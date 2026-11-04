@@ -75,21 +75,6 @@
     });
   };
 
-  // Faixas de texto correndo em sentidos opostos
-  const kinetic = document.querySelector('.kinetic');
-  const kineticLines = kinetic ? [...kinetic.querySelectorAll('.kinetic-line')] : [];
-
-  const drawKinetic = (vh) => {
-    if (!kinetic) return;
-    const rect = kinetic.getBoundingClientRect();
-    if (rect.bottom < -50 || rect.top > vh + 50) return;
-    const moved = vh - rect.top;
-    kineticLines.forEach((line, index) => {
-      const direction = index % 2 ? 1 : -1;
-      line.style.transform = `translate3d(${direction * moved * 0.32 - (index % 2 ? 900 : 100)}px, 0, 0)`;
-    });
-  };
-
   // Blocos sobem e entram na tela
   const riseItems = [...document.querySelectorAll('[data-rise]')];
 
@@ -119,66 +104,37 @@
     heroChips.style.transform = wide ? `translate3d(0, ${s * -0.16}px, 0)` : '';
   };
 
-  // Gaveta de pastas: fica presa na tela e cada pasta sobe com a rolagem
-  const archive = document.querySelector('[data-archive]');
-  const stage = archive && archive.querySelector('.archive-stage');
-  const drawer = archive && archive.querySelector('.folders');
-  const folders = archive ? [...archive.querySelectorAll('.folder')] : [];
+  // Especialidades: a seção fica presa na tela e a rolagem vai abrindo cada coluna
+  const spec = document.querySelector('[data-spec]');
+  const specStage = spec && spec.querySelector('.spec-stage');
+  const specPanels = spec ? [...spec.querySelectorAll('.spec-panel')] : [];
   const pinQuery = window.matchMedia('(min-width: 861px) and (min-height: 680px)');
+  let specActive = 0;
 
-  const folderTitles = folders.map((folder) => split(folder.querySelector('h3')));
+  specPanels.forEach((panel) => {
+    split(panel.querySelector('h3')).forEach((char, index) => char.style.setProperty('--c', index));
+  });
 
-  const clearFolders = () => {
-    folders.forEach((folder, index) => {
-      folder.style.transform = '';
-      folder.querySelector('.folder-body').inert = false;
-      folder.querySelector('.folder-tab').setAttribute('aria-expanded', 'true');
-      folder.querySelector('.folder-sheet').style.transform = '';
-      folderTitles[index].forEach((char) => {
-        char.style.transform = '';
-        char.style.opacity = '';
-      });
-    });
-  };
+  const specTop = () => spec.getBoundingClientRect().top + window.scrollY - specStage.offsetTop;
 
-  const drawArchive = () => {
-    if (!archive) return;
-    const pinned = pinQuery.matches;
-    if (root.classList.contains('archive-pinned') !== pinned) {
-      root.classList.toggle('archive-pinned', pinned);
-      if (!pinned) clearFolders();
+  const drawSpec = () => {
+    if (!spec) return;
+    root.classList.toggle('spec-pinned', pinQuery.matches);
+    if (!pinQuery.matches) return;
+    const room = spec.offsetHeight - specStage.offsetHeight;
+    const progress = clamp((window.scrollY - specTop()) / room);
+    const active = Math.round(progress * (specPanels.length - 1));
+    if (active !== specActive) {
+      specActive = active;
+      specPanels[active].dispatchEvent(new Event('spec:open'));
     }
-    if (!pinned) return;
-
-    const room = archive.offsetHeight - stage.offsetHeight;
-    const progress = clamp(-archive.getBoundingClientRect().top / room) * (folders.length - 1);
-    const height = drawer.offsetHeight;
-    const active = Math.round(progress);
-
-    folders.forEach((folder, index) => {
-      const t = index === 0 ? 1 : easeOut(clamp(progress - index + 1));
-      const y = height + (index * 10 - height) * t;
-      const isActive = index === active;
-      folder.style.transform = `translate3d(0, ${y}px, 0)`;
-      folder.querySelector('.folder-body').inert = !isActive;
-      folder.querySelector('.folder-tab').setAttribute('aria-expanded', String(isActive));
-      folder.classList.toggle('is-active', isActive);
-      folder.querySelector('.folder-sheet').style.transform = `translate3d(${(1 - t) * 90}px, ${(1 - t) * 140}px, 0) rotate(${3 + (1 - t) * 14}deg)`;
-      const chars = folderTitles[index];
-      chars.forEach((char, c) => {
-        const local = easeOut(clamp(t * 1.5 - (c / chars.length) * 0.5));
-        char.style.transform = `translateY(${(1 - local) * 70}%)`;
-        char.style.opacity = String(local);
-      });
-    });
   };
 
-  folders.forEach((folder, index) => {
-    folder.querySelector('.folder-tab').addEventListener('click', () => {
+  specPanels.forEach((panel, index) => {
+    panel.querySelector('.spec-tab').addEventListener('click', () => {
       if (!pinQuery.matches) return;
-      const room = archive.offsetHeight - stage.offsetHeight;
-      const top = archive.getBoundingClientRect().top + window.scrollY - stage.offsetTop;
-      window.scrollTo({ top: top + (room / (folders.length - 1)) * index + 1, behavior: 'smooth' });
+      const room = spec.offsetHeight - specStage.offsetHeight;
+      window.scrollTo({ top: specTop() + (room / (specPanels.length - 1)) * index + 1, behavior: 'smooth' });
     });
   });
 
@@ -188,10 +144,9 @@
     const vh = window.innerHeight;
     const headerHeight = document.querySelector('[data-header]')?.offsetHeight ?? 0;
     drawHero(window.scrollY);
-    drawKinetic(vh);
     drawStatement(vh);
     drawRise(vh);
-    drawArchive();
+    drawSpec();
     letterItems.forEach((item) => drawLetters(item, vh, headerHeight));
   };
   const request = () => {
