@@ -76,6 +76,8 @@
   document.querySelectorAll('[data-spec]').forEach((spec) => {
     const panels = [...spec.querySelectorAll('.spec-panel')];
     const hoverQuery = window.matchMedia('(hover: hover) and (min-width: 861px)');
+    let lastX = null;
+    let lastY = null;
 
     const open = (panel) => {
       if (panel.classList.contains('is-open')) return;
@@ -87,10 +89,13 @@
     };
 
     panels.forEach((panel) => {
-      panel.addEventListener('spec:open', () => open(panel));
       panel.querySelector('.spec-tab').addEventListener('click', () => open(panel));
-      panel.addEventListener('pointerenter', (event) => {
-        if (event.pointerType === 'mouse' && hoverQuery.matches) open(panel);
+      // Só quando o mouse anda: com a página rolando e o mouse parado, nada abre sozinho
+      panel.addEventListener('pointermove', (event) => {
+        const moved = event.clientX !== lastX || event.clientY !== lastY;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        if (event.pointerType === 'mouse' && hoverQuery.matches && moved) open(panel);
       });
     });
   });
