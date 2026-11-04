@@ -60,21 +60,6 @@
     });
   };
 
-  // Frase que vai acendendo, letra por letra
-  const statement = document.querySelector('[data-fill]');
-  const statementChars = statement ? split(statement) : [];
-
-  const drawStatement = (vh) => {
-    if (!statement) return;
-    const rect = statement.getBoundingClientRect();
-    if (rect.bottom < -100 || rect.top > vh + 100) return;
-    const t = clamp((vh * 0.85 - rect.top) / (vh * 0.62 + rect.height * 0.4));
-    const lit = t * (statementChars.length + 12);
-    statementChars.forEach((char, index) => {
-      char.style.opacity = String(0.14 + 0.86 * clamp((lit - index) / 12));
-    });
-  };
-
   // Blocos sobem e entram na tela
   const riseItems = [...document.querySelectorAll('[data-rise]')];
 
@@ -115,7 +100,6 @@
     const vh = window.innerHeight;
     const headerHeight = document.querySelector('[data-header]')?.offsetHeight ?? 0;
     drawHero(window.scrollY);
-    drawStatement(vh);
     drawRise(vh);
     letterItems.forEach((item) => drawLetters(item, vh, headerHeight));
   };

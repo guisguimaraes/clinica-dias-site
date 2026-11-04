@@ -100,6 +100,22 @@
     });
   });
 
+  // Como funciona: a etapa aberta troca a foto ao lado
+  document.querySelectorAll('[data-steps]').forEach((box) => {
+    const steps = [...box.querySelectorAll('.step')];
+    const photos = [...box.querySelectorAll('.journey-photos img')];
+    photos.forEach((photo) => { photo.loading = 'eager'; });
+    steps.forEach((step, index) => {
+      step.querySelector('.step-tab').addEventListener('click', () => {
+        steps.forEach((item, i) => {
+          item.classList.toggle('is-open', i === index);
+          item.querySelector('.step-tab').setAttribute('aria-expanded', String(i === index));
+          photos[i].classList.toggle('is-active', i === index);
+        });
+      });
+    });
+  });
+
   // Como chegar: o botão de rota acompanha o jeito que a pessoa vem
   const routeGroup = document.querySelector('[data-route]');
   if (routeGroup) {
@@ -151,7 +167,7 @@
     });
   });
 
-  // Aberto ou fechado, sempre no horário de Timóteo: segunda a sexta, das 8h às 18h
+  // Aberto ou fechado, sempre no horário de Timóteo: seg. a sex. das 7h às 22h, sábado das 8h às 19h
   const clinicStatus = (date) => {
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: 'America/Sao_Paulo', weekday: 'short', hour: 'numeric', minute: 'numeric', hourCycle: 'h23',
@@ -159,14 +175,16 @@
     const get = (type) => parts.find((part) => part.type === type).value;
     const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
     const minutes = Number(get('hour')) * 60 + Number(get('minute'));
-    const weekday = day >= 1 && day <= 5;
+    const opens = day === 0 ? null : day === 6 ? 480 : 420;
+    const closes = day === 6 ? 1140 : 1320;
 
-    if (weekday && minutes >= 480 && minutes < 1080) {
-      return { open: true, day, left: 1080 - minutes, label: 'Aberto agora', text: 'Estamos atendendo agora, até as 18h.' };
+    if (opens !== null && minutes >= opens && minutes < closes) {
+      return { open: true, day, left: closes - minutes, label: 'Aberto agora', text: `Estamos atendendo agora, até as ${closes / 60}h.` };
     }
-    let next = 'amanhã às 8h';
-    if (weekday && minutes < 480) next = 'hoje às 8h';
-    else if (day === 6 || (day === 5 && minutes >= 1080)) next = 'segunda-feira às 8h';
+    let next = 'amanhã às 7h';
+    if (opens !== null && minutes < opens) next = `hoje às ${opens / 60}h`;
+    else if (day === 6) next = 'segunda-feira às 7h';
+    else if (day === 5) next = 'amanhã às 8h';
     return { open: false, day, next, label: 'Fechado agora', text: `Estamos fechados agora. Voltamos ${next}.` };
   };
 
