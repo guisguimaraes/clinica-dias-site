@@ -645,6 +645,20 @@ html:not(.js) .quick-tabs {
   background: var(--surface-soft);
 }
 
+.hero-slides {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hero-slides.is-dragging {
+  cursor: grabbing;
+}
+
 .hero-bg {
   position: absolute;
   inset: 0;
@@ -652,6 +666,53 @@ html:not(.js) .quick-tabs {
   height: 100%;
   object-fit: cover;
   object-position: left 40%;
+}
+
+.hero-team,
+.hero-cross {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-team[hidden],
+.hero-cross[hidden] {
+  display: none;
+}
+
+.hero-cross {
+  background: var(--orange-500);
+}
+
+.hero-team {
+  z-index: 1;
+  overflow: hidden;
+  background: var(--purple-700);
+}
+
+/* equipe recortada sobre o roxo, à esquerda do cartão */
+.team-word {
+  --word-center: calc((100% - 38rem) / 2);
+  position: absolute;
+  top: 2%;
+  left: var(--word-center);
+  margin: 0;
+  color: var(--orange-500);
+  font-size: clamp(3rem, min(9vw, 22vh), 11rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.team-photo {
+  position: absolute;
+  top: 4%;
+  left: calc((100% - 38rem) / 2);
+  width: auto;
+  max-width: none;
+  height: 117%;
+  transform: translateX(-50%);
 }
 
 .hero-card {
@@ -706,6 +767,40 @@ html:not(.js) .quick-tabs {
 
 .chip-rating:hover strong {
   color: var(--orange-700);
+}
+
+.chip-drag {
+  border: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chip-drag > span > span {
+  display: block;
+}
+
+.chip-drag svg {
+  flex-shrink: 0;
+  color: var(--orange-700);
+  animation: chip-nudge 1.8s ease-in-out infinite;
+}
+
+.chip-drag:hover strong {
+  color: var(--orange-700);
+}
+
+.chip-drag.is-used svg {
+  animation: none;
+}
+
+@keyframes chip-nudge {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
 }
 
 .chip-star {
@@ -1709,10 +1804,31 @@ html:not(.js) .spec-tab {
     padding: 0;
   }
 
-  .hero-bg {
-    position: static;
-    height: clamp(220px, 44vw, 480px);
-    object-position: left 40%;
+  .hero-slides {
+    position: relative;
+    inset: auto;
+    height: clamp(260px, 50vw, 520px);
+  }
+
+  .team-word,
+  .team-photo {
+    left: 50%;
+  }
+
+  .chip-drag {
+    position: absolute;
+    top: calc(clamp(260px, 50vw, 520px) - 66px);
+    left: 50%;
+    z-index: 2;
+    flex: none;
+    min-height: 54px;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .hero-chips .chip-drag {
+    flex: none;
+    box-shadow: var(--shadow);
   }
 
   .hero-chips {

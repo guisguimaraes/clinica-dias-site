@@ -61,7 +61,14 @@
 
   <main id="conteudo" class="blocks">
     <section class="hero-panel">
-      <img class="hero-bg" src="assets/img/fachada.webp" alt="Fachada da Clínica Dias, na Rua Cento e Vinte e Oito, em Timóteo" width="1899" height="828" fetchpriority="high">
+      <div class="hero-slides" data-slides>
+        <img draggable="false" class="hero-bg" src="assets/img/fachada.webp" alt="Fachada da Clínica Dias, na Rua Cento e Vinte e Oito, em Timóteo" width="1899" height="828" fetchpriority="high">
+        <div class="hero-team" data-team hidden>
+          <p class="team-word" aria-hidden="true">Nossa equipe</p>
+          <img class="team-photo" src="assets/img/equipe-recorte.webp" alt="Equipe médica da Clínica Dias, de jaleco branco" width="1656" height="1424" draggable="false">
+        </div>
+        <div class="hero-cross" data-cross hidden></div>
+      </div>
 
       <div class="hero-chips">
         <div class="chip hero-status" data-status>
@@ -72,6 +79,10 @@
           <span class="chip-star"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" stroke="none" d="m12 2.5 2.9 6.2 6.7.8-5 4.6 1.4 6.7-6-3.4-6 3.4 1.4-6.7-5-4.6 6.7-.8z"/></svg></span>
           <span><strong>4,8 no Google</strong>Ver avaliações<span class="sr-only"> (abre em nova aba)</span></span>
         </a>
+        <button class="chip chip-drag" type="button" aria-pressed="false" data-slides-toggle>
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M3 12h18"/></svg>
+          <span><strong data-slides-label>Arraste a foto</strong><span data-slides-sub>para conhecer a equipe</span></span>
+        </button>
       </div>
 
       <div class="hero-card">

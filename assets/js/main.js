@@ -100,6 +100,147 @@
     });
   });
 
+  // Foto do topo: arrastar troca a fachada pela equipe. Uma cruz, a do logo,
+  // nasce no ponto onde a pessoa pegou e cresce até tomar o quadro.
+  const slides = document.querySelector('[data-slides]');
+  if (slides) {
+    const team = slides.querySelector('[data-team]');
+    const cross = slides.querySelector('[data-cross]');
+    const facade = slides.querySelector('.hero-bg');
+    const photo = slides.querySelector('.team-photo');
+    const word = slides.querySelector('.team-word');
+    const toggle = document.querySelector('[data-slides-toggle]');
+    const label = document.querySelector('[data-slides-label]');
+    const sub = document.querySelector('[data-slides-sub]');
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const clamp01 = (value) => Math.min(1, Math.max(0, value));
+
+    let progress = 0;
+    let target = 0;
+    let originX = 0.36;
+    let originY = 0.55;
+    let frame = null;
+
+    const crossShape = (cx, cy, arm, length, angle) => {
+      const points = [
+        [-arm, -length], [arm, -length], [arm, -arm], [length, -arm], [length, arm], [arm, arm],
+        [arm, length], [-arm, length], [-arm, arm], [-length, arm], [-length, -arm], [-arm, -arm],
+      ];
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const list = points.map(([x, y]) => `${(cx + x * cos - y * sin).toFixed(1)}px ${(cy + x * sin + y * cos).toFixed(1)}px`);
+      return `polygon(${list.join(',')})`;
+    };
+
+    const render = () => {
+      const p = progress;
+      const shown = p > 0.001;
+      const full = p > 0.999;
+      team.hidden = !shown;
+      cross.hidden = !shown || full;
+      facade.style.transform = shown ? `scale(${1 + p * 0.08})` : '';
+      if (shown) {
+        const rest = 1 - p;
+        photo.style.transform = `translateX(calc(-50% + ${rest * 70}px)) scale(${1.08 - p * 0.08})`;
+        word.style.transform = `translateX(calc(-50% - ${rest * 190}px))`;
+        word.style.opacity = String(Math.min(1, p * 1.4));
+      }
+      if (!shown) return;
+      if (full) {
+        team.style.clipPath = 'none';
+        return;
+      }
+      const { width, height } = slides.getBoundingClientRect();
+      const cx = originX * width;
+      const cy = originY * height;
+      const reach = Math.hypot(Math.max(cx, width - cx), Math.max(cy, height - cy));
+      const arm = reach * p ** 1.9;
+      const length = arm * 2.4 + 18 * p;
+      const angle = (1 - p) * 0.9;
+      const edge = 9 * (1 - p);
+      team.style.clipPath = crossShape(cx, cy, arm, length, angle);
+      cross.style.clipPath = crossShape(cx, cy, arm + edge, length + edge, angle);
+    };
+
+    const settle = (to) => {
+      target = to;
+      toggle.setAttribute('aria-pressed', String(to === 1));
+      label.textContent = 'Arraste a foto';
+      sub.textContent = to === 1 ? 'para voltar à fachada' : 'para conhecer a equipe';
+      cancelAnimationFrame(frame);
+      if (calm.matches) {
+        progress = to;
+        render();
+        return;
+      }
+      const from = progress;
+      const distance = Math.abs(to - from);
+      const duration = 350 + 550 * distance;
+      const start = performance.now();
+      const step = (now) => {
+        const t = clamp01((now - start) / duration);
+        progress = from + (to - from) * (1 - (1 - t) ** 3);
+        render();
+        if (t < 1) frame = requestAnimationFrame(step);
+      };
+      frame = requestAnimationFrame(step);
+    };
+
+    toggle.addEventListener('click', () => {
+      toggle.classList.add('is-used');
+      if (target === 0) {
+        originX = 0.36;
+        originY = 0.55;
+      }
+      settle(target === 1 ? 0 : 1);
+    });
+
+    let drag = null;
+
+    slides.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      const rect = slides.getBoundingClientRect();
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, from: target, width: rect.width, rect, active: false };
+    });
+
+    window.addEventListener('pointermove', (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      if (!drag.active) {
+        if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+          drag = null;
+          return;
+        }
+        if (Math.abs(dx) < 8) return;
+        drag.active = true;
+        cancelAnimationFrame(frame);
+        slides.classList.add('is-dragging');
+        toggle.classList.add('is-used');
+        if (drag.from === 0) {
+          originX = clamp01((drag.x - drag.rect.left) / drag.rect.width);
+          originY = clamp01((drag.y - drag.rect.top) / drag.rect.height);
+        }
+      }
+      const moved = Math.abs(dx) / (drag.width * 0.42);
+      progress = clamp01(drag.from === 0 ? moved : 1 - moved);
+      render();
+    });
+
+    const release = (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const { active, from } = drag;
+      drag = null;
+      slides.classList.remove('is-dragging');
+      if (!active) return;
+      settle((from === 0 ? progress > 0.3 : progress > 0.7) ? 1 : 0);
+    };
+
+    window.addEventListener('pointerup', release);
+    window.addEventListener('pointercancel', release);
+    window.addEventListener('resize', render);
+  }
+
   // Como funciona: a etapa aberta troca a foto ao lado
   document.querySelectorAll('[data-steps]').forEach((box) => {
     const steps = [...box.querySelectorAll('.step')];

@@ -76,7 +76,7 @@
 
   // Parallax da abertura. A fachada anda mais devagar que a página.
   const heroPanel = document.querySelector('.hero-panel');
-  const heroBg = document.querySelector('.hero-bg');
+  const heroBg = document.querySelector('.hero-slides');
   const heroCard = document.querySelector('.hero-card');
   const heroChips = document.querySelector('.hero-chips');
 
