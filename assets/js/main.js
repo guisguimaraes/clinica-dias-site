@@ -72,6 +72,48 @@
     });
   });
 
+  // Especialidades: abre a coluna ao clicar, ou ao passar o mouse no computador
+  document.querySelectorAll('[data-spec]').forEach((spec) => {
+    const panels = [...spec.querySelectorAll('.spec-panel')];
+    const hoverQuery = window.matchMedia('(hover: hover) and (min-width: 861px)');
+
+    const open = (panel) => {
+      if (panel.classList.contains('is-open')) return;
+      panels.forEach((item) => {
+        const active = item === panel;
+        item.classList.toggle('is-open', active);
+        item.querySelector('.spec-tab').setAttribute('aria-expanded', String(active));
+      });
+    };
+
+    panels.forEach((panel) => {
+      panel.addEventListener('spec:open', () => open(panel));
+      panel.querySelector('.spec-tab').addEventListener('click', () => open(panel));
+      panel.addEventListener('pointerenter', (event) => {
+        if (event.pointerType === 'mouse' && hoverQuery.matches) open(panel);
+      });
+    });
+  });
+
+  // Como chegar: o botão de rota acompanha o jeito que a pessoa vem
+  const routeGroup = document.querySelector('[data-route]');
+  if (routeGroup) {
+    const link = document.querySelector('[data-route-link]');
+    const text = document.querySelector('[data-route-text]');
+    const waze = document.querySelector('[data-route-waze]');
+    const modes = [...routeGroup.querySelectorAll('[data-mode]')];
+    modes.forEach((mode) => {
+      mode.addEventListener('click', () => {
+        modes.forEach((item) => item.setAttribute('aria-pressed', String(item === mode)));
+        const url = new URL(link.href);
+        url.searchParams.set('travelmode', mode.dataset.mode);
+        link.href = url.href;
+        text.textContent = `Traçar rota ${mode.dataset.word}`;
+        waze.hidden = mode.dataset.mode !== 'driving';
+      });
+    });
+  }
+
   const copyText = async (text) => {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
@@ -95,7 +137,7 @@
     button.addEventListener('click', async () => {
       try {
         await copyText(button.dataset.copy);
-        button.textContent = 'Número copiado';
+        button.textContent = button.dataset.copied || 'Número copiado';
       } catch {
         button.textContent = button.dataset.copy;
       }
@@ -115,12 +157,12 @@
     const weekday = day >= 1 && day <= 5;
 
     if (weekday && minutes >= 480 && minutes < 1080) {
-      return { open: true, label: 'Aberto agora', text: 'Estamos atendendo agora, até as 18h.' };
+      return { open: true, day, left: 1080 - minutes, label: 'Aberto agora', text: 'Estamos atendendo agora, até as 18h.' };
     }
     let next = 'amanhã às 8h';
     if (weekday && minutes < 480) next = 'hoje às 8h';
     else if (day === 6 || (day === 5 && minutes >= 1080)) next = 'segunda-feira às 8h';
-    return { open: false, label: 'Fechado agora', text: `Estamos fechados agora. Voltamos ${next}.` };
+    return { open: false, day, next, label: 'Fechado agora', text: `Estamos fechados agora. Voltamos ${next}.` };
   };
 
   const statusBox = document.querySelector('[data-status]');
@@ -130,6 +172,17 @@
       statusBox.dataset.state = status.open ? 'open' : 'closed';
       statusBox.querySelector('[data-status-label]').textContent = status.label;
       document.querySelector('[data-status-text]').textContent = status.text;
+
+      const visitStatus = document.querySelector('[data-visit-status]');
+      if (visitStatus) {
+        const hours = Math.floor((status.left || 0) / 60);
+        const rest = (status.left || 0) % 60;
+        const time = [hours ? `${hours}h` : '', rest ? `${rest}min` : ''].filter(Boolean).join(' ');
+        visitStatus.textContent = status.open ? `Aberto agora. Fecha em ${time}.` : `Fechado agora. Voltamos ${status.next}.`;
+        document.querySelectorAll('.visit-week li').forEach((item) => {
+          item.classList.toggle('is-today', Number(item.dataset.day) === status.day);
+        });
+      }
     };
     updateStatus();
     setInterval(updateStatus, 60000);
