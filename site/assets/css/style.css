@@ -595,16 +595,6 @@ html:not(.js) .quick-tabs {
   font-weight: 700;
 }
 
-.tile-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--purple-700);
-}
-
 /* Telefone no topo */
 .header-phone {
   display: flex;
@@ -738,65 +728,8 @@ html:not(.js) .quick-tabs {
   font-size: 0.9rem;
 }
 
-/* Três blocos */
-.trio {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: var(--gap);
-}
-
-.trio h2 {
-  font-size: clamp(1.15rem, 1rem + 0.5vw, 1.4rem);
-}
-
-.trio p {
-  margin: 0;
-}
-
-.trio .tile-icon {
-  margin-bottom: 1rem;
-}
-
 .block-orange {
   background: var(--tint-orange);
-}
-
-.block-lilac {
-  background: var(--tint-lilac);
-}
-
-.block-photo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  gap: 1.5rem;
-  padding-block: 0;
-  padding-right: 0;
-  overflow: hidden;
-  background: var(--surface-soft);
-}
-
-.block-photo > div {
-  padding-block: clamp(1.5rem, 2.6vw, 2.75rem);
-}
-
-.block-photo img {
-  width: 100%;
-  height: 100%;
-  min-height: 220px;
-  object-fit: cover;
-}
-
-/* Frase */
-.statement {
-  max-width: 22em;
-  margin: 0;
-  padding: clamp(3rem, 9vw, 8rem) clamp(0.5rem, 4vw, 4rem);
-  color: var(--purple-900);
-  font-size: clamp(1.8rem, 4.4vw, 4.25rem);
-  font-weight: 700;
-  line-height: 1.14;
-  letter-spacing: -0.015em;
 }
 
 .word {
@@ -817,6 +750,146 @@ html:not(.js) .quick-tabs {
     opacity: 0;
     transform: translateY(70%);
   }
+}
+
+/* Como funciona: etapas que abrem e trocam a foto */
+.journey {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: stretch;
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  padding: clamp(2.5rem, 6vw, 5.5rem) clamp(0.5rem, 3vw, 3rem);
+}
+
+.journey h2 {
+  margin-bottom: 0.8em;
+  font-size: clamp(1.9rem, 3.6vw, 3.4rem);
+  line-height: 1.08;
+}
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--gray-200);
+}
+
+.step {
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.step-tab {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 72px;
+  padding: 0.9rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--purple-900);
+  font-family: inherit;
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.step-tab:hover {
+  color: var(--orange-700);
+}
+
+.step-number {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--purple-700);
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.step.is-open .step-number {
+  background: var(--orange-500);
+  color: var(--purple-900);
+}
+
+.step-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.3, 0.8, 0.2, 1);
+}
+
+.step.is-open .step-body {
+  grid-template-rows: 1fr;
+}
+
+.step-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding-left: 56px;
+  visibility: hidden;
+  transition: visibility 0.35s;
+}
+
+.step.is-open .step-inner {
+  visibility: visible;
+}
+
+.step-inner p {
+  max-width: 32rem;
+  margin: 0 0 0.9rem;
+}
+
+.step-inner .btn {
+  min-height: 46px;
+  margin-bottom: 1.25rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+}
+
+html:not(.js) .step-body {
+  grid-template-rows: 1fr;
+}
+
+html:not(.js) .step-inner {
+  visibility: visible;
+}
+
+.journey-photos {
+  position: relative;
+  min-height: 460px;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--surface-soft);
+}
+
+.journey-photos img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.journey-photos img.is-active {
+  opacity: 1;
+}
+
+html:not(.js) .journey-photos img:first-child {
+  opacity: 1;
+}
+
+.visit {
+  scroll-margin-top: calc(var(--header-height) + var(--gap));
 }
 
 /* Especialidades: colunas de foto, a escolhida abre */
@@ -1658,14 +1731,6 @@ html:not(.js) .spec-tab {
     box-shadow: none;
   }
 
-  .trio {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .block-photo {
-    grid-column: 1 / -1;
-  }
-
   .results {
     grid-template-columns: 1fr 1fr;
   }
@@ -1712,19 +1777,6 @@ html:not(.js) .spec-tab {
     border-radius: var(--radius-lg);
   }
 
-  .trio {
-    grid-template-columns: 1fr;
-  }
-
-  .block-photo {
-    grid-template-columns: 1fr;
-    padding: 0;
-  }
-
-  .block-photo > div {
-    padding: 1.5rem 1.5rem 0;
-  }
-
 }
 
 .btn[hidden] {
@@ -1744,5 +1796,19 @@ html:not(.js) .spec-tab {
 
   .visit-week .is-closed strong {
     opacity: 0.55;
+  }
+}
+
+@media (max-width: 860px) {
+  .journey {
+    grid-template-columns: 1fr;
+    padding-block: 2rem;
+  }
+
+  .journey-photos {
+    order: -1;
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--radius-lg);
   }
 }
