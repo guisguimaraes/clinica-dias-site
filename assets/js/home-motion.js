@@ -104,38 +104,9 @@
     heroChips.style.transform = wide ? `translate3d(0, ${s * -0.16}px, 0)` : '';
   };
 
-  // Especialidades: a seção fica presa na tela e a rolagem vai abrindo cada coluna
-  const spec = document.querySelector('[data-spec]');
-  const specStage = spec && spec.querySelector('.spec-stage');
-  const specPanels = spec ? [...spec.querySelectorAll('.spec-panel')] : [];
-  const pinQuery = window.matchMedia('(min-width: 861px) and (min-height: 680px)');
-  let specActive = 0;
-
-  specPanels.forEach((panel) => {
-    split(panel.querySelector('h3')).forEach((char, index) => char.style.setProperty('--c', index));
-  });
-
-  const specTop = () => spec.getBoundingClientRect().top + window.scrollY - specStage.offsetTop;
-
-  const drawSpec = () => {
-    if (!spec) return;
-    root.classList.toggle('spec-pinned', pinQuery.matches);
-    if (!pinQuery.matches) return;
-    const room = spec.offsetHeight - specStage.offsetHeight;
-    const progress = clamp((window.scrollY - specTop()) / room);
-    const active = Math.round(progress * (specPanels.length - 1));
-    if (active !== specActive) {
-      specActive = active;
-      specPanels[active].dispatchEvent(new Event('spec:open'));
-    }
-  };
-
-  specPanels.forEach((panel, index) => {
-    panel.querySelector('.spec-tab').addEventListener('click', () => {
-      if (!pinQuery.matches) return;
-      const room = spec.offsetHeight - specStage.offsetHeight;
-      window.scrollTo({ top: specTop() + (room / (specPanels.length - 1)) * index + 1, behavior: 'smooth' });
-    });
+  // Especialidades: letras do título da coluna que abre
+  document.querySelectorAll('.spec-panel h3').forEach((title) => {
+    split(title).forEach((char, index) => char.style.setProperty('--c', index));
   });
 
   let queued = false;
@@ -146,7 +117,6 @@
     drawHero(window.scrollY);
     drawStatement(vh);
     drawRise(vh);
-    drawSpec();
     letterItems.forEach((item) => drawLetters(item, vh, headerHeight));
   };
   const request = () => {

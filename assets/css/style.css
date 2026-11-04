@@ -971,23 +971,6 @@ html:not(.js) .quick-tabs {
   background: var(--tint-orange);
 }
 
-/* Presa na tela enquanto as colunas abrem com a rolagem */
-.spec-pinned .spec {
-  height: calc(100svh + (var(--n) - 1) * 38vh);
-}
-
-.spec-pinned .spec-stage {
-  position: sticky;
-  top: var(--header-height);
-  height: calc(100svh - var(--header-height) - var(--gap));
-}
-
-.spec-pinned .spec-row {
-  flex: 1;
-  min-height: 0;
-  height: auto;
-}
-
 html:not(.js) .spec-row {
   flex-direction: column;
   height: auto;
