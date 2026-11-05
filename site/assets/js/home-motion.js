@@ -35,7 +35,7 @@
   };
 
   // Abertura: as letras do título entram ao carregar
-  const heroTitle = document.querySelector('.hero-card h1');
+  const heroTitle = document.querySelector('.hero-side h1');
   if (heroTitle) {
     split(heroTitle).forEach((char, index) => {
       char.style.animationDelay = `${150 + index * 18}ms`;
@@ -77,16 +77,12 @@
   // Parallax da abertura. A fachada anda mais devagar que a página.
   const heroPanel = document.querySelector('.hero-panel');
   const heroBg = document.querySelector('.hero-slides');
-  const heroCard = document.querySelector('.hero-card');
-  const heroChips = document.querySelector('.hero-chips');
 
   const drawHero = (scroll) => {
     if (!heroPanel) return;
     const wide = window.innerWidth > 1280;
     const s = wide ? Math.min(scroll, heroPanel.offsetHeight + 100) : 0;
     heroBg.style.transform = wide ? `translate3d(0, ${s * 0.24}px, 0)` : '';
-    heroCard.style.transform = wide ? `translate3d(0, ${s * -0.09}px, 0)` : '';
-    heroChips.style.transform = wide ? `translate3d(0, ${s * -0.16}px, 0)` : '';
   };
 
   // Especialidades: letras do título da coluna que abre

@@ -1,0 +1,102 @@
+/* Modelo 3: um dia na Clínica Dias. O céu muda enquanto a página rola. */
+:root { --ceu: #fdefe2; --tinta: #211a38; --lado: clamp(1.25rem, 6vw, 7rem); }
+body { background: var(--ceu); color: var(--tinta); font-family: 'Manrope', sans-serif; font-size: 1.05rem; line-height: 1.5; }
+h1, h2, em { font-family: 'Instrument Serif', serif; font-weight: 400; }
+h1 em, h2 em { font-style: italic; }
+
+.topo { position: fixed; inset: 0 0 auto; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.1rem var(--lado); mix-blend-mode: normal; color: var(--tinta); font-size: .92rem; font-weight: 600; }
+.topo a { text-decoration: none; }
+.marca { display: flex; align-items: center; gap: .5rem; font-size: 1.05rem; font-weight: 700; }
+.marca svg { width: 20px; fill: var(--laranja); }
+.topo nav { display: flex; gap: clamp(1rem, 2.5vw, 2.25rem); margin-left: auto; }
+.topo nav a:hover, .topo-tel:hover { color: var(--laranja); }
+
+/* Relógio que anda com a rolagem */
+.relogio { position: fixed; right: clamp(.75rem, 2vw, 2rem); top: 50%; z-index: 30; display: grid; justify-items: end; gap: .6rem; transform: translateY(-50%); }
+.relogio-hora { font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.relogio-trilho { position: relative; width: 2px; height: 26vh; background: color-mix(in srgb, var(--tinta) 22%, transparent); }
+.relogio-trilho span { position: absolute; inset: 0 0 auto; height: 100%; background: var(--laranja); transform: scaleY(0); transform-origin: top; }
+
+/* Abertura com a fachada dentro da cruz */
+.abertura { position: relative; height: 210vh; }
+.abertura-palco { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+.abertura-texto { position: absolute; left: var(--lado); top: 50%; z-index: 1; max-width: 34rem; transform: translateY(-46%); }
+.abertura-texto h1 { font-size: clamp(5rem, min(15vw, 26vh), 15rem); line-height: .88; letter-spacing: -.025em; }
+.abertura-texto h1 em { color: var(--ameixa); }
+.abertura-texto p { max-width: 24rem; margin-top: 1.5rem; font-size: 1.12rem; }
+.abertura-texto .agora { display: inline-flex; align-items: center; gap: .55rem; margin-top: 1rem; font-size: .95rem; font-weight: 700; }
+.agora::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--laranja); }
+.agora.aberto::before { background: #2e7d4f; }
+.abertura-janela { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.abertura-janela img { width: 100%; height: 100%; object-fit: cover; object-position: 30% 40%; }
+.abertura-dica { position: absolute; left: var(--lado); bottom: 1.5rem; z-index: 1; font-size: .85rem; font-weight: 600; opacity: .7; }
+
+/* Cada momento do dia */
+.momento { position: relative; padding: clamp(6rem, 13vw, 12rem) var(--lado); }
+.hora { font-size: .95rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--laranja); }
+.momento h2 { margin-top: .5rem; max-width: 14em; font-size: clamp(3rem, 8.4vw, 8.5rem); line-height: .98; letter-spacing: -.02em; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; padding: .7rem 1.6rem; border-radius: 999px; background: var(--laranja); color: var(--noite); font-size: .98rem; font-weight: 700; text-decoration: none; transition: transform .2s ease, background-color .2s ease; }
+.btn:hover { background: var(--laranja-claro); transform: translateY(-3px); }
+.btn-claro { background: #fff; }
+.btn-claro:hover { background: var(--pessego); }
+.btn-linha { border: 1.5px solid currentColor; background: transparent; color: inherit; }
+.btn-linha:hover { background: transparent; color: var(--laranja-claro); }
+
+.manha-acao { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem 3rem; margin-top: clamp(2rem, 4vw, 3.5rem); }
+.manha-acao p { max-width: 26rem; font-size: 1.2rem; }
+
+/* Equipe */
+.equipe { padding-bottom: clamp(4rem, 8vw, 7rem); overflow: hidden; }
+.equipe-palco { position: relative; margin-top: 1rem; }
+.equipe-gigante { position: absolute; top: 2%; left: 0; color: var(--ameixa); font-family: 'Instrument Serif', serif; font-size: clamp(5rem, 19vw, 21rem); font-style: italic; line-height: .9; white-space: nowrap; }
+.equipe-palco img { position: relative; width: min(100%, 1020px); margin: clamp(2.5rem, 7vw, 7rem) auto 0; }
+.equipe-nota { max-width: 30rem; margin-top: 2rem; font-size: 1.2rem; }
+.equipe-vagas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 2rem; }
+.equipe-vagas .foto-vaga { aspect-ratio: .95; border-radius: 16px; }
+
+/* Especialidades */
+.areas-lista { margin-top: clamp(2rem, 5vw, 4rem); border-top: 1px solid color-mix(in srgb, var(--tinta) 22%, transparent); }
+.areas-lista li { border-bottom: 1px solid color-mix(in srgb, var(--tinta) 22%, transparent); }
+.areas-lista button { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: clamp(.65rem, 1.2vw, 1rem) 0; border: 0; background: none; font-family: 'Instrument Serif', serif; font-size: clamp(2.2rem, 5.2vw, 5.2rem); line-height: 1.05; text-align: left; cursor: pointer; transition: color .2s ease, padding-left .3s ease; }
+.areas-lista button:hover { padding-left: .6rem; color: var(--ameixa); font-style: italic; }
+.areas-lista i { font-family: 'Manrope', sans-serif; font-size: .5em; font-style: normal; font-weight: 300; transition: transform .3s ease; }
+.areas-lista button[aria-expanded='true'] i { transform: rotate(45deg); }
+.areas-resp { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.3, .8, .2, 1); }
+.areas-resp > div { min-height: 0; overflow: hidden; visibility: hidden; transition: visibility .35s; }
+button[aria-expanded='true'] + .areas-resp { grid-template-rows: 1fr; }
+button[aria-expanded='true'] + .areas-resp > div { visibility: visible; }
+.areas-resp p { max-width: 38rem; padding-bottom: 1.25rem; font-size: 1.15rem; }
+
+/* Simulador de horário */
+.simula { display: grid; gap: .75rem; max-width: 40rem; margin-top: clamp(2rem, 5vw, 4rem); }
+.simula-rotulo { font-weight: 600; }
+.simula-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .35rem; margin-bottom: 1rem; }
+.simula-dias button { min-height: 48px; border: 1.5px solid rgba(255, 255, 255, .45); border-radius: 12px; background: transparent; font-size: .9rem; font-weight: 600; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.simula-dias button:hover { border-color: #fff; }
+.simula-dias button[aria-pressed='true'] { border-color: #fff; background: #fff; color: var(--noite); }
+.simula input[type='range'] { width: 100%; height: 44px; accent-color: var(--laranja); cursor: grab; }
+.simula-marcas { display: flex; justify-content: space-between; font-size: .8rem; opacity: .8; }
+.simula-resposta { min-height: 2.5em; margin: 1rem 0 .5rem; font-family: 'Instrument Serif', serif; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.08; }
+.simula .btn { justify-self: start; }
+
+.noite1 .btn { margin-top: clamp(2rem, 4vw, 3rem); }
+
+/* Noite */
+.noite2 { padding-bottom: 5rem; }
+.noite-grade { display: grid; grid-template-columns: 1fr 1.4fr; gap: clamp(1.5rem, 4vw, 4rem); margin-top: clamp(2rem, 5vw, 4rem); }
+.noite-info { display: grid; align-content: start; gap: 1.25rem; }
+.noite-info address { font-style: normal; font-size: 1.25rem; }
+.noite-botoes { display: flex; flex-wrap: wrap; gap: .6rem; }
+.noite-aviso { font-size: .9rem; opacity: .8; }
+.noite-mapa { min-height: 420px; overflow: hidden; border-radius: 22px; }
+.noite-mapa iframe { display: block; width: 100%; height: 100%; min-height: 420px; border: 0; filter: grayscale(.25) brightness(.95); }
+
+@media (max-width: 800px) {
+  .topo nav { display: none; }
+  .relogio { top: auto; bottom: 14px; right: 14px; transform: none; padding: .35rem .7rem; border-radius: 999px; background: var(--noite); color: #fff; }
+  .relogio-trilho { display: none; }
+  .noite-grade { grid-template-columns: 1fr; }
+  .equipe-vagas { grid-template-columns: 1fr 1fr; }
+  .equipe-vagas li:last-child { display: none; }
+  .abertura-texto { top: 42%; }
+}
