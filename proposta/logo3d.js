@@ -181,6 +181,7 @@ const rendCanto = canto && !semMovimento && criarRenderizador();
 if (rendCanto) {
   const { logo, ajustar, desenhar } = montar(canto, rendCanto);
   const rodape = document.querySelector('.rodape');
+  const secaoCartao = document.getElementById('card-facil');
   let descida = window.innerHeight * 0.14;
   let velDescida = 0;
   let giro = -0.42;
@@ -198,7 +199,10 @@ if (rendCanto) {
 
     // Aparece depois do topo e some quando o rodapé chega
     const antesDoRodape = !rodape || rodape.getBoundingClientRect().top > altura * 0.9;
-    const visivel = y > altura * 0.55 && antesDoRodape;
+    // Na seção do CardFácil o logo da clínica sai de cena, para não se misturar com o cartão
+    const caixaCartao = secaoCartao && secaoCartao.getBoundingClientRect();
+    const noCartao = caixaCartao && caixaCartao.top < altura * 0.75 && caixaCartao.bottom > altura * 0.25;
+    const visivel = y > altura * 0.55 && antesDoRodape && !noCartao;
     canto.classList.toggle('visivel', visivel);
 
     // Descida com mola: acompanha a página e assenta com um leve balanço
