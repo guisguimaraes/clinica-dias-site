@@ -3972,3 +3972,292 @@ a {
     font-size: 0.8rem;
   }
 }
+
+/* Telefones das cidades em linhas, sem cortar o número */
+.clinica-cidades {
+  grid-template-columns: 1fr;
+  gap: 0;
+  max-width: 30rem;
+  border-top: 1px solid #e4e0ea;
+}
+
+.clinica-cidades li {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 0.25rem;
+  border-bottom: 1px solid #e4e0ea;
+  border-radius: 0;
+  background: none;
+}
+
+.clinica-cidades li:hover {
+  background: none;
+}
+
+.clinica-cidades .cidade {
+  color: #4a4458;
+  font-size: 0.95rem;
+}
+
+.cc-icone {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgb(236 127 31 / 0.14);
+  color: #a4520b;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.cc-icone svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.clinica-cidades li:hover .cc-icone {
+  background: var(--laranja);
+  color: var(--tinta);
+}
+
+.clinica-cidades a {
+  font-size: 1.08rem;
+}
+
+/* Linha do tempo, versão 2: ícone em cada marco e o traço que se desenha ao aparecer */
+.historia-linha {
+  gap: 0.85rem;
+  padding-top: 2.1rem;
+}
+
+.historia-linha::before {
+  top: 7px;
+  background: var(--degrau);
+}
+
+.historia-linha::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: 70%;
+  height: 2px; /* taste-skill-ignore */
+  background: linear-gradient(90deg, var(--laranja), #f6b06a);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.6s var(--saida) 0.2s;
+}
+
+.historia-linha.visivel::after {
+  transform: scaleX(1);
+}
+
+.historia-linha li {
+  gap: 0.35rem;
+  padding: 1.25rem 1.25rem 1.35rem;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(33 26 56 / 0.05);
+  transition: transform 0.35s var(--saida), box-shadow 0.35s ease;
+}
+
+.historia-linha li:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 34px -22px rgb(33 26 56 / 0.4);
+}
+
+.historia-linha li::before {
+  top: calc(-2.1rem + 1px);
+  left: 1.25rem;
+}
+
+.hl-icone {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 0.35rem;
+  border-radius: 13px;
+  background: rgb(236 127 31 / 0.12);
+  color: #a4520b;
+}
+
+.historia-linha li:last-child .hl-icone {
+  background: var(--noite);
+  color: var(--laranja);
+}
+
+.hl-icone svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.historia-linha b {
+  color: var(--laranja);
+}
+
+.historia-linha li:last-child b {
+  color: var(--tinta);
+}
+
+.historia-linha span:not(.hl-icone) {
+  color: #4a4458;
+}
+
+/* Ficha do fundador em fundo escuro */
+.fundador {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 80% at 100% 0%, rgb(236 127 31 / 0.22), transparent 60%),
+    linear-gradient(150deg, #2a2148, var(--noite));
+  color: #fff;
+  isolation: isolate;
+}
+
+.fundador::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  right: -6%;
+  bottom: -14%;
+  width: 42%;
+  aspect-ratio: 576 / 525;
+  background: url('../assets/img/simbolo.svg') center / contain no-repeat;
+  opacity: 0.08;
+  transform: rotate(-10deg);
+}
+
+.fundador-topo {
+  border-bottom-color: rgb(255 255 255 / 0.12);
+}
+
+.fundador-selo {
+  background: #fff;
+}
+
+.fundador-cargo {
+  color: #ffb36b;
+}
+
+.fundador h3 {
+  color: #fff;
+}
+
+.fundador-dados div {
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.75rem;
+  row-gap: 0.15rem;
+}
+
+.fd-icone {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.08);
+  color: var(--laranja);
+}
+
+.fd-icone svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fundador-dados dt {
+  color: rgb(255 255 255 / 0.55);
+}
+
+.fundador-dados dd {
+  color: rgb(255 255 255 / 0.92);
+}
+
+.fundador .botao-escuro {
+  background: var(--laranja);
+  color: var(--tinta);
+}
+
+.fundador .botao-escuro:hover {
+  background: var(--laranja-claro);
+}
+
+/* Números num cartão só, divididos por linhas finas */
+.numeros-lista {
+  gap: 0;
+  overflow: hidden;
+  border-radius: calc(var(--raio) * 1.4);
+  background: #fff;
+}
+
+.numeros-lista li,
+.numeros-lista li:first-child {
+  min-height: 0;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-radius: 0;
+  background: none;
+  color: var(--tinta);
+}
+
+.numeros-lista li:nth-child(odd) {
+  border-right: 1px solid #ece9f3;
+}
+
+.numeros-lista li:nth-child(-n + 2) {
+  border-bottom: 1px solid #ece9f3;
+}
+
+.numeros-lista li:first-child span {
+  color: #4a4458;
+}
+
+.numeros-lista b {
+  font-size: clamp(2.6rem, 1.8rem + 2.4vw, 3.8rem);
+}
+
+.numeros-lista span {
+  font-size: 0.92rem;
+}
+
+@media (max-width: 640px) {
+  .historia-linha li::before {
+    top: 1.5rem;
+    left: calc(-1.6rem + 1px);
+  }
+
+  .historia-linha::after {
+    top: 0;
+    left: 6px;
+    width: 2px; /* taste-skill-ignore */
+    height: 70%;
+    background: linear-gradient(180deg, var(--laranja), #f6b06a);
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .historia-linha.visivel::after {
+    transform: scaleY(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .historia-linha {
+    padding-top: 0;
+  }
+}
