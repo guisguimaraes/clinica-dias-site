@@ -1021,11 +1021,10 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: clamp(84px, 9vw, 120px);
+  min-height: clamp(96px, 10vw, 136px);
   padding: 1rem 1.25rem 1rem 1.5rem;
   overflow: hidden;
   border-radius: 18px;
-  background: #fff;
   box-shadow: 0 1px 2px rgb(33 26 56 / 0.06);
   transition: transform 0.35s var(--saida), box-shadow 0.35s ease;
 }
@@ -1046,17 +1045,73 @@ a {
 }
 
 .conv-nome {
-  color: var(--tinta);
-  font-size: clamp(1.1rem, 0.95rem + 0.6vw, 1.45rem);
+  position: relative;
+  z-index: 1;
+  color: inherit;
+  font-size: clamp(1.2rem, 0.95rem + 0.9vw, 1.75rem);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
 }
 
 .convenios-grade small {
-  margin-top: 0.2rem;
-  color: #5a5468;
-  font-size: 0.9rem;
+  position: relative;
+  z-index: 1;
+  margin-top: 0.25rem;
+  color: inherit;
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
+/* Mosaico de cores: roxo, laranja e ameixa entre cartões brancos */
+.convenios-grade li {
+  --fundo-conv: #fff;
+  background: var(--fundo-conv);
+  color: var(--tinta);
+}
+
+.convenios-grade li:nth-child(1),
+.convenios-grade li:nth-child(8),
+.convenios-grade li:nth-child(11),
+.convenios-grade li:nth-child(14) {
+  --fundo-conv: #3b2d63;
+  color: #fff;
+}
+
+.convenios-grade li:nth-child(3),
+.convenios-grade li:nth-child(9),
+.convenios-grade li:nth-child(16) {
+  --fundo-conv: var(--laranja);
+  color: var(--noite);
+}
+
+.convenios-grade li:nth-child(6),
+.convenios-grade li:nth-child(12) {
+  --fundo-conv: #7b4a7c;
+  color: #fff;
+}
+
+/* Nos coloridos, a faixinha some e entra o símbolo da clínica no canto */
+.convenios-grade li:is(:nth-child(1), :nth-child(3), :nth-child(6), :nth-child(8), :nth-child(9), :nth-child(11), :nth-child(12), :nth-child(14), :nth-child(16))::before {
+  display: none;
+}
+
+.convenios-grade li:is(:nth-child(1), :nth-child(3), :nth-child(6), :nth-child(8), :nth-child(9), :nth-child(11), :nth-child(12), :nth-child(14), :nth-child(16))::after {
+  content: '';
+  position: absolute;
+  right: -14%;
+  bottom: -38%;
+  width: 46%;
+  aspect-ratio: 576 / 525;
+  background: url('../assets/img/simbolo.svg') center / contain no-repeat;
+  opacity: 0.32;
+  transform: rotate(-12deg);
+  transition: transform 0.6s var(--saida), opacity 0.4s ease;
+}
+
+.convenios-grade li:is(:nth-child(3), :nth-child(9), :nth-child(16))::after {
+  filter: brightness(0) invert(1);
+  opacity: 0.35;
 }
 
 @media (hover: hover) {
@@ -1067,6 +1122,11 @@ a {
 
   .convenios-grade li:hover::before {
     inset: 0 auto 0 0;
+  }
+
+  .convenios-grade li:hover::after {
+    opacity: 0.5;
+    transform: rotate(0deg) scale(1.1);
   }
 }
 
