@@ -1218,6 +1218,9 @@ a {
   position: relative;
   display: grid;
   place-items: center;
+  justify-self: center;
+  width: min(100%, 560px);
+  margin-bottom: 2.5rem;
   perspective: 1400px;
 }
 
@@ -1442,6 +1445,80 @@ a {
   fill: currentColor;
 }
 
+/* Setas para virar o cartão, uma de cada lado */
+.cartao-virar {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--tinta);
+  box-shadow: 0 8px 20px -8px rgb(33 26 56 / 0.35);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.3s var(--saida);
+}
+
+.cartao-virar-esq {
+  left: -26px;
+}
+
+.cartao-virar-dir {
+  right: -26px;
+}
+
+.cartao-virar svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cartao-virar:hover {
+  background: var(--tinta);
+  color: #fff;
+}
+
+.cartao-virar-esq:hover svg {
+  transform: rotate(-40deg);
+}
+
+.cartao-virar-dir:hover svg {
+  transform: rotate(40deg);
+}
+
+.cartao-virar svg {
+  transition: transform 0.4s var(--saida);
+}
+
+.cartao-virar:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+.cartao-dica {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2.5rem;
+  color: #5a5468;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Depois que a pessoa vira com as setas, o giro automático para */
+.cartao-giro.na-mao {
+  animation: none;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
 /* Entrada: o cartão chega girando */
 .js .card-facil-palco:not(.visivel) .cartao-inclina {
   opacity: 0;
@@ -1462,6 +1539,10 @@ a {
   }
 
   .card-facil-palco {
+    width: calc(100% - 40px);
+  }
+
+  .card-facil-palco {
     order: -1;
   }
 }
@@ -1476,227 +1557,138 @@ a {
   flex-wrap: wrap;
   align-items: end;
   justify-content: space-between;
-  gap: 1rem 2rem;
+  gap: 0.75rem 2rem;
   margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
 }
 
-.mapa-topo h2 .destaque {
-  color: var(--laranja);
-  font-weight: 600;
-}
-
 .mapa-topo p {
-  max-width: 28ch;
+  max-width: 30ch;
   color: #3d3750;
 }
 
+/* Lista de endereços à esquerda, mapa à direita; os botões ficam embaixo da lista */
 .mapa-corpo {
   display: grid;
-  grid-template-columns: minmax(260px, 4fr) minmax(0, 9fr);
-  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  grid-template-columns: minmax(280px, 4fr) minmax(0, 8fr);
+  grid-template-rows: auto 1fr;
+  column-gap: clamp(1.5rem, 4vw, 4rem);
 }
 
-.mapa-unidades {
-  display: grid;
-  align-content: start;
-  gap: 0.6rem;
+.mapa-lista {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid #d6d3dc;
+  list-style: none;
 }
 
-.mapa-unidades button {
+.mapa-lista li {
+  border-bottom: 1px solid #d6d3dc;
+}
+
+.mapa-lista button {
   position: relative;
   display: grid;
-  gap: 0.3rem;
-  padding: 1.35rem 3.25rem 1.35rem 1.4rem;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 1.1rem 0 1.15rem 1.1rem;
   border: 0;
-  border-radius: 20px;
-  background: #fff;
+  background: none;
   color: var(--tinta);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s var(--saida), box-shadow 0.3s ease;
 }
 
-.mapa-unidades button:hover {
-  transform: translateX(4px);
-}
-
-.mapa-unidades button[aria-pressed='true'] {
-  background: #3b2d63;
-  color: #fff;
-  box-shadow: 0 20px 40px -18px rgb(59 45 99 / 0.6);
-}
-
-.mu-cidade {
-  font-size: clamp(1.25rem, 1rem + 0.8vw, 1.6rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
-
-.mu-endereco {
-  font-size: 0.98rem;
-  opacity: 0.75;
-}
-
-.mu-seta {
+/* Marca da unidade escolhida: um traço laranja na margem */
+.mapa-lista button::before {
+  content: '';
   position: absolute;
-  top: 50%;
-  right: 1.25rem;
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.35;
-  transform: translateY(-50%);
-  transition: opacity 0.3s ease, transform 0.3s var(--saida), stroke 0.3s ease;
+  top: 1.1rem;
+  bottom: 1.15rem;
+  left: 0;
+  width: 3px;
+  background: transparent;
+  transition: background-color 0.2s ease;
 }
 
-.mapa-unidades button[aria-pressed='true'] .mu-seta {
-  stroke: var(--laranja);
-  opacity: 1;
-  transform: translate(4px, -50%);
+.mapa-lista button:hover::before {
+  background: #d6d3dc;
+}
+
+.mapa-lista button[aria-pressed='true']::before {
+  background: var(--laranja);
+}
+
+.ml-cidade {
+  font-size: clamp(1.3rem, 1.05rem + 0.8vw, 1.65rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.mapa-lista button[aria-pressed='true'] .ml-cidade {
+  font-weight: 700;
+}
+
+.ml-linha {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.ml-apagado {
+  color: #5a5468;
+}
+
+.mapa-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: start;
+  gap: 0.6rem 1rem;
+  padding-top: 1.5rem;
+}
+
+.mapa-tel {
+  color: #3b2d63;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .mapa-quadro {
-  position: relative;
-  min-height: clamp(420px, 64vh, 640px);
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-height: clamp(420px, 62vh, 620px);
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 12px;
   background: var(--degrau);
-  box-shadow: 0 30px 60px -30px rgb(33 26 56 / 0.35);
 }
 
 .mapa-quadro iframe {
-  position: absolute;
-  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+  min-height: inherit;
   border: 0;
-}
-
-/* Cartão da unidade por cima do mapa */
-.mapa-cartao {
-  position: absolute;
-  left: clamp(0.75rem, 2vw, 1.5rem);
-  bottom: clamp(0.75rem, 2vw, 1.5rem);
-  width: min(380px, calc(100% - 1.5rem));
-  padding: 1.4rem 1.5rem 1.5rem;
-  border-radius: 22px;
-  background: var(--noite);
-  color: #fff;
-  box-shadow: 0 24px 50px -16px rgb(0 0 0 / 0.5);
-}
-
-.mapa-cartao-rotulo {
-  color: var(--laranja-claro);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.mapa-cartao-cidade {
-  margin: 0.15rem 0 0.25rem;
-  font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.1rem);
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
-}
-
-.mapa-cartao-endereco {
-  margin-bottom: 1.1rem;
-  color: rgb(255 255 255 / 0.75);
-  font-size: 1rem;
-}
-
-.mapa-cartao-acoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.mapa-cartao-acoes .botao {
-  gap: 0.45rem;
-  min-height: 44px;
-  padding: 0.55rem 1.1rem;
-}
-
-.mapa-cartao-acoes svg {
-  width: 1.1em;
-  height: 1.1em;
-  fill: currentColor;
-}
-
-.mapa-botao-claro {
-  background: rgb(255 255 255 / 0.12);
-  color: #fff;
-}
-
-.mapa-botao-claro:hover {
-  background: #fff;
-  color: var(--noite);
-}
-
-.mapa-cartao.trocou {
-  animation: mapa-troca 0.5s var(--saida);
-}
-
-@keyframes mapa-troca {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
 }
 
 @media (max-width: 900px) {
   .mapa-corpo {
     grid-template-columns: 1fr;
-  }
-
-  /* Unidades viram uma fileira que desliza para o lado */
-  .mapa-unidades {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(230px, 72%);
-    margin: 0 calc(var(--margem) * -1);
-    padding: 0.25rem var(--margem) 0.75rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--margem);
-    scrollbar-width: none;
-  }
-
-  .mapa-unidades::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mapa-unidades button {
-    scroll-snap-align: start;
-  }
-
-  .mapa-unidades button:hover {
-    transform: none;
+    grid-template-rows: none;
   }
 
   .mapa-quadro {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    background: var(--noite);
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 340px;
+    margin-top: 1.25rem;
   }
 
-  .mapa-quadro iframe {
-    position: static;
-    height: 360px;
-  }
-
-  .mapa-cartao {
-    position: static;
-    width: 100%;
-    border-radius: 0;
-    box-shadow: none;
+  .mapa-acoes {
+    padding-top: 1.25rem;
   }
 }
 
