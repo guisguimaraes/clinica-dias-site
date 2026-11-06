@@ -82,7 +82,7 @@
   }
 
   // Entrada das partes de cada seção
-  const partes = document.querySelectorAll('[data-sobe]');
+  const partes = document.querySelectorAll('[data-sobe], [data-convenios]');
 
   if ('IntersectionObserver' in window) {
     const observador = new IntersectionObserver((entradas) => {
@@ -128,63 +128,177 @@
     link.addEventListener('click', () => mostrarUnidade(Number(link.dataset.verUnidade)));
   });
 
-  // Explorador: cada área mostra sua foto e seu texto, e a logo em 3D dá uma volta
-  const explorador = document.querySelector('[data-explorador]');
-  if (!explorador) return;
+  // Especialidades: os nomes acendem um a um conforme a página rola
+  const parede = document.querySelector('[data-parede]');
 
-  const areas = [
-    {
-      nome: 'Clínica Médica',
-      texto: 'Consultas para avaliação, diagnóstico e tratamento, com orientação clara sobre cada passo do cuidado.',
-      foto: 'esp-clinica-geral.webp',
-      alt: 'Estetoscópio sobre fundo claro (imagem ilustrativa)',
-    },
-    {
-      nome: 'Check-up',
-      texto: 'Avaliações periódicas para acompanhar sua saúde e identificar precocemente qualquer alteração.',
-      foto: 'esp-cardiologia.webp',
-      alt: 'Modelo anatômico de coração (imagem ilustrativa)',
-    },
-    {
-      nome: 'Exames',
-      texto: 'Solicitação e acompanhamento de exames, com resultados disponíveis online de forma prática.',
-      foto: 'esp-exames.webp',
-      alt: 'Laboratório de análises clínicas (imagem ilustrativa)',
-    },
-    {
-      nome: 'Hematologia',
-      texto: 'Investigação e acompanhamento de alterações do sangue com atenção especializada.',
-      foto: 'esp-hematologia.webp',
-      alt: 'Profissional analisando amostra ao microscópio (imagem ilustrativa)',
-    },
-    {
-      nome: 'Prevenção',
-      texto: 'Orientação e cuidados preventivos para manter a qualidade de vida em todas as idades.',
-      foto: 'esp-prevencao.webp',
-      alt: 'Profissional de saúde atendendo paciente idosa (imagem ilustrativa)',
-    },
-    {
-      nome: 'Acompanhamento contínuo',
-      texto: 'Seguimento próximo de tratamentos e condições crônicas, com escuta e cuidado individualizado.',
-      foto: 'esp-geriatria.webp',
-      alt: 'Médico acompanhando paciente em leito (imagem ilustrativa)',
-    },
-  ];
+  if (parede) {
+    const nomes = [...parede.children];
+    const semMovimentoParede = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const botoes = [...explorador.querySelectorAll('[data-area]')];
-  const foto = explorador.querySelector('[data-painel-foto]');
-  const nome = explorador.querySelector('[data-painel-nome]');
-  const texto = explorador.querySelector('[data-painel-texto]');
+    if (semMovimentoParede) {
+      nomes.forEach((nome) => nome.classList.add('acesa'));
+    } else {
+      let pedido = 0;
+      const acender = () => {
+        pedido = 0;
+        const caixa = parede.getBoundingClientRect();
+        const altura = window.innerHeight;
+        // Começa quando o topo da parede entra na tela e termina quando o fim dela aparece
+        const inicio = altura * 0.9;
+        const percurso = Math.max(1, caixa.height + inicio - altura * 0.92);
+        const progresso = Math.min(1, Math.max(0, (inicio - caixa.top) / percurso));
+        const quantas = Math.round(progresso * nomes.length);
+        nomes.forEach((nome, i) => nome.classList.toggle('acesa', i < quantas));
+      };
+      const pedir = () => {
+        if (!pedido) pedido = requestAnimationFrame(acender);
+      };
+      window.addEventListener('scroll', pedir, { passive: true });
+      window.addEventListener('resize', pedir);
+      acender();
+    }
+  }
 
-  botoes.forEach((botao, indice) => {
-    botao.addEventListener('click', () => {
-      const area = areas[indice];
-      botoes.forEach((outro, i) => outro.setAttribute('aria-pressed', String(i === indice)));
-      foto.src = `../assets/img/${area.foto}`;
-      foto.alt = area.alt;
-      nome.textContent = area.nome;
-      texto.textContent = area.texto;
-      document.dispatchEvent(new CustomEvent('area-escolhida'));
+  // Especialidades: clicar no nome abre a explicação
+  const modal = document.querySelector('[data-esp-modal]');
+
+  if (modal && typeof modal.showModal === 'function') {
+    const explicacoes = {
+      "Anestesiologia": "Cuida da anestesia antes, durante e depois de cirurgias e exames, para que o paciente não sinta dor e fique seguro. O anestesista avalia a saúde de cada pessoa e escolhe o tipo de anestesia mais indicado.",
+      "Cardiologia": "Cuida do coração e dos vasos sanguíneos. Previne, investiga e trata problemas como pressão alta, arritmia, colesterol alto e insuficiência cardíaca, e avalia quem vai passar por cirurgia ou começar atividade física.",
+      "Cirurgia Vascular": "Cuida das veias e artérias. Trata varizes, má circulação nas pernas, tromboses e outras doenças que dificultam a passagem do sangue pelo corpo.",
+      "Clínica Geral": "É a porta de entrada do cuidado. O clínico geral avalia a saúde como um todo, trata as doenças mais comuns, pede exames de rotina e, quando precisa, encaminha para a especialidade certa.",
+      "Coloproctologia": "Cuida do intestino grosso, do reto e do ânus. Trata hemorroidas, fissuras, prisão de ventre e outras queixas intestinais, e participa da prevenção do câncer de intestino.",
+      "Dermatologia": "Cuida da pele, dos cabelos e das unhas. Trata acne, manchas, alergias, micoses e queda de cabelo, e acompanha pintas e lesões que precisam de atenção.",
+      "Endocrinologia": "Cuida dos hormônios e do metabolismo. Trata diabetes, problemas de tireoide, obesidade, colesterol alto e outras alterações hormonais.",
+      "Endoscopia": "Exame que usa uma câmera fina e flexível para ver por dentro o esôfago, o estômago e o começo do intestino. Ajuda a investigar azia, dor no estômago, gastrite, úlcera e outras queixas digestivas.",
+      "Fonoaudiologia": "Cuida da fala, da voz, da audição, da linguagem e da deglutição. Atende crianças com atraso na fala, adultos com rouquidão ou dificuldade para engolir e pessoas com perda auditiva.",
+      "Gastroenterologia": "Cuida de todo o sistema digestivo: esôfago, estômago, intestino, fígado e pâncreas. Trata refluxo, gastrite, intestino irritável, problemas no fígado e outras queixas da digestão.",
+      "Geriatria": "Cuida da saúde da pessoa idosa. Acompanha várias doenças ao mesmo tempo, organiza os remédios e ajuda a manter a memória, o equilíbrio e a independência no dia a dia.",
+      "Ginecologia e Obstetrícia": "Cuida da saúde da mulher em todas as fases da vida. A ginecologia faz os exames preventivos e trata questões do útero, dos ovários e das mamas; a obstetrícia acompanha a gravidez, o parto e o pós-parto.",
+      "Hematologia": "Cuida do sangue e dos órgãos que o produzem. Investiga e trata anemias, alterações nas plaquetas e na coagulação e outras doenças do sangue.",
+      "Infectologia": "Cuida das doenças causadas por vírus, bactérias, fungos e parasitas. Trata infecções que se repetem ou são difíceis de curar e orienta sobre vacinas e prevenção.",
+      "Mastologia": "Cuida das mamas. Faz a prevenção e o diagnóstico precoce do câncer de mama e avalia nódulos, dores e outras alterações nas mamas.",
+      "Nefrologia": "Cuida dos rins. Trata pedras nos rins, infecções urinárias que se repetem e pressão alta ligada aos rins, e acompanha quem tem doença renal crônica.",
+      "Neurologia": "Cuida do cérebro, da medula e dos nervos. Trata dor de cabeça, enxaqueca, tontura, convulsões, problemas de memória, AVC e formigamentos.",
+      "Nutrição": "Ajuda a organizar a alimentação de acordo com a rotina, os objetivos e a saúde de cada pessoa. O nutricionista monta o plano alimentar para emagrecer, ganhar massa, controlar doenças ou comer melhor.",
+      "Nutrologia": "Especialidade médica que cuida da relação entre a alimentação e a saúde. O nutrólogo investiga falta de vitaminas e minerais, trata obesidade e desnutrição e pode pedir exames e receitar suplementos ou remédios.",
+      "Odontologia": "Cuida da saúde da boca e dos dentes. Faz limpeza, restaurações, tratamento de canal e prevenção de cáries e de problemas na gengiva.",
+      "Oftalmologia": "Cuida dos olhos e da visão. Avalia o grau dos óculos e trata catarata, glaucoma, conjuntivite, olho seco e outras doenças dos olhos.",
+      "Ortopedia e Traumatologia": "Cuida dos ossos, músculos, articulações e coluna. Trata dores nas costas, no joelho e no ombro, lesões do esporte, fraturas e torções.",
+      "Pediatria Geral": "Cuida da saúde de crianças e adolescentes. Acompanha o crescimento e o desenvolvimento, orienta sobre vacinas e alimentação e trata as doenças da infância.",
+      "Pneumologia": "Cuida dos pulmões e da respiração. Trata asma, bronquite, falta de ar, tosse que não passa, apneia do sono e outras doenças respiratórias.",
+      "Psicanálise": "Forma de terapia pela fala. Ajuda a pessoa a entender seus sentimentos, conflitos e padrões de comportamento, olhando com calma para a própria história.",
+      "Psicologia": "Cuida da saúde emocional. O psicólogo ajuda a lidar com ansiedade, tristeza, estresse, luto, relacionamentos e momentos difíceis por meio da psicoterapia.",
+      "Psicopedagogia": "Cuida da forma como a pessoa aprende. Ajuda crianças, jovens e adultos com dificuldade de leitura, escrita, atenção e aprendizado na escola ou no trabalho.",
+      "Psiquiatria": "Especialidade médica que cuida da saúde mental. Diagnostica e trata depressão, ansiedade, insônia, transtorno bipolar, TDAH e outras condições, e receita remédios quando é preciso.",
+      "Reumatologia": "Cuida das articulações, dos músculos e do sistema de defesa do corpo. Trata artrite, artrose, gota, fibromialgia, lúpus e outras doenças que causam dor e inflamação."
+    };
+    const nomeModal = modal.querySelector('[data-esp-modal-nome]');
+    const textoModal = modal.querySelector('[data-esp-modal-texto]');
+    const posicaoModal = modal.querySelector('[data-esp-modal-posicao]');
+    const caixaModal = modal.querySelector('.esp-modal-caixa');
+    const botoesNome = [...document.querySelectorAll('.esp-nome')];
+    let atual = 0;
+
+    const mostrar = (indice, direcao) => {
+      atual = (indice + botoesNome.length) % botoesNome.length;
+      const nome = botoesNome[atual].textContent.trim();
+      nomeModal.textContent = nome;
+      textoModal.textContent = explicacoes[nome] || '';
+      posicaoModal.textContent = `${String(atual + 1).padStart(2, '0')} de ${botoesNome.length}`;
+      if (direcao) {
+        caixaModal.style.setProperty('--troca-de', `${direcao * 28}px`);
+        caixaModal.classList.remove('trocando');
+        void caixaModal.offsetWidth;
+        caixaModal.classList.add('trocando');
+      }
+    };
+
+    botoesNome.forEach((botao, indice) => {
+      botao.addEventListener('click', () => {
+        mostrar(indice);
+        modal.showModal();
+      });
     });
-  });
+
+    modal.querySelectorAll('[data-esp-passo]').forEach((seta) => {
+      seta.addEventListener('click', () => {
+        const passo = Number(seta.dataset.espPasso);
+        mostrar(atual + passo, passo);
+      });
+    });
+
+    // Setas do teclado também passam de uma para outra
+    modal.addEventListener('keydown', (evento) => {
+      if (evento.key === 'ArrowRight') mostrar(atual + 1, 1);
+      if (evento.key === 'ArrowLeft') mostrar(atual - 1, -1);
+    });
+
+    modal.querySelector('[data-esp-fechar]').addEventListener('click', () => modal.close());
+
+    // Devolve o foco ao nome que estava aberto por último
+    modal.addEventListener('close', () => botoesNome[atual].focus({ preventScroll: true }));
+
+    // Clicar fora da caixa fecha
+    modal.addEventListener('click', (evento) => {
+      if (evento.target === modal) modal.close();
+    });
+  }
+
+  // Especialidades: o 29 conta a partir do zero quando aparece
+  const contador = document.querySelector('[data-contador]');
+
+  if (contador && 'IntersectionObserver' in window
+    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const total = Number(contador.dataset.contador);
+    contador.textContent = '0';
+    const vigia = new IntersectionObserver((entradas) => {
+      if (!entradas[0].isIntersecting) return;
+      vigia.disconnect();
+      const inicio = performance.now();
+      const duracao = 1400;
+      const passo = (agora) => {
+        const t = Math.min(1, (agora - inicio) / duracao);
+        const suave = 1 - Math.pow(1 - t, 3);
+        contador.textContent = String(Math.round(suave * total));
+        if (t < 1) requestAnimationFrame(passo);
+      };
+      requestAnimationFrame(passo);
+    }, { threshold: 0.3 });
+    vigia.observe(contador);
+  }
+
+  // Card Fácil: o cartão chega girando e depois se inclina conforme a rolagem
+  const palcoCartao = document.querySelector('[data-card-facil]');
+
+  if (palcoCartao) {
+    const semMovimentoCartao = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (semMovimentoCartao || !('IntersectionObserver' in window)) {
+      palcoCartao.classList.add('visivel');
+    } else {
+      new IntersectionObserver((entradas, vigia) => {
+        if (!entradas[0].isIntersecting) return;
+        vigia.disconnect();
+        palcoCartao.classList.add('visivel');
+        setTimeout(() => palcoCartao.classList.add('pronto'), 1250);
+      }, { threshold: 0.35 }).observe(palcoCartao);
+
+      const cartao = palcoCartao.querySelector('.cartao');
+      let pedidoCartao = 0;
+      const inclinar = () => {
+        pedidoCartao = 0;
+        const caixa = palcoCartao.getBoundingClientRect();
+        // -1 quando está embaixo da tela, 1 quando está saindo por cima
+        const posicao = 1 - (caixa.top + caixa.height / 2) / (window.innerHeight / 2);
+        const p = Math.max(-1, Math.min(1, posicao));
+        cartao.style.setProperty('--inclina-x', `${(10 - p * 8).toFixed(2)}deg`);
+        cartao.style.setProperty('--inclina-y', `${(-18 + p * 22).toFixed(2)}deg`);
+      };
+      window.addEventListener('scroll', () => {
+        if (!pedidoCartao) pedidoCartao = requestAnimationFrame(inclinar);
+      }, { passive: true });
+      inclinar();
+    }
+  }
 })();
