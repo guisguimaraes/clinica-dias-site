@@ -1362,27 +1362,242 @@ a {
 
 /* Rodapé */
 .rodape {
-  padding: clamp(2rem, 4vw, 3rem) var(--margem) var(--margem);
+  position: relative;
+  padding: clamp(4rem, 8vw, 7rem) var(--margem) 0;
   overflow: hidden;
   background: var(--noite);
   color: #fff;
 }
 
-.rodape-notas {
+.rodape a {
+  text-decoration: none;
+}
+
+.rodape-chamada {
   display: flex;
   flex-wrap: wrap;
+  align-items: end;
   justify-content: space-between;
-  gap: 0.5rem 2rem;
+  gap: 1.5rem 3rem;
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+  border-bottom: 1px solid rgb(255 255 255 / 0.14);
+}
+
+.rodape-frase {
+  max-width: 14ch;
+  font-size: clamp(2.25rem, 1.2rem + 4vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+
+.rodape-frase .destaque {
+  color: var(--laranja);
+  font-weight: 600;
+}
+
+.rodape-colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) minmax(0, 0.9fr);
+  gap: clamp(2.5rem, 5vw, 5rem);
+  padding: clamp(3rem, 6vw, 4.5rem) 0;
+}
+
+.rodape-marca img {
+  width: 76px;
+  height: auto;
+  margin-bottom: 1.25rem;
+}
+
+.rodape-marca p {
+  max-width: 26ch;
+  color: rgb(255 255 255 / 0.75);
+  font-size: 1.05rem;
+}
+
+.rodape-marca b {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.rodape-bloco h2 {
+  margin-bottom: 1.25rem;
+  color: var(--laranja-claro);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rodape-unidades,
+.rodape-links {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rodape-unidades {
+  gap: 1.5rem;
+}
+
+.rodape-unidades li {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.rodape-unidades b {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.rodape-unidades span {
+  color: rgb(255 255 255 / 0.7);
   font-size: 1rem;
 }
 
+.rodape-unidades a {
+  justify-self: start;
+  margin-top: 0.2rem;
+  color: #fff;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  background: linear-gradient(var(--laranja), var(--laranja)) left bottom / 0 2px no-repeat;
+  transition: background-size 0.35s var(--saida), color 0.2s ease;
+}
+
+.rodape-unidades a:hover {
+  color: var(--laranja-claro);
+  background-size: 100% 2px;
+}
+
+.rodape-links {
+  gap: 0.15rem;
+}
+
+.rodape-links a {
+  display: inline-block;
+  padding: 0.35rem 0;
+  color: rgb(255 255 255 / 0.85);
+  font-size: 1.05rem;
+  transition: color 0.2s ease, transform 0.3s var(--saida);
+}
+
+.rodape-links a:hover {
+  color: var(--laranja-claro);
+  transform: translateX(6px);
+}
+
+.rodape-base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+  color: rgb(255 255 255 / 0.7);
+  font-size: 0.95rem;
+}
+
+.rodape-emergencia {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #fff;
+}
+
+.rodape-emergencia a {
+  color: var(--laranja-claro);
+  font-weight: 700;
+}
+
+.rodape-alerta {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--laranja);
+  color: var(--noite);
+  font-weight: 800;
+}
+
+.rodape-topo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.rodape-topo svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.3s var(--saida);
+}
+
+.rodape-topo:hover {
+  background: #fff;
+  color: var(--noite);
+}
+
+.rodape-topo:hover svg {
+  transform: translateY(-3px);
+}
+
+/* Nome gigante: ocupa a largura toda, cortado embaixo como uma placa */
 .rodape-nome {
-  margin-top: clamp(4rem, 10vw, 10rem);
-  font-size: 20vw;
-  font-weight: 400;
-  letter-spacing: -0.025em;
-  line-height: 0.85;
+  margin: clamp(2rem, 5vw, 4rem) 0 0;
+  background: linear-gradient(180deg, #fff 30%, rgb(255 255 255 / 0.12));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 16.4vw;
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 0.78;
+  text-align: center;
   white-space: nowrap;
+  transform: translateY(0.08em);
+}
+
+@media (max-width: 900px) {
+  .rodape-colunas {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rodape-marca {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .rodape-colunas {
+    grid-template-columns: 1fr;
+  }
+
+  .rodape-base {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rodape-emergencia {
+    align-items: flex-start;
+  }
 }
 
 /* Movimento */

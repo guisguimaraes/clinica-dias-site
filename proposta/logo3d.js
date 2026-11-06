@@ -195,8 +195,10 @@ if (rendCanto) {
     const total = Math.max(1, document.documentElement.scrollHeight - altura);
     const progresso = Math.min(1, y / total);
 
-    // Aparece depois do topo e some no finzinho, perto do rodapé
-    canto.classList.toggle('visivel', y > altura * 0.55 && progresso < 0.985);
+    // Aparece depois do topo e some quando o rodapé chega
+    const rodape = document.querySelector('.rodape');
+    const antesDoRodape = !rodape || rodape.getBoundingClientRect().top > altura * 0.9;
+    canto.classList.toggle('visivel', y > altura * 0.55 && antesDoRodape);
 
     // Desce do alto até perto do pé da tela ao longo da página inteira
     const tamanho = canto.clientHeight;
