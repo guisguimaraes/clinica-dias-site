@@ -2,7 +2,9 @@
 import * as THREE from './vendor/three.module.min.js';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
 
-const palco = document.querySelector('[data-logo3d]');
+const canto = document.querySelector('[data-logo3d-canto]');
+const noModal = document.querySelector('[data-logo3d-modal]');
+const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const criarRenderizador = () => {
   try {
@@ -12,10 +14,7 @@ const criarRenderizador = () => {
   }
 };
 
-const renderizador = palco && criarRenderizador();
-
-if (renderizador) {
-  const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const criarLogo = () => {
 
   // Coordenadas em pixels da logo ampliada: x para a direita, y para baixo
   const CENTRO = { x: 288, y: 260 };
@@ -139,6 +138,12 @@ if (renderizador) {
     new THREE.MeshPhysicalMaterial({ color: '#f4e7e0', roughness: 0.25, clearcoat: 1 }),
   ));
 
+  return logo;
+};
+
+// Monta cena, câmera e tela num elemento; devolve o que cada palco precisa
+const montar = (elemento, renderizador) => {
+  const logo = criarLogo();
   const cena = new THREE.Scene();
   const ambiente = new THREE.PMREMGenerator(renderizador);
   cena.environment = ambiente.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -153,89 +158,104 @@ if (renderizador) {
   renderizador.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderizador.toneMapping = THREE.NeutralToneMapping;
   renderizador.domElement.setAttribute('aria-hidden', 'true');
-  palco.append(renderizador.domElement);
-  palco.classList.add('ativo');
+  elemento.append(renderizador.domElement);
+  elemento.classList.add('ativo');
 
-  const LARGURA = 6.2;
-  const ALTURA = 6.2;
-
+  const LADO = 6.2;
   const ajustar = () => {
-    const { clientWidth: w, clientHeight: h } = palco;
-    if (!w || !h) return;
+    const { clientWidth: w, clientHeight: h } = elemento;
+    if (!w || !h) return false;
     renderizador.setSize(w, h, false);
     camera.aspect = w / h;
     const tangente = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    camera.position.z = Math.max(ALTURA / 2 / tangente, LARGURA / 2 / (tangente * camera.aspect));
+    camera.position.z = Math.max(LADO / 2 / tangente, LADO / 2 / (tangente * camera.aspect));
     camera.updateProjectionMatrix();
-    desenhar();
+    return true;
   };
 
-  // Rotação: posição de repouso levemente virada, arrasto e giro a cada área escolhida
-  const REPOUSO = { x: -0.12, y: -0.42 };
-  const atual = { x: REPOUSO.x, y: REPOUSO.y };
-  const alvo = { x: REPOUSO.x, y: REPOUSO.y };
-  let arrastando = null;
-  let visivel = false;
+  return { logo, ajustar, desenhar: () => renderizador.render(cena, camera) };
+};
+
+const rendCanto = canto && !semMovimento && criarRenderizador();
+
+if (rendCanto) {
+  const { logo, ajustar, desenhar } = montar(canto, rendCanto);
+  let giro = -0.42;
+  let inclinacao = 0;
+  let descida = 0;
+  let ultimoY = window.scrollY;
+  let velocidade = 0;
   let quadro = 0;
   let tempo = 0;
 
-  function desenhar() {
-    logo.rotation.set(atual.x, atual.y, 0);
-    renderizador.render(cena, camera);
-  }
+  const passo = () => {
+    quadro = 0;
+    const y = window.scrollY;
+    const altura = window.innerHeight;
+    const total = Math.max(1, document.documentElement.scrollHeight - altura);
+    const progresso = Math.min(1, y / total);
 
-  const animar = () => {
-    quadro = visivel ? requestAnimationFrame(animar) : 0;
+    // Aparece depois do topo e some no finzinho, perto do rodapé
+    canto.classList.toggle('visivel', y > altura * 0.55 && progresso < 0.985);
+
+    // Desce do alto até perto do pé da tela ao longo da página inteira
+    const tamanho = canto.clientHeight;
+    const alvoDescida = altura * 0.14 + (altura * 0.72 - tamanho) * progresso;
+    descida += (alvoDescida - descida) * 0.12;
+
+    // Gira duas voltas na página toda; a velocidade da rolagem inclina o logo
+    velocidade += ((y - ultimoY) - velocidade) * 0.2;
+    ultimoY = y;
+    const alvoGiro = -0.42 + progresso * Math.PI * 4;
+    giro += (alvoGiro - giro) * 0.1;
+    inclinacao += (THREE.MathUtils.clamp(velocidade * 0.012, -0.5, 0.5) - inclinacao) * 0.12;
     tempo += 1 / 60;
-    const balanco = arrastando ? 0 : Math.sin(tempo * 0.7) * 0.1;
-    atual.x += (alvo.x - atual.x) * 0.08;
-    atual.y += (alvo.y + balanco - atual.y) * 0.08;
+
+    canto.style.transform = `translate3d(0, ${descida.toFixed(1)}px, 0)`;
+    logo.rotation.set(-0.12 + inclinacao, giro + Math.sin(tempo * 0.8) * 0.08, Math.sin(tempo * 0.6) * 0.04);
+    desenhar();
+
+    const parado = Math.abs(alvoDescida - descida) < 0.5 && Math.abs(alvoGiro - giro) < 0.002
+      && Math.abs(velocidade) < 0.05;
+    if (!parado || canto.classList.contains('visivel')) quadro = requestAnimationFrame(passo);
+  };
+
+  const pedir = () => {
+    if (!quadro) quadro = requestAnimationFrame(passo);
+  };
+
+  window.addEventListener('scroll', pedir, { passive: true });
+  window.addEventListener('resize', () => {
+    ajustar();
+    pedir();
+  });
+  ajustar();
+  descida = window.innerHeight * 0.14;
+  pedir();
+}
+
+// Logo da janela de especialidade: gira 360° sem parar enquanto a janela está aberta
+const rendModal = noModal && criarRenderizador();
+
+if (rendModal) {
+  const janela = noModal.closest('dialog');
+  const { logo, ajustar, desenhar } = montar(noModal, rendModal);
+  let quadro = 0;
+  let giro = 0;
+  let tempo = 0;
+
+  const girar = () => {
+    quadro = janela.open ? requestAnimationFrame(girar) : 0;
+    tempo += 1 / 60;
+    giro += semMovimento ? 0 : 0.022;
+    logo.rotation.set(-0.12 + Math.sin(tempo * 1.1) * 0.08, giro, 0);
     desenhar();
   };
 
-  const ligar = () => {
-    if (semMovimento) {
-      atual.x = alvo.x;
-      atual.y = alvo.y;
-      desenhar();
-    } else if (visivel && !quadro) {
-      quadro = requestAnimationFrame(animar);
+  new MutationObserver(() => {
+    if (janela.open && !quadro) {
+      ajustar();
+      quadro = requestAnimationFrame(girar);
     }
-  };
-
-  new IntersectionObserver(([entrada]) => {
-    visivel = entrada.isIntersecting;
-    ligar();
-  }).observe(palco);
-
-  new ResizeObserver(ajustar).observe(palco);
-
-  palco.addEventListener('pointerdown', (evento) => {
-    arrastando = { x: evento.clientX, y: evento.clientY, rx: alvo.x, ry: alvo.y };
-    palco.setPointerCapture(evento.pointerId);
-    palco.classList.add('arrastando');
-  });
-
-  palco.addEventListener('pointermove', (evento) => {
-    if (!arrastando) return;
-    alvo.y = arrastando.ry + (evento.clientX - arrastando.x) * 0.012;
-    alvo.x = THREE.MathUtils.clamp(arrastando.rx + (evento.clientY - arrastando.y) * 0.008, -0.8, 0.8);
-    ligar();
-  });
-
-  const soltar = () => {
-    arrastando = null;
-    palco.classList.remove('arrastando');
-  };
-  palco.addEventListener('pointerup', soltar);
-  palco.addEventListener('pointercancel', soltar);
-
-  document.addEventListener('area-escolhida', () => {
-    const voltas = Math.round((alvo.y - REPOUSO.y) / (Math.PI * 2));
-    alvo.y = REPOUSO.y + (voltas + 1) * Math.PI * 2;
-    alvo.x = REPOUSO.x;
-    ligar();
-  });
-
-  ajustar();
+  }).observe(janela, { attributes: true, attributeFilter: ['open'] });
 }

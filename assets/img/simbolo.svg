@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 525">
+  <!-- Símbolo da Clínica Dias, traçado sobre assets/img/logo.png (mesmas formas do logo 3D) -->
+  <defs>
+    <linearGradient id="cruz" gradientUnits="userSpaceOnUse" x1="215" y1="0" x2="562" y2="0">
+      <stop offset="0" stop-color="#e08a4e"/><stop offset=".245" stop-color="#a56f78"/><stop offset=".533" stop-color="#6b3f74"/><stop offset="1" stop-color="#211c52"/>
+    </linearGradient>
+    <linearGradient id="base" gradientUnits="userSpaceOnUse" x1="213" y1="0" x2="398" y2="0">
+      <stop offset="0" stop-color="#ee8328"/><stop offset=".58" stop-color="#d2804f"/><stop offset="1" stop-color="#8f5a70"/>
+    </linearGradient>
+    <linearGradient id="folha" gradientUnits="userSpaceOnUse" x1="14" y1="0" x2="282" y2="0">
+      <stop offset="0" stop-color="#f07f1c"/><stop offset=".5" stop-color="#ee8326"/><stop offset="1" stop-color="#d9925c"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#cruz)" d="M 215 28 Q 215 5 238 5 L 372 5 Q 395 5 395 28 L 395 148 Q 395 168 415 168 L 538 168 Q 562 168 562 192 L 562 326 Q 562 350 538 350 L 400 350 L 385 358 C 345 325 300 295 288 255 C 275 215 250 180 215 165 L 215 28 Z"/>
+  <path fill="none" stroke="#f4e7e0" stroke-width="3.2" d="M 232 42 Q 232 22 252 22 L 358 22 Q 378 22 378 42 L 378 165 Q 378 184 397 184 L 526 184 Q 546 184 546 204 L 546 314 Q 546 333 526 333 L 388 333 L 382 337 C 350 310 318 285 305 250 C 292 210 268 172 232 150 L 232 42 Z"/>
+  <path fill="url(#base)" d="M 300 292 L 390 372 Q 398 380 398 392 L 398 492 Q 398 517 373 517 L 238 517 Q 213 517 213 492 L 213 452 L 232 464 L 232 482 Q 232 498 248 498 L 364 498 Q 380 498 380 482 L 380 396 Q 380 386 372 379 L 292 308 L 300 292 Z"/>
+  <path fill="url(#folha)" d="M 47 240 L 65 254 L 65 314 Q 65 332 83 332 L 134 332 L 162 350 L 73 350 Q 47 350 47 324 L 47 240 Z"/>
+  <path fill="url(#folha)" fill-rule="evenodd" d="M 14 196 C 90 160 190 158 240 215 C 262 245 272 285 282 322 C 205 340 105 290 14 196 Z M 88 204 C 150 215 215 255 268 312 C 205 268 145 232 88 204 Z"/>
+  <path fill="url(#folha)" fill-rule="evenodd" d="M 116 468 C 135 410 185 345 240 336 C 262 334 280 342 288 354 C 292 385 225 435 116 468 Z M 150 432 C 195 398 235 382 282 372 C 238 390 195 408 150 432 Z"/>
+</svg>
