@@ -99,28 +99,47 @@
     partes.forEach((parte) => parte.classList.add('visivel'));
   }
 
-  // Mapa: mostra a unidade escolhida
+  // Mapa: mostra a unidade escolhida, com rota, Waze e telefone
   const unidades = [
     {
       nome: 'Timóteo',
+      endereco: 'Rua Cento e Vinte e Oito, 14 · Santa Maria',
+      busca: 'Rua Cento e Vinte e Oito, 14 - Santa Maria, Timóteo - MG',
+      tel: '+553138496156',
       quadro: 'https://www.google.com/maps/embed?origin=mfe&pb=!1m3!3m2!1m1!4s4223650061861704008',
-      link: 'https://www.google.com/maps/place/Cl%C3%ADnica+Dias+-+Tim%C3%B3teo/data=!4m2!3m1!1s0x0:0x3a9d6b5a78d2d148',
     },
-    { nome: 'Coronel Fabriciano', endereco: 'Rua Pedro Nolasco, 107 - Centro, Coronel Fabriciano - MG' },
-    { nome: 'Ipatinga', endereco: 'Avenida Brasil, 700 - Iguaçu, Ipatinga - MG' },
+    {
+      nome: 'Coronel Fabriciano',
+      endereco: 'Rua Pedro Nolasco, 107 · Centro',
+      busca: 'Rua Pedro Nolasco, 107 - Centro, Coronel Fabriciano - MG',
+      tel: '+5531997600755',
+    },
+    {
+      nome: 'Ipatinga',
+      endereco: 'Avenida Brasil, 700 · Iguaçu',
+      busca: 'Avenida Brasil, 700 - Iguaçu, Ipatinga - MG',
+      tel: '+5531997454281',
+    },
   ];
 
   const mapaBotoes = [...document.querySelectorAll('[data-mapa]')];
   const mapaQuadro = document.querySelector('[data-mapa-quadro]');
-  const mapaLink = document.querySelector('[data-mapa-link]');
+  const mapaCartao = document.querySelector('.mapa-cartao');
 
   const mostrarUnidade = (indice) => {
     const unidade = unidades[indice];
-    const busca = unidade.endereco && encodeURIComponent(unidade.endereco);
+    const busca = encodeURIComponent(unidade.busca);
     mapaBotoes.forEach((botao, i) => botao.setAttribute('aria-pressed', String(i === indice)));
     mapaQuadro.src = unidade.quadro || `https://www.google.com/maps?q=${busca}&output=embed`;
     mapaQuadro.title = `Mapa da Clínica Dias em ${unidade.nome}`;
-    mapaLink.href = unidade.link || `https://www.google.com/maps/search/?api=1&query=${busca}`;
+    mapaCartao.querySelector('[data-mapa-cidade]').textContent = unidade.nome;
+    mapaCartao.querySelector('[data-mapa-endereco]').textContent = unidade.endereco;
+    mapaCartao.querySelector('[data-mapa-rota]').href = `https://www.google.com/maps/dir/?api=1&destination=${busca}`;
+    mapaCartao.querySelector('[data-mapa-waze]').href = `https://waze.com/ul?q=${busca}&navigate=yes`;
+    mapaCartao.querySelector('[data-mapa-tel]').href = `tel:${unidade.tel}`;
+    mapaCartao.classList.remove('trocou');
+    void mapaCartao.offsetWidth;
+    mapaCartao.classList.add('trocou');
   };
 
   mapaBotoes.forEach((botao, indice) => botao.addEventListener('click', () => mostrarUnidade(indice)));
@@ -284,7 +303,7 @@
         setTimeout(() => palcoCartao.classList.add('pronto'), 1250);
       }, { threshold: 0.35 }).observe(palcoCartao);
 
-      const cartao = palcoCartao.querySelector('.cartao');
+      const cartao = palcoCartao.querySelector('.cartao-inclina');
       let pedidoCartao = 0;
       const inclinar = () => {
         pedidoCartao = 0;

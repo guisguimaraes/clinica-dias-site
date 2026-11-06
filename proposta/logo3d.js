@@ -180,46 +180,51 @@ const rendCanto = canto && !semMovimento && criarRenderizador();
 
 if (rendCanto) {
   const { logo, ajustar, desenhar } = montar(canto, rendCanto);
+  const rodape = document.querySelector('.rodape');
+  let descida = window.innerHeight * 0.14;
+  let velDescida = 0;
   let giro = -0.42;
+  let impulso = 0;
   let inclinacao = 0;
-  let descida = 0;
   let ultimoY = window.scrollY;
-  let velocidade = 0;
   let quadro = 0;
   let tempo = 0;
 
   const passo = () => {
-    quadro = 0;
     const y = window.scrollY;
     const altura = window.innerHeight;
     const total = Math.max(1, document.documentElement.scrollHeight - altura);
     const progresso = Math.min(1, y / total);
 
     // Aparece depois do topo e some quando o rodapé chega
-    const rodape = document.querySelector('.rodape');
     const antesDoRodape = !rodape || rodape.getBoundingClientRect().top > altura * 0.9;
-    canto.classList.toggle('visivel', y > altura * 0.55 && antesDoRodape);
+    const visivel = y > altura * 0.55 && antesDoRodape;
+    canto.classList.toggle('visivel', visivel);
 
-    // Desce do alto até perto do pé da tela ao longo da página inteira
+    // Descida com mola: acompanha a página e assenta com um leve balanço
     const tamanho = canto.clientHeight;
-    const alvoDescida = altura * 0.14 + (altura * 0.72 - tamanho) * progresso;
-    descida += (alvoDescida - descida) * 0.12;
+    const alvo = altura * 0.14 + (altura * 0.72 - tamanho) * progresso;
+    velDescida = (velDescida + (alvo - descida) * 0.045) * 0.82;
+    descida += velDescida;
 
-    // Gira duas voltas na página toda; a velocidade da rolagem inclina o logo
-    velocidade += ((y - ultimoY) - velocidade) * 0.2;
+    // A rolagem dá um empurrão no giro, que vai perdendo força até o giro lento de sempre
+    const delta = y - ultimoY;
     ultimoY = y;
-    const alvoGiro = -0.42 + progresso * Math.PI * 4;
-    giro += (alvoGiro - giro) * 0.1;
-    inclinacao += (THREE.MathUtils.clamp(velocidade * 0.012, -0.5, 0.5) - inclinacao) * 0.12;
+    impulso = impulso * 0.94 + delta * 0.0016;
+    impulso = Math.max(-0.35, Math.min(0.35, impulso));
+    giro += 0.007 + impulso;
+    inclinacao += (Math.max(-0.45, Math.min(0.45, delta * 0.02)) - inclinacao) * 0.1;
     tempo += 1 / 60;
 
-    canto.style.transform = `translate3d(0, ${descida.toFixed(1)}px, 0)`;
-    logo.rotation.set(-0.12 + inclinacao, giro + Math.sin(tempo * 0.8) * 0.08, Math.sin(tempo * 0.6) * 0.04);
+    // Flutua um pouco para os lados enquanto desce
+    const lado = Math.sin(progresso * Math.PI * 6) * 10 + Math.sin(tempo * 1.3) * 3;
+    const escala = 1 + Math.min(0.12, Math.abs(impulso) * 0.6);
+    canto.style.transform = `translate3d(${lado.toFixed(1)}px, ${descida.toFixed(1)}px, 0) scale(${escala.toFixed(3)})`;
+    logo.rotation.set(-0.12 + inclinacao + Math.sin(tempo * 0.9) * 0.06, giro, Math.sin(tempo * 0.7) * 0.05);
     desenhar();
 
-    const parado = Math.abs(alvoDescida - descida) < 0.5 && Math.abs(alvoGiro - giro) < 0.002
-      && Math.abs(velocidade) < 0.05;
-    if (!parado || canto.classList.contains('visivel')) quadro = requestAnimationFrame(passo);
+    const parado = Math.abs(alvo - descida) < 0.5 && Math.abs(velDescida) < 0.05 && Math.abs(impulso) < 0.001;
+    quadro = visivel || !parado ? requestAnimationFrame(passo) : 0;
   };
 
   const pedir = () => {
@@ -232,7 +237,6 @@ if (rendCanto) {
     pedir();
   });
   ajustar();
-  descida = window.innerHeight * 0.14;
   pedir();
 }
 

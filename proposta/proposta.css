@@ -563,24 +563,47 @@ a {
   position: fixed;
   z-index: 30;
   top: 0;
-  right: clamp(6px, 1.4vw, 24px);
-  width: clamp(64px, 6.5vw, 116px);
+  right: clamp(6px, 1.4vw, 28px);
+  width: clamp(70px, 7.5vw, 132px);
   aspect-ratio: 1;
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s ease;
-  filter: drop-shadow(0 12px 18px rgb(33 26 56 / 0.25));
   will-change: transform;
 }
 
-.logo-canto.visivel {
-  opacity: 1;
-}
-
 .logo-canto canvas {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
+  opacity: 0;
+  filter: drop-shadow(0 10px 14px rgb(33 26 56 / 0.3));
+  transform: scale(0.4) rotate(-30deg);
+  transition: opacity 0.4s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Sombra suave embaixo, como se flutuasse */
+.logo-canto::after {
+  content: '';
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -8%;
+  height: 12%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(33 26 56 / 0.35), transparent);
+  opacity: 0;
+  filter: blur(3px);
+  transition: opacity 0.4s ease;
+}
+
+.logo-canto.visivel canvas {
+  opacity: 1;
+  transform: none;
+}
+
+.logo-canto.visivel::after {
+  opacity: 1;
 }
 
 /* Especialidades */
@@ -1017,116 +1040,78 @@ a {
 }
 
 .convenios-grade li {
-  position: relative;
+  --cor-conv: #3b2d63;
+  --texto-conv: #fff;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: clamp(96px, 10vw, 136px);
-  padding: 1rem 1.25rem 1rem 1.5rem;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 20px;
+  background: #fff;
   box-shadow: 0 1px 2px rgb(33 26 56 / 0.06);
   transition: transform 0.35s var(--saida), box-shadow 0.35s ease;
 }
 
-/* Faixinha de cor na lateral de cada cartão */
-.convenios-grade li::before {
-  content: '';
-  position: absolute;
-  inset: 22% auto 22% 0;
-  width: 4px;
-  border-radius: 0 4px 4px 0;
-  background: var(--laranja);
-  transition: inset 0.35s var(--saida);
+.convenios-grade li:nth-child(3n + 2) {
+  --cor-conv: var(--laranja);
+  --texto-conv: var(--noite);
 }
 
-.convenios-grade li:nth-child(even)::before {
-  background: #3b2d63;
+.convenios-grade li:nth-child(3n + 3) {
+  --cor-conv: #7b4a7c;
+}
+
+.conv-logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: clamp(104px, 10vw, 140px);
+}
+
+/* O logo cabe numa caixa fixa, com respiro, sem esticar o cartão */
+.conv-logo img {
+  position: absolute;
+  inset: clamp(0.9rem, 1.6vw, 1.4rem) clamp(1rem, 2.2vw, 2rem);
+  width: calc(100% - 2 * clamp(1rem, 2.2vw, 2rem));
+  height: calc(100% - 2 * clamp(0.9rem, 1.6vw, 1.4rem));
+  object-fit: contain;
+  transition: transform 0.45s var(--saida);
+}
+
+/* Sem logo oficial: o nome vira a marca */
+.conv-sem-logo {
+  color: #3b2d63;
+  font-size: clamp(1.8rem, 1.2rem + 2vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .conv-nome {
-  position: relative;
-  z-index: 1;
-  color: inherit;
-  font-size: clamp(1.2rem, 0.95rem + 0.9vw, 1.75rem);
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.7rem 1rem;
+  background: var(--cor-conv);
+  color: var(--texto-conv);
+  font-size: clamp(0.95rem, 0.85rem + 0.3vw, 1.1rem);
   font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
-.convenios-grade small {
-  position: relative;
-  z-index: 1;
-  margin-top: 0.25rem;
-  color: inherit;
-  font-size: 0.95rem;
-  opacity: 0.75;
-}
-
-/* Mosaico de cores: roxo, laranja e ameixa entre cartões brancos */
-.convenios-grade li {
-  --fundo-conv: #fff;
-  background: var(--fundo-conv);
-  color: var(--tinta);
-}
-
-.convenios-grade li:nth-child(1),
-.convenios-grade li:nth-child(8),
-.convenios-grade li:nth-child(11),
-.convenios-grade li:nth-child(14) {
-  --fundo-conv: #3b2d63;
-  color: #fff;
-}
-
-.convenios-grade li:nth-child(3),
-.convenios-grade li:nth-child(9),
-.convenios-grade li:nth-child(16) {
-  --fundo-conv: var(--laranja);
-  color: var(--noite);
-}
-
-.convenios-grade li:nth-child(6),
-.convenios-grade li:nth-child(12) {
-  --fundo-conv: #7b4a7c;
-  color: #fff;
-}
-
-/* Nos coloridos, a faixinha some e entra o símbolo da clínica no canto */
-.convenios-grade li:is(:nth-child(1), :nth-child(3), :nth-child(6), :nth-child(8), :nth-child(9), :nth-child(11), :nth-child(12), :nth-child(14), :nth-child(16))::before {
-  display: none;
-}
-
-.convenios-grade li:is(:nth-child(1), :nth-child(3), :nth-child(6), :nth-child(8), :nth-child(9), :nth-child(11), :nth-child(12), :nth-child(14), :nth-child(16))::after {
-  content: '';
-  position: absolute;
-  right: -14%;
-  bottom: -38%;
-  width: 46%;
-  aspect-ratio: 576 / 525;
-  background: url('../assets/img/simbolo.svg') center / contain no-repeat;
-  opacity: 0.32;
-  transform: rotate(-12deg);
-  transition: transform 0.6s var(--saida), opacity 0.4s ease;
-}
-
-.convenios-grade li:is(:nth-child(3), :nth-child(9), :nth-child(16))::after {
-  filter: brightness(0) invert(1);
-  opacity: 0.35;
+.conv-nome small {
+  font-size: 0.85em;
+  font-weight: 500;
+  opacity: 0.8;
 }
 
 @media (hover: hover) {
   .convenios-grade li:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 30px -12px rgb(33 26 56 / 0.25);
+    transform: translateY(-6px);
+    box-shadow: 0 24px 40px -18px rgb(33 26 56 / 0.35);
   }
 
-  .convenios-grade li:hover::before {
-    inset: 0 auto 0 0;
-  }
-
-  .convenios-grade li:hover::after {
-    opacity: 0.5;
-    transform: rotate(0deg) scale(1.1);
+  .convenios-grade li:hover .conv-logo img {
+    transform: scale(1.06);
   }
 }
 
@@ -1144,7 +1129,7 @@ a {
 }
 
 .js [data-convenios].visivel li:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
   transition-delay: 0s;
 }
 
@@ -1206,7 +1191,7 @@ a {
     'chip chip'
     'numero numero'
     'campo campo';
-  width: min(100%, 560px);
+  width: 100%;
   aspect-ratio: 1.586;
   padding: clamp(1.25rem, 3.5vw, 2.25rem);
   overflow: hidden;
@@ -1217,8 +1202,95 @@ a {
     0 1px 0 rgb(255 255 255 / 0.6) inset,
     0 50px 90px -20px rgb(120 80 0 / 0.45),
     0 20px 40px -20px rgb(33 26 56 / 0.35);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.cartao-inclina {
+  width: min(100%, 560px);
   transform: rotateX(var(--inclina-x, 10deg)) rotateY(var(--inclina-y, -18deg)) rotateZ(-4deg);
   transform-style: preserve-3d;
+}
+
+/* Gira a volta inteira, parando um pouco na frente e no verso */
+.cartao-giro {
+  display: grid;
+  transform-style: preserve-3d;
+  animation: cartao-gira 9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes cartao-gira {
+  0%, 38% {
+    transform: rotateY(0deg);
+  }
+
+  50%, 88% {
+    transform: rotateY(180deg);
+  }
+
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.cartao-giro .cartao {
+  grid-area: 1 / 1;
+}
+
+.cartao-verso {
+  display: block;
+  padding: 0;
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #e9ac06 0%, #fbcb12 50%, #ffe066 100%);
+}
+
+.cartao-tarja {
+  display: block;
+  height: 19%;
+  margin-top: 9%;
+  background: #2b2100;
+}
+
+.cartao-assinatura {
+  display: block;
+  width: 58%;
+  height: 13%;
+  margin: 6% 0 0 7%;
+  border-radius: 6px;
+  background: repeating-linear-gradient(-45deg, #fff8dc 0 6px, #f6e7b0 6px 12px);
+}
+
+.cartao-verso-info {
+  position: absolute;
+  left: 7%;
+  bottom: 9%;
+  display: grid;
+  font-size: clamp(0.95rem, 0.8rem + 0.6vw, 1.25rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cartao-verso-info small {
+  color: rgb(43 33 0 / 0.65);
+  font-size: 0.6em;
+  letter-spacing: 0.1em;
+}
+
+.cartao-verso-info span {
+  margin-top: 0.2rem;
+  font-size: 0.65em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+.cartao-verso-simbolo {
+  position: absolute;
+  right: 7%;
+  bottom: 9%;
+  width: 22%;
+  height: auto;
 }
 
 .cartao-brilho {
@@ -1243,23 +1315,17 @@ a {
 .cartao-marca {
   position: relative;
   grid-area: marca;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: clamp(1.1rem, 0.8rem + 1.2vw, 1.6rem);
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  justify-self: start;
+  padding: 0.45rem 0.8rem;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(120 80 0 / 0.18);
 }
 
-.cartao-marca b {
-  font-weight: 800;
-}
-
-.cartao-marca svg {
-  width: 1.15em;
-  height: 1.15em;
-  fill: #e5481f;
+.cartao-marca img {
+  display: block;
+  width: clamp(96px, 13vw, 150px);
+  height: auto;
 }
 
 .cartao-sinal {
@@ -1336,16 +1402,16 @@ a {
 }
 
 /* Entrada: o cartão chega girando */
-.js .card-facil-palco:not(.visivel) .cartao {
+.js .card-facil-palco:not(.visivel) .cartao-inclina {
   opacity: 0;
   transform: translateX(30%) rotateY(-70deg) rotateZ(8deg);
 }
 
-.js .card-facil-palco .cartao {
+.js .card-facil-palco .cartao-inclina {
   transition: opacity 0.6s ease, transform 1.2s var(--saida);
 }
 
-.js .card-facil-palco.visivel.pronto .cartao {
+.js .card-facil-palco.visivel.pronto .cartao-inclina {
   transition: transform 0.25s linear;
 }
 
@@ -1361,63 +1427,236 @@ a {
 
 /* Mapa */
 .mapa {
-  display: grid;
-  justify-items: start;
-  gap: clamp(1.25rem, 2.5vw, 2rem);
-  padding: 0 var(--margem) clamp(4rem, 8vw, 8rem);
+  padding: clamp(1rem, 3vw, 2rem) var(--margem) clamp(4rem, 8vw, 8rem);
 }
 
 .mapa-topo {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: end;
   justify-content: space-between;
   gap: 1rem 2rem;
-  width: 100%;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
 }
 
-.mapa-escolha {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+.mapa-topo h2 .destaque {
+  color: var(--laranja);
+  font-weight: 600;
 }
 
-.mapa-escolha button {
-  min-height: 44px;
-  padding: 0.5rem 1.1rem;
+.mapa-topo p {
+  max-width: 28ch;
+  color: #3d3750;
+}
+
+.mapa-corpo {
+  display: grid;
+  grid-template-columns: minmax(260px, 4fr) minmax(0, 9fr);
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.mapa-unidades {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+}
+
+.mapa-unidades button {
+  position: relative;
+  display: grid;
+  gap: 0.3rem;
+  padding: 1.35rem 3.25rem 1.35rem 1.4rem;
   border: 0;
-  border-radius: 999px;
-  background: var(--degrau);
+  border-radius: 20px;
+  background: #fff;
   color: var(--tinta);
   font: inherit;
-  font-size: 1rem;
-  font-weight: 500;
+  text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s var(--saida), box-shadow 0.3s ease;
 }
 
-.mapa-escolha button:hover {
-  background: var(--superficie);
+.mapa-unidades button:hover {
+  transform: translateX(4px);
 }
 
-.mapa-escolha button[aria-pressed='true'] {
-  background: var(--tinta);
+.mapa-unidades button[aria-pressed='true'] {
+  background: #3b2d63;
   color: #fff;
+  box-shadow: 0 20px 40px -18px rgb(59 45 99 / 0.6);
+}
+
+.mu-cidade {
+  font-size: clamp(1.25rem, 1rem + 0.8vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.mu-endereco {
+  font-size: 0.98rem;
+  opacity: 0.75;
+}
+
+.mu-seta {
+  position: absolute;
+  top: 50%;
+  right: 1.25rem;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.35;
+  transform: translateY(-50%);
+  transition: opacity 0.3s ease, transform 0.3s var(--saida), stroke 0.3s ease;
+}
+
+.mapa-unidades button[aria-pressed='true'] .mu-seta {
+  stroke: var(--laranja);
+  opacity: 1;
+  transform: translate(4px, -50%);
 }
 
 .mapa-quadro {
-  width: 100%;
-  height: clamp(360px, 62vh, 620px);
+  position: relative;
+  min-height: clamp(420px, 64vh, 640px);
   overflow: hidden;
-  border-radius: var(--raio);
+  border-radius: 28px;
   background: var(--degrau);
+  box-shadow: 0 30px 60px -30px rgb(33 26 56 / 0.35);
 }
 
 .mapa-quadro iframe {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+/* Cartão da unidade por cima do mapa */
+.mapa-cartao {
+  position: absolute;
+  left: clamp(0.75rem, 2vw, 1.5rem);
+  bottom: clamp(0.75rem, 2vw, 1.5rem);
+  width: min(380px, calc(100% - 1.5rem));
+  padding: 1.4rem 1.5rem 1.5rem;
+  border-radius: 22px;
+  background: var(--noite);
+  color: #fff;
+  box-shadow: 0 24px 50px -16px rgb(0 0 0 / 0.5);
+}
+
+.mapa-cartao-rotulo {
+  color: var(--laranja-claro);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mapa-cartao-cidade {
+  margin: 0.15rem 0 0.25rem;
+  font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+.mapa-cartao-endereco {
+  margin-bottom: 1.1rem;
+  color: rgb(255 255 255 / 0.75);
+  font-size: 1rem;
+}
+
+.mapa-cartao-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.mapa-cartao-acoes .botao {
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+}
+
+.mapa-cartao-acoes svg {
+  width: 1.1em;
+  height: 1.1em;
+  fill: currentColor;
+}
+
+.mapa-botao-claro {
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+}
+
+.mapa-botao-claro:hover {
+  background: #fff;
+  color: var(--noite);
+}
+
+.mapa-cartao.trocou {
+  animation: mapa-troca 0.5s var(--saida);
+}
+
+@keyframes mapa-troca {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@media (max-width: 900px) {
+  .mapa-corpo {
+    grid-template-columns: 1fr;
+  }
+
+  /* Unidades viram uma fileira que desliza para o lado */
+  .mapa-unidades {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(230px, 72%);
+    margin: 0 calc(var(--margem) * -1);
+    padding: 0.25rem var(--margem) 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--margem);
+    scrollbar-width: none;
+  }
+
+  .mapa-unidades::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mapa-unidades button {
+    scroll-snap-align: start;
+  }
+
+  .mapa-unidades button:hover {
+    transform: none;
+  }
+
+  .mapa-quadro {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--noite);
+  }
+
+  .mapa-quadro iframe {
+    position: static;
+    height: 360px;
+  }
+
+  .mapa-cartao {
+    position: static;
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
 }
 
 /* Rodapé */
@@ -1728,6 +1967,10 @@ a {
     transition: none !important;
   }
 
+  .cartao-giro {
+    animation: none !important;
+  }
+
   .js [data-sobe],
   .js [data-convenios] li {
     opacity: 1;
@@ -1740,17 +1983,21 @@ a {
   .abertura {
     align-items: flex-end;
     justify-content: flex-start;
-    min-height: 600px;
-    padding: 0 var(--margem) calc(var(--altura-onda) + 0.75rem);
+    height: auto;
+    min-height: 0;
+    padding: calc(min(78vw, 560px) - 4.5rem) var(--margem) calc(var(--altura-onda) + 0.75rem);
   }
 
+  /* A foto ocupa o alto e o texto começa logo abaixo dela */
   .abertura::after {
-    background: linear-gradient(0deg, var(--noite) 48%, rgba(33, 26, 56, 0) 66%);
+    inset: 0 0 auto;
+    height: min(78vw, 560px);
+    background: linear-gradient(0deg, var(--noite) 4%, rgba(33, 26, 56, 0) 42%);
   }
 
   .abertura-foto {
     bottom: auto;
-    height: 60%;
+    height: min(78vw, 560px);
   }
 
   .abertura-foto img {
