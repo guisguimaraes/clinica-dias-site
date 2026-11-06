@@ -99,32 +99,32 @@
     partes.forEach((parte) => parte.classList.add('visivel'));
   }
 
-  // Mapa: mostra a unidade escolhida, com rota, Waze e telefone
+  // Mapa: mostra a unidade escolhida, com rota e telefone dela
   const unidades = [
     {
       nome: 'Timóteo',
-      endereco: 'Rua Cento e Vinte e Oito, 14 · Santa Maria',
       busca: 'Rua Cento e Vinte e Oito, 14 - Santa Maria, Timóteo - MG',
       tel: '+553138496156',
+      telTexto: '(31) 3849-6156',
       quadro: 'https://www.google.com/maps/embed?origin=mfe&pb=!1m3!3m2!1m1!4s4223650061861704008',
     },
     {
       nome: 'Coronel Fabriciano',
-      endereco: 'Rua Pedro Nolasco, 107 · Centro',
       busca: 'Rua Pedro Nolasco, 107 - Centro, Coronel Fabriciano - MG',
       tel: '+5531997600755',
+      telTexto: '(31) 99760-0755',
     },
     {
       nome: 'Ipatinga',
-      endereco: 'Avenida Brasil, 700 · Iguaçu',
       busca: 'Avenida Brasil, 700 - Iguaçu, Ipatinga - MG',
       tel: '+5531997454281',
+      telTexto: '(31) 99745-4281',
     },
   ];
 
   const mapaBotoes = [...document.querySelectorAll('[data-mapa]')];
   const mapaQuadro = document.querySelector('[data-mapa-quadro]');
-  const mapaCartao = document.querySelector('.mapa-cartao');
+  const mapaAcoes = document.querySelector('[data-mapa-acoes]');
 
   const mostrarUnidade = (indice) => {
     const unidade = unidades[indice];
@@ -132,14 +132,11 @@
     mapaBotoes.forEach((botao, i) => botao.setAttribute('aria-pressed', String(i === indice)));
     mapaQuadro.src = unidade.quadro || `https://www.google.com/maps?q=${busca}&output=embed`;
     mapaQuadro.title = `Mapa da Clínica Dias em ${unidade.nome}`;
-    mapaCartao.querySelector('[data-mapa-cidade]').textContent = unidade.nome;
-    mapaCartao.querySelector('[data-mapa-endereco]').textContent = unidade.endereco;
-    mapaCartao.querySelector('[data-mapa-rota]').href = `https://www.google.com/maps/dir/?api=1&destination=${busca}`;
-    mapaCartao.querySelector('[data-mapa-waze]').href = `https://waze.com/ul?q=${busca}&navigate=yes`;
-    mapaCartao.querySelector('[data-mapa-tel]').href = `tel:${unidade.tel}`;
-    mapaCartao.classList.remove('trocou');
-    void mapaCartao.offsetWidth;
-    mapaCartao.classList.add('trocou');
+    mapaAcoes.querySelector('[data-mapa-rota]').href = `https://www.google.com/maps/dir/?api=1&destination=${busca}`;
+    mapaAcoes.querySelector('[data-mapa-waze]').href = `https://waze.com/ul?q=${busca}&navigate=yes`;
+    const tel = mapaAcoes.querySelector('[data-mapa-tel]');
+    tel.href = `tel:${unidade.tel}`;
+    tel.textContent = `Ligar ${unidade.telTexto}`;
   };
 
   mapaBotoes.forEach((botao, indice) => botao.addEventListener('click', () => mostrarUnidade(indice)));
@@ -319,5 +316,26 @@
       }, { passive: true });
       inclinar();
     }
+  }
+
+  // Setas do cartão: cada toque vira meia volta para o lado escolhido
+  const giroCartao = document.querySelector('.cartao-giro');
+
+  if (giroCartao) {
+    let angulo = 0;
+    document.querySelectorAll('[data-virar]').forEach((seta) => {
+      seta.addEventListener('click', () => {
+        if (!giroCartao.classList.contains('na-mao')) {
+          // Parte de onde o giro automático estava, para não dar salto
+          const atual = new DOMMatrix(getComputedStyle(giroCartao).transform);
+          angulo = Math.round(Math.atan2(-atual.m13, atual.m11) * 180 / Math.PI / 180) * 180;
+          giroCartao.style.transform = `rotateY(${angulo}deg)`;
+          giroCartao.classList.add('na-mao');
+          void giroCartao.offsetWidth;
+        }
+        angulo += Number(seta.dataset.virar) * 180;
+        giroCartao.style.transform = `rotateY(${angulo}deg)`;
+      });
+    });
   }
 })();

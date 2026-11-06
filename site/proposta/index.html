@@ -242,8 +242,15 @@
           <a class="botao botao-linha" href="https://cardfacil.com.br/" target="_blank" rel="noopener noreferrer">Saiba mais no site<span class="so-leitor"> do CardFácil (abre em nova aba)</span></a>
         </div>
       </div>
-      <div class="card-facil-palco" aria-hidden="true" data-card-facil>
-        <div class="cartao-inclina">
+      <div class="card-facil-palco" data-card-facil>
+        <button class="cartao-virar cartao-virar-esq" type="button" data-virar="-1" aria-label="Virar o cartão para a esquerda">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>
+        </button>
+        <button class="cartao-virar cartao-virar-dir" type="button" data-virar="1" aria-label="Virar o cartão para a direita">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/></svg>
+        </button>
+        <p class="cartao-dica" aria-hidden="true">Use as setas para virar o cartão</p>
+        <div class="cartao-inclina" aria-hidden="true">
           <div class="cartao-giro">
             <div class="cartao cartao-frente">
               <span class="cartao-brilho"></span>
@@ -296,42 +303,39 @@
 
     <section class="mapa" id="mapa" aria-labelledby="mapa-titulo">
       <div class="mapa-topo" data-sobe>
-        <h2 id="mapa-titulo">Veja como <span class="destaque">chegar</span></h2>
-        <p>Escolha a unidade e trace a rota direto no seu celular.</p>
+        <h2 id="mapa-titulo">Como chegar</h2>
+        <p>Três unidades no Vale do Aço. Toque na cidade para ver no mapa.</p>
       </div>
       <div class="mapa-corpo">
-        <div class="mapa-unidades" role="group" aria-label="Escolha a unidade" data-sobe>
-          <button type="button" data-mapa="0" aria-pressed="true">
-            <span class="mu-cidade">Timóteo</span>
-            <span class="mu-endereco">Rua Cento e Vinte e Oito, 14 · Santa Maria</span>
-            <svg class="mu-seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </button>
-          <button type="button" data-mapa="1" aria-pressed="false">
-            <span class="mu-cidade">Coronel Fabriciano</span>
-            <span class="mu-endereco">Rua Pedro Nolasco, 107 · Centro</span>
-            <svg class="mu-seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </button>
-          <button type="button" data-mapa="2" aria-pressed="false">
-            <span class="mu-cidade">Ipatinga</span>
-            <span class="mu-endereco">Avenida Brasil, 700 · Iguaçu</span>
-            <svg class="mu-seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </button>
+        <ol class="mapa-lista" data-sobe>
+          <li>
+            <button type="button" data-mapa="0" aria-pressed="true">
+              <span class="ml-cidade">Timóteo</span>
+              <span class="ml-linha">Rua Cento e Vinte e Oito, 14, Santa Maria</span>
+              <span class="ml-linha ml-apagado">Seg. a sex., das 8h às 18h</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-mapa="1" aria-pressed="false">
+              <span class="ml-cidade">Coronel Fabriciano</span>
+              <span class="ml-linha">Rua Pedro Nolasco, 107, Centro</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-mapa="2" aria-pressed="false">
+              <span class="ml-cidade">Ipatinga</span>
+              <span class="ml-linha">Avenida Brasil, 700, Iguaçu</span>
+              <span class="ml-linha ml-apagado">Na esquina, ao lado da Drogaria Popular. Das 8h às 18h</span>
+            </button>
+          </li>
+        </ol>
+        <div class="mapa-acoes" data-mapa-acoes>
+          <a class="botao botao-laranja" data-mapa-rota href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG" target="_blank" rel="noopener noreferrer">Rota no Google Maps<span class="so-leitor"> (abre em nova aba)</span></a>
+          <a class="botao botao-linha" data-mapa-waze href="https://waze.com/ul?q=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG&amp;navigate=yes" target="_blank" rel="noopener noreferrer">Rota no Waze<span class="so-leitor"> (abre em nova aba)</span></a>
+          <a class="mapa-tel" data-mapa-tel href="tel:+553138496156">Ligar (31)&nbsp;3849&#8209;6156</a>
         </div>
         <div class="mapa-quadro" data-sobe>
           <iframe data-mapa-quadro src="https://www.google.com/maps/embed?origin=mfe&amp;pb=!1m3!3m2!1m1!4s4223650061861704008" title="Mapa da Clínica Dias em Timóteo" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
-          <div class="mapa-cartao" aria-live="polite">
-            <p class="mapa-cartao-rotulo">Clínica Dias</p>
-            <p class="mapa-cartao-cidade" data-mapa-cidade>Timóteo</p>
-            <p class="mapa-cartao-endereco" data-mapa-endereco>Rua Cento e Vinte e Oito, 14 · Santa Maria</p>
-            <div class="mapa-cartao-acoes">
-              <a class="botao botao-laranja" data-mapa-rota href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG" target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8z"/></svg>
-                Traçar rota<span class="so-leitor"> (abre o Google Maps)</span>
-              </a>
-              <a class="botao mapa-botao-claro" data-mapa-waze href="https://waze.com/ul?q=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG&amp;navigate=yes" target="_blank" rel="noopener noreferrer">Waze<span class="so-leitor"> (abre o Waze)</span></a>
-              <a class="botao mapa-botao-claro" data-mapa-tel href="tel:+553138496156">Ligar</a>
-            </div>
-          </div>
         </div>
       </div>
     </section>
