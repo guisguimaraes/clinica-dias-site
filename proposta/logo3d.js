@@ -4,6 +4,7 @@ import { RoomEnvironment } from './vendor/RoomEnvironment.js';
 
 const canto = document.querySelector('[data-logo3d-canto]');
 const noModal = document.querySelector('[data-logo3d-modal]');
+const naOrbita = document.querySelector('[data-logo3d-orbita]');
 const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const criarRenderizador = () => {
@@ -182,6 +183,7 @@ if (rendCanto) {
   const { logo, ajustar, desenhar } = montar(canto, rendCanto);
   const rodape = document.querySelector('.rodape');
   const secaoCartao = document.getElementById('card-facil');
+  const secaoOrbita = document.getElementById('especialidades');
   let descida = window.innerHeight * 0.14;
   let velDescida = 0;
   let giro = -0.42;
@@ -201,7 +203,9 @@ if (rendCanto) {
     const antesDoRodape = !rodape || rodape.getBoundingClientRect().top > altura * 0.9;
     // Na seção do CardFácil o logo da clínica sai de cena, para não se misturar com o cartão
     const caixaCartao = secaoCartao && secaoCartao.getBoundingClientRect();
-    const noCartao = caixaCartao && caixaCartao.top < altura * 0.75 && caixaCartao.bottom > altura * 0.25;
+    const caixaOrbita = secaoOrbita && secaoOrbita.getBoundingClientRect();
+    const noCartao = (caixaCartao && caixaCartao.top < altura * 0.75 && caixaCartao.bottom > altura * 0.25)
+      || (caixaOrbita && caixaOrbita.top < altura * 0.75 && caixaOrbita.bottom > altura * 0.25);
     const visivel = y > altura * 0.55 && antesDoRodape && !noCartao;
     canto.classList.toggle('visivel', visivel);
 
@@ -268,4 +272,33 @@ if (rendModal) {
       quadro = requestAnimationFrame(girar);
     }
   }).observe(janela, { attributes: true, attributeFilter: ['open'] });
+}
+
+// Logo no centro da órbita das especialidades: gira só enquanto está na tela
+const rendOrbita = naOrbita && criarRenderizador();
+
+if (rendOrbita) {
+  const { logo, ajustar, desenhar } = montar(naOrbita, rendOrbita);
+  let quadro = 0;
+  let naTela = false;
+  let giro = 0.4;
+  let tempo = 0;
+
+  const girar = () => {
+    quadro = naTela ? requestAnimationFrame(girar) : 0;
+    tempo += 1 / 60;
+    giro += semMovimento ? 0 : 0.012;
+    logo.rotation.set(-0.1 + Math.sin(tempo * 0.9) * 0.08, giro, Math.sin(tempo * 0.6) * 0.04);
+    desenhar();
+  };
+
+  new IntersectionObserver((entradas) => {
+    naTela = entradas[0].isIntersecting;
+    if (naTela && !quadro) {
+      ajustar();
+      quadro = requestAnimationFrame(girar);
+    }
+  }).observe(naOrbita);
+
+  window.addEventListener('resize', ajustar);
 }

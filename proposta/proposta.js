@@ -123,15 +123,14 @@
   ];
 
   const mapaBotoes = [...document.querySelectorAll('[data-mapa]')];
-  const mapaQuadro = document.querySelector('[data-mapa-quadro]');
+  const mapaQuadro = document.querySelector('[data-mapa-desenho]');
   const mapaAcoes = document.querySelector('[data-mapa-acoes]');
 
   const mostrarUnidade = (indice) => {
     const unidade = unidades[indice];
     const busca = encodeURIComponent(unidade.busca);
-    mapaBotoes.forEach((botao, i) => botao.setAttribute('aria-pressed', String(i === indice)));
-    mapaQuadro.src = unidade.quadro || `https://www.google.com/maps?q=${busca}&output=embed`;
-    mapaQuadro.title = `Mapa da Clínica Dias em ${unidade.nome}`;
+    mapaBotoes.forEach((botao) => botao.setAttribute('aria-pressed', String(Number(botao.dataset.mapa) === indice)));
+    if (mapaQuadro) mapaQuadro.dataset.ativa = String(indice);
     mapaAcoes.querySelector('[data-mapa-rota]').href = `https://www.google.com/maps/dir/?api=1&destination=${busca}`;
     mapaAcoes.querySelector('[data-mapa-waze]').href = `https://waze.com/ul?q=${busca}&navigate=yes`;
     const tel = mapaAcoes.querySelector('[data-mapa-tel]');
@@ -139,41 +138,10 @@
     tel.textContent = `Ligar ${unidade.telTexto}`;
   };
 
-  mapaBotoes.forEach((botao, indice) => botao.addEventListener('click', () => mostrarUnidade(indice)));
+  mapaBotoes.forEach((botao) => botao.addEventListener('click', () => mostrarUnidade(Number(botao.dataset.mapa))));
   document.querySelectorAll('[data-ver-unidade]').forEach((link) => {
     link.addEventListener('click', () => mostrarUnidade(Number(link.dataset.verUnidade)));
   });
-
-  // Especialidades: os nomes acendem um a um conforme a página rola
-  const parede = document.querySelector('[data-parede]');
-
-  if (parede) {
-    const nomes = [...parede.children];
-    const semMovimentoParede = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (semMovimentoParede) {
-      nomes.forEach((nome) => nome.classList.add('acesa'));
-    } else {
-      let pedido = 0;
-      const acender = () => {
-        pedido = 0;
-        const caixa = parede.getBoundingClientRect();
-        const altura = window.innerHeight;
-        // Começa quando o topo da parede entra na tela e termina quando o fim dela aparece
-        const inicio = altura * 0.9;
-        const percurso = Math.max(1, caixa.height + inicio - altura * 0.92);
-        const progresso = Math.min(1, Math.max(0, (inicio - caixa.top) / percurso));
-        const quantas = Math.round(progresso * nomes.length);
-        nomes.forEach((nome, i) => nome.classList.toggle('acesa', i < quantas));
-      };
-      const pedir = () => {
-        if (!pedido) pedido = requestAnimationFrame(acender);
-      };
-      window.addEventListener('scroll', pedir, { passive: true });
-      window.addEventListener('resize', pedir);
-      acender();
-    }
-  }
 
   // Especialidades: clicar no nome abre a explicação
   const modal = document.querySelector('[data-esp-modal]');
@@ -219,10 +187,20 @@
 
     const mostrar = (indice, direcao) => {
       atual = (indice + botoesNome.length) % botoesNome.length;
-      const nome = botoesNome[atual].textContent.trim();
+      const nome = botoesNome[atual].dataset.nome;
       nomeModal.textContent = nome;
       textoModal.textContent = explicacoes[nome] || '';
-      posicaoModal.textContent = `${String(atual + 1).padStart(2, '0')} de ${botoesNome.length}`;
+      posicaoModal.textContent = `${String(atual + 1).padStart(2, '0')}/${botoesNome.length}`;
+      const total = botoesNome.length;
+      const ant = modal.querySelector('[data-esp-ant]');
+      const prox = modal.querySelector('[data-esp-prox]');
+      if (ant) ant.textContent = botoesNome[(atual - 1 + total) % total].dataset.nome;
+      if (prox) prox.textContent = botoesNome[(atual + 1) % total].dataset.nome;
+      const botaoAtual = botoesNome[atual];
+      const desenho = botaoAtual.querySelector('svg');
+      if (iconeModal && desenho) iconeModal.innerHTML = desenho.outerHTML;
+      const cor = getComputedStyle(botaoAtual).getPropertyValue('--cor').trim();
+      if (cor) caixaModal.style.setProperty('--esp-cor', cor);
       if (direcao) {
         caixaModal.style.setProperty('--troca-de', `${direcao * 28}px`);
         caixaModal.classList.remove('trocando');
@@ -231,9 +209,31 @@
       }
     };
 
+
+    // Órbita: os hexágonos saem do logo quando a seção aparece
+    const orbita = document.querySelector('[data-orbita]');
+    botoesNome.forEach((botao, i) => botao.closest('li').style.setProperty('--i', String(i)));
+    if ('IntersectionObserver' in window) {
+      const vigiaOrbita = new IntersectionObserver((entradas) => {
+        if (!entradas[0].isIntersecting) return;
+        vigiaOrbita.disconnect();
+        orbita.classList.add('entrou');
+        setTimeout(() => orbita.classList.add('pronta'), 1900);
+      }, { threshold: 0.25 });
+      vigiaOrbita.observe(orbita);
+    } else {
+      orbita.classList.add('entrou', 'pronta');
+    }
+
+    const iconeModal = modal.querySelector('[data-esp-modal-icone]');
+
     botoesNome.forEach((botao, indice) => {
       botao.addEventListener('click', () => {
         mostrar(indice);
+        // A janela nasce de onde está o ícone
+        const caixa = botao.getBoundingClientRect();
+        modal.style.setProperty('--de-x', `${Math.round(caixa.left + caixa.width / 2 - window.innerWidth / 2)}px`);
+        modal.style.setProperty('--de-y', `${Math.round(caixa.top + caixa.height / 2 - window.innerHeight / 2)}px`);
         modal.showModal();
       });
     });
@@ -262,27 +262,48 @@
     });
   }
 
-  // Especialidades: o 29 conta a partir do zero quando aparece
-  const contador = document.querySelector('[data-contador]');
+  // Números que contam a partir do zero quando aparecem (o 29, os anos de clínica etc.)
+  document.querySelectorAll('[data-desde]').forEach((el) => {
+    const anos = new Date().getFullYear() - Number(el.dataset.desde);
+    el.dataset.contador = String(anos);
+    el.textContent = String(anos);
+  });
 
-  if (contador && 'IntersectionObserver' in window
+  const contadores = document.querySelectorAll('[data-contador]');
+
+  if ('IntersectionObserver' in window
     && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const total = Number(contador.dataset.contador);
-    contador.textContent = '0';
-    const vigia = new IntersectionObserver((entradas) => {
-      if (!entradas[0].isIntersecting) return;
-      vigia.disconnect();
+    const contar = (el) => {
+      const total = Number(el.dataset.contador);
       const inicio = performance.now();
       const duracao = 1400;
       const passo = (agora) => {
         const t = Math.min(1, (agora - inicio) / duracao);
         const suave = 1 - Math.pow(1 - t, 3);
-        contador.textContent = String(Math.round(suave * total));
+        el.textContent = String(Math.round(suave * total));
         if (t < 1) requestAnimationFrame(passo);
       };
       requestAnimationFrame(passo);
+    };
+    const vigia = new IntersectionObserver((entradas) => {
+      entradas.forEach((entrada) => {
+        if (!entrada.isIntersecting) return;
+        vigia.unobserve(entrada.target);
+        contar(entrada.target);
+      });
     }, { threshold: 0.3 });
-    vigia.observe(contador);
+    contadores.forEach((el) => {
+      el.textContent = '0';
+      vigia.observe(el);
+    });
+  }
+
+  // Topo fixo: ganha sombra depois que a página começa a rolar
+  const topo = document.querySelector('.topo');
+  if (topo) {
+    const marcarTopo = () => topo.classList.toggle('rolou', window.scrollY > 8);
+    marcarTopo();
+    window.addEventListener('scroll', marcarTopo, { passive: true });
   }
 
   // Card Fácil: o cartão chega girando e depois se inclina conforme a rolagem
