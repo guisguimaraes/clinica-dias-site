@@ -17,6 +17,23 @@
     el.textContent = String(new Date().getFullYear() - Number(el.dataset.desde));
   });
 
+
+  // privacidade: destaca no índice a seção que está na tela
+  const indice = document.querySelector('[data-indice]');
+  if (indice && 'IntersectionObserver' in window) {
+    const links = [...indice.querySelectorAll('a[href^="#"]')];
+    const alvo = new Map(links.map((a) => [a.getAttribute('href').slice(1), a]));
+    const obs = new IntersectionObserver((itens) => {
+      itens.forEach((it) => {
+        if (it.isIntersecting) {
+          links.forEach((a) => a.classList.remove('ativo'));
+          alvo.get(it.target.id)?.classList.add('ativo');
+        }
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    alvo.forEach((_, id) => { const el = document.getElementById(id); if (el) obs.observe(el); });
+  }
+
   // galeria de Timóteo: arrastar com o mouse ou o dedo, setas e contador
   document.querySelectorAll('[data-galeria]').forEach((g) => {
     const trilho = g.querySelector('[data-galeria-trilho]');
