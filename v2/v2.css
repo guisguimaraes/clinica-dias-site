@@ -412,3 +412,66 @@ ul, ol { padding: 0; list-style: none; }
 .marca-vitrine { background: var(--pessego); }
 .marca-vitrine img { object-fit: contain; padding: 16%; }
 .citacao.bloco-noite blockquote { z-index: 1; }
+
+/* ── cartões com ícone (exames) ── */
+.cartao-icone { display: grid; place-items: center; width: 54px; height: 54px; background: var(--noite); color: var(--laranja); margin-bottom: 10px; transition: background .3s, color .3s; }
+.cartao-icone svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.cartao:hover .cartao-icone { background: var(--laranja); color: var(--noite); }
+.cartao h3 { font-size: 1.35rem; font-weight: 500; }
+.cartao-acao { margin-top: auto; padding-top: 12px; display: inline-flex; align-items: center; gap: 10px; font-weight: 500; text-decoration: none; color: var(--noite); }
+.cartao-acao::after { content: '→'; transition: transform .3s var(--saida); }
+.cartao-acao:hover { color: var(--laranja-texto); }
+.cartao-acao:hover::after { transform: translateX(4px); }
+.cartao { grid-template-rows: auto auto auto 1fr auto; min-height: 260px; }
+.cartao-destaque { background: var(--noite); color: #fff; overflow: hidden; }
+.cartao-destaque:hover { background: #18295a; }
+.cartao-destaque p:not(.rotulo-cartao) { color: var(--sobre-noite); }
+.cartao-destaque .rotulo-cartao { color: var(--laranja); }
+.cartao-destaque .cartao-acao { color: #fff; }
+.cartao-destaque .cartao-acao:hover { color: var(--laranja); }
+.cartao-destaque .cartao-icone { background: var(--laranja); color: var(--noite); }
+.cartao-destaque .contornos { height: 140%; right: -30%; bottom: -30%; opacity: .35; }
+.cartao-destaque > :not(.contornos) { position: relative; }
+
+/* ── cartões com foto (como chegar) ── */
+.cartoes-foto .cartao { padding: 0; min-height: 0; grid-template-rows: auto 1fr; }
+.cartao-foto { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #e9e7e3; }
+.cartao-foto img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--saida); }
+.cartao:hover .cartao-foto img { transform: scale(1.04); }
+.cartao-texto { display: grid; gap: 10px; align-content: start; padding: 24px 26px 28px; }
+.cartoes-foto .cartao-destaque { padding: 32px 28px; align-content: end; min-height: 100%; }
+.cartoes-foto .cartao-destaque .botao { justify-self: start; margin-top: 10px; }
+
+/* ── dúvidas frequentes em duas colunas ── */
+.faq { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 40px 64px; align-items: start; }
+.faq-lado { position: sticky; top: calc(var(--topo) + 28px); display: grid; gap: 18px; }
+.faq-lado .secao-titulo { position: relative; padding-top: 22px; }
+.faq-lado .secao-titulo::before { content: ''; position: absolute; left: 0; top: 0; width: 56px; height: 4px; background: var(--faixa); }
+.faq-lado > p { color: var(--apagado); font-weight: 300; }
+.faq-contato { position: relative; overflow: hidden; padding: 26px 24px; display: grid; gap: 8px; margin-top: 8px; }
+.faq-contato > :not(.contornos) { position: relative; }
+.faq-contato .contornos { height: 160%; right: -40%; bottom: -40%; opacity: .3; }
+.faq-contato b { font-size: 1.15rem; font-weight: 500; }
+.faq-contato a.faq-fone { font-size: 1.6rem; font-weight: 300; color: #fff; text-decoration: none; }
+.faq-contato a.faq-fone:hover { color: var(--laranja); }
+.faq-contato span { color: var(--sobre-noite); font-size: .92rem; font-weight: 300; }
+.faq-contato .botao { justify-self: start; margin-top: 8px; }
+
+.faq .perguntas { margin-top: 0; border-top: 0; display: grid; gap: 10px; counter-reset: pergunta; }
+.faq .perguntas details { position: relative; background: var(--branco); border: 1px solid var(--linha); transition: border-color .3s, background .3s; }
+.faq .perguntas details::before { content: ''; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 4px; background: var(--laranja); transform: scaleY(0); transform-origin: top; transition: transform .35s var(--saida); }
+.faq .perguntas details[open] { border-color: var(--linha-forte); background: #FFF8F1; }
+.faq .perguntas details[open]::before { transform: scaleY(1); }
+.faq .perguntas summary { grid-template-columns: 40px 1fr 44px; padding: 18px 18px 18px 22px; font-size: 1.08rem; font-weight: 500; }
+.faq .perguntas summary::before { counter-increment: pergunta; content: counter(pergunta, decimal-leading-zero); font-size: .82rem; font-weight: 400; color: var(--petroleo-texto); font-variant-numeric: tabular-nums; }
+.faq .perguntas summary:hover { color: var(--laranja-texto); }
+.faq .perguntas .resposta { padding: 0 24px 24px 84px; animation: abre .45s var(--saida); }
+@keyframes abre { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .faq { grid-template-columns: 1fr; }
+  .faq-lado { position: static; }
+  .faq .perguntas .resposta { padding: 0 18px 20px 22px; }
+  .cartao { min-height: 0; }
+}
+.cartoes-foto .cartao-destaque { grid-template-rows: none; }
