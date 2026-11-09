@@ -8,3 +8,8 @@ skills-lock.json
 site/previa-celular.html
 maquete-3d
 imersao-flow
+
+# Blender: cópias automáticas, logs e testes de luz
+blender/*.blend1
+blender/log-*.txt
+blender/teste-luz/
