@@ -485,8 +485,14 @@ def porta(nome, centro, vira, placa, largura=0.95):
         partes.append(cilindro(nome + '_macaneta', em((L / 2 - 0.15, 1.02, lado)), em((L / 2 - 0.15, 1.02, lado * 3)), 0.012, 'inox', 6))
     if placa:
         partes.append(caixa_local(nome + '_placa', em((L / 2 + 0.17, 2.0, 0.06)), (0.2, 0.26, 0.012), 'laranja', vira))
-        partes.append(texto(nome + '_num', placa, em((L / 2 + 0.17, 1.97, 0.068)), 0.11, 'branco', vira, 0.002))
+        if placa is not True:  # sem número ainda: só a placa laranja (como nas fotos do 1º andar)
+            partes.append(texto(nome + '_num', str(placa), em((L / 2 + 0.17, 1.97, 0.068)), 0.11, 'branco', vira, 0.002))
+        else:
+            partes.append(caixa_local(nome + '_placa_friso', em((L / 2 + 0.17, 1.91, 0.067)), (0.12, 0.012, 0.004), 'branco', vira))
     return grupo(partes, nome)
+
+
+portas_abrem = []  # folhas de porta de vidro que abrem sozinhas no site (sem mapa de luz próprio)
 
 
 def monta():
@@ -506,29 +512,46 @@ def monta():
         elif t == 'vidro':
             objs_vidro.append(caixa(n, p['min'], p['max'], 'vidro'))
         elif t == 'porta-vidro':
+            # duas folhas que abrem sozinhas no site: cada folha é um objeto com a origem na dobradiça
+            # e a propriedade "abre" (+1/-1 = sentido do giro no three.js para abrir para dentro)
             mn, mx = p['min'], p['max']
-            objs_vidro.append(caixa('vidro_' + n, mn, mx, 'vidro'))
-            perf = []
-            if p.get('eixo') == 'x':  # porta numa parede leste/oeste (vista de +x)
-                cz = (mn[2] + mx[2]) / 2
-                fx = mx[0]
-                for zz in (mn[2], cz, mx[2]):
-                    perf.append(caixa(n + '_perfil', (mn[0] - 0.02, mn[1], zz - 0.03), (mx[0] + 0.02, mx[1], zz + 0.03), 'inox'))
-                perf.append(caixa(n + '_perfil', (mn[0] - 0.02, mx[1] - 0.05, mn[2]), (mx[0] + 0.02, mx[1], mx[2]), 'inox'))
-                perf.append(caixa(n + '_faixa', (fx + 0.005, mn[1] + 1.95, mn[2]), (fx + 0.01, mn[1] + 2.1, mx[2]), 'faixa-azul'))
-                perf.append(texto(n + '_txt', p['texto'], (fx + 0.012, mn[1] + 2.025, mx[2] - 0.55), 0.08, 'branco', 90, 0.001)) if p.get('texto') else None
-                for zz in (cz - 0.12, cz + 0.12):
-                    perf.append(cilindro(n + '_puxador', (fx + 0.06, mn[1] + 0.7, zz), (fx + 0.06, mn[1] + 1.5, zz), 0.014, 'inox', 8))
-            else:
-                cx = (mn[0] + mx[0]) / 2
-                for xx in (mn[0], cx, mx[0]):
-                    perf.append(caixa(n + '_perfil', (xx - 0.03, mn[1], mn[2] - 0.02), (xx + 0.03, mx[1], mx[2] + 0.02), 'inox'))
-                perf.append(caixa(n + '_perfil', (mn[0], mx[1] - 0.05, mn[2] - 0.02), (mx[0], mx[1], mx[2] + 0.02), 'inox'))
-                perf.append(caixa(n + '_faixa', (mn[0], mn[1] + 1.95, mx[2] + 0.005), (mx[0], mn[1] + 2.1, mx[2] + 0.01), 'faixa-azul'))
-                perf.append(texto(n + '_txt', p['texto'], (mn[0] + 0.55, mn[1] + 2.025, mx[2] + 0.012), 0.08, 'branco', 0, 0.001)) if p.get('texto') else None
-                for xx in (cx - 0.12, cx + 0.12):
-                    perf.append(cilindro(n + '_puxador', (xx, mn[1] + 0.7, mx[2] + 0.06), (xx, mn[1] + 1.5, mx[2] + 0.06), 0.014, 'inox', 8))
-            grupo(perf, n)
+            eixo_x = p.get('eixo') == 'x'  # porta numa parede leste/oeste (vista de +x), dentro é -x
+            ini, fim = (mn[2], mx[2]) if eixo_x else (mn[0], mx[0])
+            meio = (ini + fim) / 2
+
+            def pto(u, y, w):
+                """u ao longo da porta, w na espessura (de fora para dentro)."""
+                return (w, y, u) if eixo_x else (u, y, w)
+
+            fora = mx[0] if eixo_x else mx[2]       # face de fora (do lado da rua)
+            w0, w1 = (mn[0], mx[0]) if eixo_x else (mn[2], mx[2])
+            for lado, (a, b) in (('esq', (ini, meio)), ('dir', (meio, fim))):
+                pecas_folha = [caixa(f'vidro_{n}_{lado}', pto(a + 0.03, mn[1] + 0.05, w0), pto(b - 0.03, mx[1] - 0.05, w1), 'vidro')]
+                for uu in (a, b):
+                    pecas_folha.append(caixa(f'{n}_{lado}_perfil', pto(uu - 0.03 if uu == b else uu, mn[1], w0 - 0.02), pto(uu if uu == b else uu + 0.03, mx[1], w1 + 0.02), 'inox'))
+                for yy in (mn[1], mx[1] - 0.05):
+                    pecas_folha.append(caixa(f'{n}_{lado}_perfil', pto(a, yy, w0 - 0.02), pto(b, yy + 0.05, w1 + 0.02), 'inox'))
+                pecas_folha.append(caixa(f'{n}_{lado}_faixa', pto(a + 0.03, mn[1] + 1.95, fora + 0.005), pto(b - 0.03, mn[1] + 2.1, fora + 0.01), 'faixa-azul'))
+                if p.get('texto') and lado == 'esq':
+                    meio_folha = (a + b) / 2
+                    c = (fora + 0.012, mn[1] + 2.025, meio_folha) if eixo_x else (meio_folha, mn[1] + 2.025, fora + 0.012)
+                    pecas_folha.append(texto(f'{n}_txt', p['texto'], c, 0.07, 'branco', 90 if eixo_x else 0, 0.001))
+                puxa = b - 0.12 if lado == 'esq' else a + 0.12
+                pecas_folha.append(cilindro(f'{n}_{lado}_puxador', pto(puxa, mn[1] + 0.7, fora + 0.06), pto(puxa, mn[1] + 1.5, fora + 0.06), 0.014, 'inox', 8))
+                folha = grupo(pecas_folha, f'porta_{n}_{lado}')
+                dobradica = pto(ini if lado == 'esq' else fim, mn[1], (w0 + w1) / 2)
+                bpy.context.scene.cursor.location = B(*dobradica)
+                for o in bpy.context.selected_objects:
+                    o.select_set(False)
+                folha.select_set(True)
+                bpy.context.view_layer.objects.active = folha
+                bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+                # giro (three.js, eixo y) que leva a ponta solta para dentro do prédio
+                if eixo_x:
+                    folha['abre'] = -1 if lado == 'esq' else 1
+                else:
+                    folha['abre'] = 1 if lado == 'esq' else -1
+                portas_abrem.append(folha)
         elif t == 'degraus':
             mn, mx, k = p['min'], p['max'], p['n']
             alt = (mx[1] - mn[1]) / k
@@ -842,7 +865,7 @@ def area_de(ob):
     # a primeira área cuja caixa contém o centro; se nenhuma, a de centro mais próximo
     # salas (consultórios vistos por dentro) primeiro: ganham grupo e mapa de luz próprios
     melhor, dist = None, 1e9
-    for a in sorted(P['areas'], key=lambda a: 0 if a.get('sala') else 1):
+    for a in sorted(P.get('gruposLuz') or P['areas'], key=lambda a: 0 if a.get('sala') else 1):
         mn, mx = a['caixa']['min'], a['caixa']['max']
         if mn[0] <= x <= mx[0] and mn[1] <= y <= mx[1] and mn[2] <= z <= mx[2]:
             return a['id']
@@ -988,7 +1011,7 @@ vidros, telas = monta()
 lumin = luzes()
 
 # junta tudo que recebe luz por área (como os "sets" do ICG); vidro e telas ficam separados
-fixos = [o for o in COLECAO.objects if o.type == 'MESH' and o not in vidros and o not in telas and o not in lumin and not o.get('decal')]
+fixos = [o for o in COLECAO.objects if o.type == 'MESH' and o not in vidros and o not in telas and o not in lumin and not o.get('decal') and not o.get('abre')]
 por_area = {}
 for o in fixos:
     por_area.setdefault(area_de(o), []).append(o)

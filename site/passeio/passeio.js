@@ -32,8 +32,9 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 // Paleta oficial (Manual da Marca): laranja #F7922D, petróleo #5C95A4, azul noite #101E44,
 // pêssego #FDE0C9, cinzas #A8A9AC / #828386. Fundo claro #F5F4F2.
-const COR_FUNDO = new THREE.Color('#F5F4F2');
-const COR_BASE = new THREE.Color('#D3DAE0'); // base da maquete: cinza-azulado suave
+const COR_FUNDO = new THREE.Color('#E9E2D7'); // fundo bege das maquetes (como o ICG)
+const COR_BASE = new THREE.Color('#DDD3C5');  // base da maquete: argila um tom abaixo
+const COR_BARRO = new THREE.Color('#EFE9E0'); // tudo da maquete em argila; só logos e placas ficam com cor
 const TOM_QUENTE = new THREE.Color('#f4e6d6');
 // cores dos materiais do Blender trocadas pela paleta da marca (nome do material → cor)
 const PALETA = {
@@ -127,7 +128,7 @@ function comCorte(mat) {
 // maquete colorida: cada material do modelo vira uma versão "maquete" com as cores e texturas reais,
 // sol com sombra suave + luz ambiente, recorte da área e corte das paredes da frente
 const matVidroMaq = comCorte(new THREE.MeshStandardMaterial({
-  color: '#bfe0ea', roughness: 0.08, metalness: 0, transparent: true, opacity: 0.35,
+  color: '#f6f2ec', roughness: 0.08, metalness: 0, transparent: true, opacity: 0.3,
   clippingPlanes: planos, depthWrite: false, envMapIntensity: 0.8,
 }));
 const maqCache = new Map();
@@ -137,13 +138,12 @@ function materialMaquete(src, aoMap = null, decal = false) {
   const m = comCorte(new THREE.MeshStandardMaterial({
     aoMap, aoMapIntensity: 0.8,
     transparent: decal, alphaTest: decal ? 0.35 : 0, polygonOffset: decal, polygonOffsetFactor: -2,
-    // tom quente único por cima das cores reais (como a argila quente das maquetes do ICG)
-    color: (src.color ? src.color.clone() : new THREE.Color('#e6e2dc')).multiply(TOM_QUENTE),
-    map: src.map || null,
+    // maquete em argila (como o ICG): uma cor só; logos e placas (decalques) ficam com a imagem
+    color: decal ? (src.color ? src.color.clone() : new THREE.Color('#ffffff')) : COR_BARRO.clone(),
+    map: decal ? (src.map || null) : null,
     roughness: Math.min(src.roughness ?? 0.8, 0.9),
-    metalness: src.metalness ?? 0,
-    emissive: src.emissive ? src.emissive.clone() : new THREE.Color(0),
-    emissiveIntensity: src.emissiveIntensity ?? 1,
+    metalness: 0,
+    emissive: new THREE.Color(0),
     envMap: ambiente, envMapIntensity: 0.35,
     clippingPlanes: planos, clipShadows: true, side: decal ? THREE.FrontSide : THREE.DoubleSide,
   }));
@@ -183,6 +183,7 @@ function posicionaBase() {
 
 // ───────────────────────── modelo
 const malhas = []; // { mesh, real, teto, vidro }
+const portas = []; // { obj, sinal, giro0, aberta, centro }
 let carregado = false;
 
 const draco = new DRACOLoader().setDecoderPath('./draco/');
@@ -259,7 +260,15 @@ luzPronta.then(() => loader.load(
       malhas.push({ mesh: o, real, maq, teto, vidro });
     });
     scene.add(gltf.scene);
-    window.__passeio = { malhas, scene, camera }; // para conferência no console
+    // folhas das portas de vidro (origem na dobradiça; "abre" diz o sentido do giro para dentro)
+    gltf.scene.updateMatrixWorld(true);
+    gltf.scene.traverse((o) => {
+      if (o.userData?.abre == null) return;
+      o.matrixAutoUpdate = true;
+      const caixa = new THREE.Box3().setFromObject(o);
+      portas.push({ obj: o, sinal: Math.sign(o.userData.abre), giro0: o.rotation.y, aberta: 0, centro: caixa.getCenter(new THREE.Vector3()) });
+    });
+    window.__passeio = { malhas, scene, camera, portas }; // para conferência no console
     carregado = true;
     pronto();
   },
@@ -292,7 +301,8 @@ function modoBarro(sim) {
     m.mesh.customDepthMaterial = sim ? sombraBarro : undefined;
     m.mesh.visible = sim ? !m.teto : true;
   }
-  base.visible = linhas.visible = sim;
+  base.visible = false; // sem base: a maquete fica solta no fundo, como no ICG
+  linhas.visible = false; // sem a caixa de linhas: a maquete fica solta no fundo, como no ICG
   hemi.intensity = sim ? (temAO ? 1.75 : 1.45) : 0.9;
   sol.intensity = sim ? 1.15 : 0.0;
   // sombra de contato vem do mapa de oclusão (AO); sem AO, sombra macia de raio grande
@@ -349,12 +359,12 @@ function enquadra(i) {
   const centro = min.clone().add(max).multiplyScalar(0.5);
   const raio = min.distanceTo(max) / 2;
   const aspecto = Math.min(camera.aspect, 1.6);
-  const dist = (raio / Math.sin(THREE.MathUtils.degToRad(vista.fov / 2))) * (aspecto < 1 ? 1.2 / aspecto : 0.94); // igual a blender/render_maquetes.py
+  const dist = (raio / Math.sin(THREE.MathUtils.degToRad(vista.fov / 2))) * (aspecto < 1 ? 1.05 / aspecto : 0.9) * (areas[i].zoom ?? 1); // igual a blender/render_maquetes.py
   return { min, max, centro, dist };
 }
 
 // quanto a maquete sobe na tela (fração da altura): mais no celular, para não ficar atrás do título
-const deslocamento = () => (innerWidth < innerHeight ? 0.16 : 0.1);
+const deslocamento = () => (innerWidth < innerHeight ? 0.16 : 0.17);
 
 function aplicaVista() {
   camera.fov = vista.fov;
@@ -369,7 +379,7 @@ function aplicaVista() {
 function rotuloSeta(j) {
   const a = areas[j];
   if (!a) return '';
-  return a.andar !== areas[areaAtual].andar ? `${nomeAndar[a.andar]} · ${a.nome}` : a.nome;
+  return a.nome;
 }
 
 // ───────────────────────── maquetes pré-renderizadas (Cycles, como as iso_* do ICG)
@@ -391,7 +401,7 @@ function preCarrega(i) {
 }
 function malhasVisiveis(sim) {
   for (const m of malhas) m.mesh.visible = sim && !m.teto;
-  base.visible = sim;
+  base.visible = false; // sem base: a maquete fica solta no fundo, como no ICG
   acorda(3);
 }
 // a render (blender/render_maquetes.py) sai com o conteúdo 10% da altura ABAIXO do centro;
@@ -427,6 +437,8 @@ function mostraArea(i, imediato = false) {
   const e = enquadra(i);
   $('#area-nome').textContent = areas[i].nome;
   $('#area-andar').textContent = nomeAndar[areas[i].andar];
+  $('#area-sub').textContent = areas[i].sub || '';
+  document.querySelectorAll('#passos button').forEach((b, k) => b.setAttribute('aria-current', k === i ? 'true' : 'false'));
   const esq = $('#seta-esq'), dir = $('#seta-dir');
   esq.disabled = i === 0;
   dir.disabled = i === areas.length - 1;
@@ -436,7 +448,6 @@ function mostraArea(i, imediato = false) {
     b.title = r;
     b.setAttribute('aria-label', r ? `${txt}: ${r}` : txt);
   }
-  $('#area-cont').textContent = `${i + 1} / ${areas.length}`;
   const dur = imediato || reduzido ? 0 : 1.4;
   gsap.to(corte.min, { x: e.min.x, y: e.min.y, z: e.min.z, duration: dur, ease: 'power3.inOut' });
   gsap.to(corte.max, { x: e.max.x, y: e.max.y, z: e.max.z, duration: dur, ease: 'power3.inOut' });
@@ -470,6 +481,7 @@ function pronto() {
 function irParaMaquetes(primeira = false) {
   if (visita) { ultimaSala = botoes[visita.i].pt.id; gsap.killTweensOf(visita); visita = null; }
   modo = 'maquetes';
+  document.body.classList.add('modo-maquetes');
   fechaPainel();
   document.body.classList.remove('modo-dentro');
   $('#dentro').hidden = true;
@@ -498,6 +510,7 @@ function areaMaisPerto() {
 function entrar() {
   if (modo !== 'maquetes') return;
   modo = 'entrando';
+  document.body.classList.remove('modo-maquetes');
   caminhoAtual = areas[areaAtual].caminho;
   const p0 = areas[areaAtual].inicio;
   const { olho, alvo } = poseNoCaminho(p0, new THREE.Vector3(), new THREE.Vector3());
@@ -792,6 +805,16 @@ $('#btn-som').addEventListener('click', (e) => {
 });
 
 // ───────────────────────── botões
+for (const [k, a] of areas.entries()) {
+  const li = document.createElement('li');
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('aria-label', a.nome);
+  b.title = a.nome;
+  b.addEventListener('click', () => k !== areaAtual && mostraArea(k));
+  li.append(b);
+  $('#passos').append(li);
+}
 $('#seta-esq').addEventListener('click', () => areaAtual > 0 && mostraArea(areaAtual - 1));
 $('#seta-dir').addEventListener('click', () => areaAtual < areas.length - 1 && mostraArea(areaAtual + 1));
 $('#btn-entrar').addEventListener('click', entrar);
@@ -819,6 +842,25 @@ const qAlvo = new THREE.Quaternion();
 const mAux = new THREE.Matrix4();
 const olharFoco = new THREE.Vector3();
 const EIXO_Y = new THREE.Vector3(0, 1, 0);
+
+// portas de vidro: as duas folhas abrem sozinhas quando a câmera chega perto e fecham quando ela se afasta
+const ABERTURA = THREE.MathUtils.degToRad(84);
+function abrePortas(dt) {
+  if (!portas.length) return;
+  const k = 1 - Math.exp(-dt * 3.2);
+  for (const pt of portas) {
+    const d = modo === 'dentro' ? Math.hypot(camera.position.x - pt.centro.x, camera.position.z - pt.centro.z) : 99;
+    const alvo = modo === 'dentro' && Math.abs(camera.position.y - pt.centro.y) < 2.5
+      ? 1 - THREE.MathUtils.smoothstep(d, 2.4, 4.8) : 0;
+    const antes = pt.aberta;
+    pt.aberta += (alvo - pt.aberta) * k;
+    if (Math.abs(pt.aberta - antes) > 1e-4) {
+      pt.obj.rotation.y = pt.giro0 + pt.sinal * ABERTURA * pt.aberta;
+      acorda(2);
+    }
+  }
+}
+
 renderer.setAnimationLoop(() => {
   const dt = Math.min(relogio.getDelta(), 0.05);
   if (modo === 'maquetes') {
@@ -853,6 +895,7 @@ renderer.setAnimationLoop(() => {
     if (Math.abs(falta) > 1e-5 || ang > 1e-4) acorda(2);
     $('#progresso').style.transform = `scaleX(${passeio.p})`;
   }
+  abrePortas(dt);
   if (!carregado || quadros <= 0) return;
   quadros--;
   atualizaPontos();

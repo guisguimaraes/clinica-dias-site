@@ -11,6 +11,22 @@
   <link rel="stylesheet" href="./passeio.css">
 </head>
 <body class="carregando">
+  <!-- sombra de folhas passando devagar no fundo das maquetes -->
+  <div class="folhas" aria-hidden="true">
+    <svg viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice">
+      <defs><filter id="desfoca"><feGaussianBlur stdDeviation="14"/></filter></defs>
+      <g filter="url(#desfoca)" fill="#6b5a44">
+        <path d="M80 520 C 150 420, 260 380, 330 300" stroke="#6b5a44" stroke-width="6" fill="none"/>
+        <ellipse cx="150" cy="430" rx="70" ry="22" transform="rotate(-40 150 430)"/>
+        <ellipse cx="200" cy="470" rx="64" ry="20" transform="rotate(15 200 470)"/>
+        <ellipse cx="225" cy="370" rx="76" ry="23" transform="rotate(-62 225 370)"/>
+        <ellipse cx="282" cy="402" rx="66" ry="20" transform="rotate(8 282 402)"/>
+        <ellipse cx="300" cy="300" rx="70" ry="21" transform="rotate(-80 300 300)"/>
+        <ellipse cx="350" cy="330" rx="60" ry="18" transform="rotate(-10 350 330)"/>
+        <ellipse cx="110" cy="500" rx="58" ry="18" transform="rotate(-12 110 500)"/>
+      </g>
+    </svg>
+  </div>
   <img id="maq-img" class="maq-img" alt="" aria-hidden="true">
   <canvas id="cena" aria-label="Clínica Dias em 3D"></canvas>
 
@@ -45,25 +61,24 @@
 
   <!-- tela das maquetes -->
   <section class="maquetes" id="maquetes" hidden>
+    <!-- setas nas bordas, com o nome da parte vizinha na vertical (como o ICG) -->
+    <button class="nav-lado nav-ant" id="seta-esq" type="button">
+      <svg viewBox="0 0 8 10" width="8" height="10" aria-hidden="true"><path d="M7 0 0 5l7 5z" fill="currentColor"/></svg>
+      <span class="nav-nome"></span>
+    </button>
+    <button class="nav-lado nav-prox" id="seta-dir" type="button">
+      <span class="nav-nome"></span>
+      <svg viewBox="0 0 8 10" width="8" height="10" aria-hidden="true"><path d="M1 0l7 5-7 5z" fill="currentColor"/></svg>
+    </button>
+
     <div class="maquete-rodape">
       <div class="area-titulo" id="area-titulo">
         <p class="area-andar" id="area-andar">Térreo</p>
-        <h1 id="area-nome">Entrada</h1>
+        <h1 id="area-nome">Recepção 1</h1>
+        <p class="area-sub" id="area-sub"></p>
       </div>
-      <nav class="nav-areas" aria-label="Trocar de área">
-        <button class="nav-btn nav-ant" id="seta-esq" type="button">
-          <i class="nav-quad" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>
-          <span class="nav-nome"></span>
-        </button>
-        <div class="nav-centro">
-          <button class="btn-entrar" id="btn-entrar" type="button">Entrar</button>
-          <p class="nav-cont" id="area-cont" aria-live="polite">1 / 9</p>
-        </div>
-        <button class="nav-btn nav-prox" id="seta-dir" type="button">
-          <span class="nav-nome"></span>
-          <i class="nav-quad" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>
-        </button>
-      </nav>
+      <button class="btn-entrar" id="btn-entrar" type="button">Entrar</button>
+      <ol class="passos" id="passos" aria-label="Partes da clínica"></ol>
     </div>
   </section>
 

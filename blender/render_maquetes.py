@@ -44,7 +44,7 @@ cena.render.resolution_percentage = 100
 cena.render.film_transparent = True
 cena.view_settings.view_transform = 'AgX'
 cena.view_settings.look = 'None'
-cena.view_settings.exposure = 0.1
+cena.view_settings.exposure = -0.12
 for _look in ('AgX - Medium High Contrast', 'Medium High Contrast'):
     try:
         cena.view_settings.look = _look
@@ -63,9 +63,9 @@ mundo = cena.world
 mundo.use_nodes = True
 bg = mundo.node_tree.nodes['Background']
 bg.inputs['Color'].default_value = (1.0, 0.965, 0.92, 1)
-bg.inputs['Strength'].default_value = 1.0
+bg.inputs['Strength'].default_value = 0.72
 sd = bpy.data.lights.new('sol_estudio', 'SUN')
-sd.energy = 3.4
+sd.energy = 4.4
 sd.angle = math.radians(12)
 sd.color = (1.0, 0.93, 0.84)
 sol = bpy.data.objects.new('sol_estudio', sd)
@@ -171,6 +171,20 @@ for m in bpy.data.materials:
     nt.links.new(gl.outputs[0], mx_.inputs[2])
     nt.links.new(mx_.outputs[0], out.inputs['Surface'])
 
+# ── argila (como as maquetes do ICG): tudo numa cor só, fosca; logos e placas (decalques) e vidro ficam como estão
+BARRO = (0.863, 0.815, 0.745, 1)  # #EFE9E0 em linear (igual ao COR_BARRO do passeio.js)
+for m in bpy.data.materials:
+    if not m.node_tree or m.name.startswith('decal_') or m.name in ('vidro', 'acrilico'):
+        continue
+    nt = m.node_tree
+    out = next((n for n in nt.nodes if n.type == 'OUTPUT_MATERIAL'), None)
+    if not out:
+        continue
+    barro = nt.nodes.new('ShaderNodeBsdfPrincipled')
+    barro.inputs['Base Color'].default_value = BARRO
+    barro.inputs['Roughness'].default_value = 0.92
+    nt.links.new(barro.outputs[0], out.inputs['Surface'])
+
 for m in bpy.data.materials:
     if not m.use_nodes or not m.node_tree:
         continue
@@ -189,12 +203,18 @@ for m in bpy.data.materials:
 # ── base da maquete (cinza-azulado) e câmera
 mb = bpy.data.materials.new('base_maquete')
 mb.use_nodes = True
-mb.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value = (0.66, 0.70, 0.74, 1)  # #D3DAE0 em linear
+mb.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value = (0.723, 0.651, 0.558, 1)  # #DDD3C5 em linear
 mb.node_tree.nodes['Principled BSDF'].inputs['Roughness'].default_value = 0.95
 bpy.ops.mesh.primitive_cube_add(size=1)
 base = bpy.context.active_object
 base.name = 'base_maquete'
 base.data.materials.append(mb)
+
+# chão invisível que só recebe sombra: a sombra da maquete cai no fundo bege da página
+bpy.ops.mesh.primitive_plane_add(size=400)
+chao = bpy.context.active_object
+chao.name = 'chao_sombra'
+chao.is_shadow_catcher = True
 
 cam_d = bpy.data.cameras.new('cam')
 cam_d.sensor_fit = 'VERTICAL'
@@ -211,7 +231,7 @@ for i in INDICES:
     mn, mx = Vector(a['caixa']['min']), Vector(a['caixa']['max'])
     # só renderiza o que toca a caixa da área (menos camadas transparentes, render mais rápido)
     for o in bpy.data.objects:
-        if o.type != 'MESH' or o.name == 'base_maquete' or '_teto' in o.name or 'luminarias' in o.name or 'volume' in o.name:
+        if o.type != 'MESH' or o.name in ('base_maquete', 'chao_sombra') or '_teto' in o.name or 'luminarias' in o.name or 'volume' in o.name:
             continue
         bb = [o.matrix_world @ Vector(c) for c in o.bound_box]
         xs = [v.x for v in bb]; zs = [-v.y for v in bb]; ys = [v.z for v in bb]
@@ -236,11 +256,16 @@ for i in INDICES:
     fundo = mn.y + 0.15
     base.scale = (sx + 0.02, sz + 0.02, 0.18)
     base.location = B((mn.x + mx.x) / 2, fundo - 0.09, (mn.z + mx.z) / 2)
+    # sem base (como o ICG): a maquete fica solta no fundo e a sombra cai na altura do piso mais baixo que aparece
+    base.hide_render = True
+    piso = min((min((o.matrix_world @ Vector(c)).z for c in o.bound_box) for o in bpy.data.objects
+                if o.type == 'MESH' and not o.hide_render and o.name not in ('base_maquete', 'chao_sombra')), default=fundo)
+    chao.location = B((mn.x + mx.x) / 2, max(piso, mn.y) - 0.005, (mn.z + mx.z) / 2)
     # câmera: igual a enquadra()/aplicaVista()
     centro = (mn + mx) / 2
     raio = (mx - mn).length / 2
     asp = min(aspecto, 1.6)
-    dist = (raio / math.sin(math.radians(11))) * ((1.2 / asp) if asp < 1 else 0.94)
+    dist = (raio / math.sin(math.radians(11))) * ((1.05 / asp) if asp < 1 else 0.9) * a.get('zoom', 1)  # igual a enquadra() do passeio.js
     alvo = centro - Vector((0, 0.6, 0))
     pos = alvo + DIR * dist
     cam.location = B(*pos)
@@ -249,7 +274,7 @@ for i in INDICES:
     cam.rotation_quaternion = olhar.to_track_quat('-Z', 'Y')
     # setViewOffset(0, 10% da altura): conteúdo sobe → deslocamento negativo da câmera
     cam_d.shift_x = 0
-    cam_d.shift_y = 0.1 * H / max(W, H)
+    cam_d.shift_y = 0.1 * H / max(W, H)  # o site sobe a imagem o quanto precisar (posicionaImagem)
     t0 = time.time()
     cena.render.filepath = os.path.join(SAIDA, f"maq_{a['id']}{SUFIXO}.webp")
     bpy.ops.render.render(write_still=True)

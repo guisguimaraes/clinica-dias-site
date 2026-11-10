@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Clínica Dias por dentro · em manutenção</title>
+  <meta name="description" content="A visita em 3D da Clínica Dias está em manutenção. Volte em breve.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../assets/img/favicon-32.png">
+  <link rel="preload" href="../assets/fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face { font-family: 'Jost'; src: url('../assets/fonts/jost-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+    :root {
+      --noite: #101E44; --laranja: #F7922D; --laranja-texto: #A8560B; --petroleo: #5C95A4;
+      --pedra: #F1ECE6; --apagado: #5D5F66; --linha: rgba(16, 30, 68, .14);
+      --faixa: linear-gradient(90deg, #F7922D 0%, #C8935F 22%, #5C95A4 52%, #2A4566 78%, #101E44 100%);
+      --gutter: clamp(16px, 4vw, 48px);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto;
+      font-family: 'Jost', 'Segoe UI', Arial, sans-serif; color: var(--noite); background: var(--pedra);
+      -webkit-font-smoothing: antialiased; position: relative; overflow-x: hidden;
+    }
+    body::before { content: ''; position: fixed; left: 0; right: 0; top: 0; height: 3px; background: var(--faixa); }
+    .contornos { position: fixed; right: -8%; bottom: -6%; height: 96vh; width: auto; opacity: .85; pointer-events: none; z-index: 0; }
+    header, main, footer { position: relative; z-index: 1; padding: 0 var(--gutter); }
+    header { height: 76px; display: flex; align-items: center; border-bottom: 1px solid var(--linha); }
+    header img { height: 48px; width: auto; display: block; }
+    main { display: flex; flex-direction: column; justify-content: center; gap: 22px; max-width: 760px; padding-top: 48px; padding-bottom: 48px; }
+    .sobretitulo { display: flex; align-items: center; gap: 10px; margin: 0; font-size: .82rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--laranja-texto); }
+    .sobretitulo::before { content: ''; width: 28px; height: 3px; background: var(--faixa); }
+    h1 { margin: 0; font-size: clamp(2rem, 1.3rem + 2.4vw, 3.2rem); font-weight: 400; line-height: 1.15; letter-spacing: -.01em; max-width: 18ch; text-wrap: balance; }
+    h1 em { font-style: normal; color: #CC6410; }
+    p.apoio { margin: 0; font-size: 1.08rem; font-weight: 300; line-height: 1.6; color: var(--apagado); max-width: 46ch; }
+    .acoes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .botao { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 24px; font: inherit; font-size: .98rem; text-decoration: none; border: 1px solid var(--noite); transition: background .25s, color .25s, border-color .25s; }
+    .botao-cheio { background: var(--laranja); border-color: var(--laranja); color: var(--noite); font-weight: 500; }
+    .botao-cheio:hover { background: var(--noite); border-color: var(--noite); color: #fff; }
+    .botao-linha { color: var(--noite); }
+    .botao-linha:hover { background: var(--noite); color: #fff; }
+    .botao:focus-visible { outline: 2px solid var(--laranja-texto); outline-offset: 3px; }
+    footer { padding-top: 18px; padding-bottom: 22px; border-top: 1px solid var(--linha); font-size: .88rem; color: var(--apagado); }
+    @media (max-width: 640px) {
+      .contornos { height: 60vh; right: -30%; opacity: .5; }
+      .botao { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <img class="contornos" src="../v2/img/contornos-claro.svg" alt="" aria-hidden="true">
+  <header>
+    <a href="../v2/" aria-label="Clínica Dias, voltar ao site"><img src="../v2/img/logo.svg" alt="Clínica Dias"></a>
+  </header>
+  <main>
+    <p class="sobretitulo">A clínica por dentro</p>
+    <h1>A visita em 3D está <em>em manutenção</em>.</h1>
+    <p class="apoio">Estamos terminando o passeio pelas duas recepções e pelos consultórios. Enquanto isso, você agenda pelo telefone ou volta para o site.</p>
+    <div class="acoes">
+      <a class="botao botao-cheio" href="tel:+553138496156">Agendar (31) 3849-6156</a>
+      <a class="botao botao-linha" href="../v2/">Voltar ao site</a>
+    </div>
+  </main>
+  <footer>Timóteo · Rua Cento e Vinte e Oito, 14 · segunda a sexta, das 8h às 18h</footer>
+</body>
+</html>

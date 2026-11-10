@@ -26,6 +26,8 @@
   --petroleo-texto: #3D7484;
   --laranja-texto: #A8560B;
   --sobre-noite: #C4C9D6;            /* texto secundário em fundo azul noite */
+  --pedra: #F1ECE6;                  /* fundo da abertura: tom das paredes e do mármore da recepção (fotos) */
+  --pedra-linha: rgba(16, 30, 68, .12);
   --linha: rgba(16, 30, 68, .14);
   --linha-forte: rgba(16, 30, 68, .34);
   --linha-noite: rgba(255, 255, 255, .16);
@@ -108,7 +110,7 @@ ul, ol { padding: 0; list-style: none; }
 .abertura-apoio { color: var(--sobre-noite); font-weight: 300; font-size: 1.08rem; max-width: 44ch; }
 .declaracao em { font-style: normal; color: var(--laranja); }
 .abertura-foto img { object-position: 14% 50%; }
-.abertura-foto::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(16, 30, 68, 0) 70%, rgba(16, 30, 68, .35)); pointer-events: none; }
+.abertura-foto::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(16, 30, 68, 0) 78%, rgba(16, 30, 68, .18)); pointer-events: none; }
 
 /* atalhos: faixa da marca em cima, linhas finas entre eles */
 .atalhos { margin-top: auto; position: relative; }
@@ -139,6 +141,20 @@ ul, ol { padding: 0; list-style: none; }
 }
 .atalho:hover .quadrado-seta { background: var(--laranja); border-color: var(--laranja); color: var(--noite); }
 .atalho:hover .quadrado-seta::after { transform: translateX(3px); }
+
+/* abertura da home em pedra clara (no lugar do azul-noite): texto azul-noite, destaque laranja */
+.bloco-pedra { background: var(--pedra); color: var(--noite); position: relative; overflow: hidden; border-left: 1px solid var(--pedra-linha); }
+.bloco-pedra .contornos { opacity: .85; }
+.bloco-pedra .declaracao em { color: #CC6410; } /* laranja da marca escurecido só o bastante para contraste 3:1 em título grande */
+.bloco-pedra .abertura-apoio { color: var(--apagado); }
+.bloco-pedra .atalho { border-bottom-color: var(--pedra-linha); color: var(--noite); }
+.bloco-pedra .atalho:hover { background: rgba(255, 255, 255, .55); }
+.bloco-pedra .atalho-num { color: var(--laranja-texto); }
+.bloco-pedra .atalho-texto span { color: var(--apagado); }
+.bloco-pedra .quadrado-seta { border-color: var(--linha-forte); color: var(--noite); }
+.bloco-pedra .atalhos li:first-child .quadrado-seta,
+.bloco-pedra .atalho:hover .quadrado-seta { background: var(--laranja); border-color: var(--laranja); color: var(--noite); }
+.bloco-pedra .atalho:focus-visible { outline: 2px solid var(--laranja-texto); outline-offset: 2px; }
 
 /* ── seções em lista ──────────────────── */
 .secao { padding: clamp(64px, 9vw, 128px) var(--gutter); max-width: var(--largura); margin: 0 auto; }

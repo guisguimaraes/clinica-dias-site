@@ -72,9 +72,12 @@ export const mobilia = [
 
   // recepção 1: logo oficial na parede de mármore, banners da espera
   { tipo: 'decal', nome: 'logo-marmore-r1', imagem: 'logo', centro: [3.49, T + 1.95, 11.65], larg: 2.6, alt: 0.975, vira: 90 },
-  { tipo: 'decal', nome: 'banner-missao', imagem: 'banner-missao', centro: [10.35, T + 1.55, 7.8], larg: 2.9, alt: 2.32, vira: 0 },
-  { tipo: 'caixa', nome: 'totem-pos', min: [3.66, T + 0.04, 8.18], max: [4.34, T + 1.78, 8.24], mat: 'branco' },
-  { tipo: 'decal', nome: 'banner-pos', imagem: 'banner-pos', centro: [4.0, T + 0.95, 8.25], larg: 0.6, alt: 1.5, vira: 0 },
+  // banners reais, recortados das fotos f45 e f49 com a perspectiva corrigida (blender/decais)
+  { tipo: 'decal', nome: 'banner-missao', imagem: 'banner-missao', centro: [10.35, T + 1.9, 7.8], larg: 2.9, alt: 1.66, vira: 0 },
+  { tipo: 'caixa', nome: 'totem-pos', min: [3.48, T + 0.02, 8.18], max: [4.98, T + 2.2, 8.26], mat: 'branco' }, // painel em pé 1,5 × 2,2 m (foto f49)
+  { tipo: 'decal', nome: 'banner-pos', imagem: 'banner-pos', centro: [4.23, T + 1.11, 8.27], larg: 1.48, alt: 2.12, vira: 0 },
+  { tipo: 'cadeiras', nome: 'cadeira-pos', de: [3.95, T, 8.75], n: 1, passo: [0, 0, 0], vira: 0, cor: 'preto' },
+  { tipo: 'mesa', nome: 'm-pos-consulta', pos: t(4.62, 8.62), vira: 0, larg: 0.8, prof: 0.5, pacientes: 0, medico: false },
   { tipo: 'planta-vaso', nome: 'planta-r1-a', pos: t(11.55, 13.9), altura: 1.4 },
   { tipo: 'planta-vaso', nome: 'planta-r1-b', pos: t(3.8, 13.9), altura: 1.2 },
 
@@ -98,7 +101,7 @@ export const mobilia = [
   { tipo: 'carro', nome: 'carro-1', pos: t(1.7, 17.8), vira: 0, cor: '#8a8f96' },
   { tipo: 'carro', nome: 'carro-2', pos: t(12.1, 17.8), vira: 180, cor: '#2d3a4f' },
   { tipo: 'extintor', nome: 'ext-r1', pos: t(12.05, 10.0), vira: -90 },
-  { tipo: 'extintor', nome: 'ext-bloco', pos: t(15.75, 7.0), vira: -90 },
+  { tipo: 'extintor', nome: 'ext-bloco', pos: t(14.7, 6.29), vira: 0 }, // na parede sul do corredor (antes flutuava no meio)
   { tipo: 'lixeira', nome: 'lix-r1', pos: t(5.6, 8.9), vira: 0 },
   { tipo: 'lixeira', nome: 'lix-r1b', pos: t(11.6, 14.0), vira: 0 },
   { tipo: 'totem', nome: 'totem-senha-r1', centro: [11.75, T, 12.7] },
@@ -149,10 +152,17 @@ export const mobilia = [
   { tipo: 'bancada', nome: 'm-odonto-1-banc', min: [26.72, N_REC, 1.65], max: [27.25, N_REC, 3.4], pia: 1 },
   { tipo: 'cadeira-odonto', nome: 'm-odonto-2', pos: r(32.0, 2.75), vira: 140 },
   { tipo: 'bancada', nome: 'm-odonto-2-banc', min: [30.1, N_REC, 1.65], max: [30.63, N_REC, 3.4], pia: 1 },
-  { tipo: 'extintor', nome: 'ext-r2', pos: r(23.4, 4.88), vira: 0 },
-  { tipo: 'extintor', nome: 'ext-espera', pos: a(14.1, 8.85), vira: -90 },
+  { tipo: 'extintor', nome: 'ext-r2', pos: r(21.9, 4.45), vira: 0 }, // na parede do corredor (antes ficava a 70 cm dela)
+  { tipo: 'extintor', nome: 'ext-espera', pos: a(13.6, 9.03), vira: 180 }, // na parede norte da espera
   { tipo: 'lixeira', nome: 'lix-r2', pos: r(26.9, 5.1), vira: 0 },
   { tipo: 'lixeira', nome: 'lix-espera', pos: a(10.5, 8.75), vira: 0 },
+  // como nas fotos: purificadores de água na parede, split na recepção 2, DEA vermelho na espera
+  { tipo: 'purificador', nome: 'pur-r1', pos: t(13.6, 6.29), vira: 0 },
+  { tipo: 'purificador', nome: 'pur-r2-a', pos: r(24.53, 4.05), vira: 90 },
+  { tipo: 'purificador', nome: 'pur-r2-b', pos: r(24.53, 4.7), vira: 90 },
+  { tipo: 'ar-split', nome: 'split-r2-a', pos: r(27.8, 4.45), vira: 0 },
+  { tipo: 'ar-split', nome: 'split-r2-b', pos: r(31.2, 4.45), vira: 0 },
+  { tipo: 'dea', nome: 'dea-espera', pos: a(12.7, 9.03), vira: 180 },
   { tipo: 'vaso', nome: 'm-isfunc-1p', pos: r(25.1, 1.95), vira: 0 },
   { tipo: 'vaso', nome: 'm-ispne-pac-1p', pos: r(24.95, 7.55), vira: 90 },
 ];

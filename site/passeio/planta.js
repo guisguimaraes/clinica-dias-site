@@ -105,7 +105,7 @@ function paredesDoAndar(lista, opc) {
           min: h ? [a, yb + 1.0, pz - 0.02] : [px - 0.02, yb + 1.0, a], max: h ? [b, yb + 2.2, pz + 0.02] : [px + 0.02, yb + 2.2, b] });
       } else {
         caixaVao(yb + 2.1, y1, 'parede', 'verga');
-        if (vao <= 1.0) pecas.push({ tipo: 'porta', nome: `${nome}-porta${n++}`, centro: [px, yb, pz], vira: h ? 0 : 90, largura: vao });
+        if (vao <= 1.0) pecas.push({ tipo: 'porta', nome: `${nome}-porta${n++}`, centro: [px, yb, pz], vira: h ? 0 : 90, largura: vao, placa: yb > 3 ? true : undefined });
       }
     });
   }
@@ -125,9 +125,11 @@ function comPortas(paredes, portas, base, nome) {
     const cx = d.o === 'h' ? m : d.c, cz = d.o === 'h' ? d.c : m;
     const y = base(cx, cz);
     const e = 0.075;
+    // verga até o alto da parede: no térreo o forro fica a 2,90 m e a verga de 2,75 m deixava uma fresta (parecia solta)
+    const topoVerga = d.topo || (y < 1 ? 3.23 : 2.75);
     pecas.push({ tipo: 'caixa', nome: `${nome}-vergaporta${i}`, mat: 'parede',
-      min: d.o === 'h' ? [d.a, y + 2.1, d.c - e] : [d.c - e, y + 2.1, d.a], max: d.o === 'h' ? [d.b, y + (d.topo || 2.75), d.c + e] : [d.c + e, y + (d.topo || 2.75), d.b] });
-    if (!d.aberta) pecas.push({ tipo: 'porta', nome: `${nome}-porta-a${i}`, centro: [cx, y, cz], vira: d.o === 'h' ? 0 : 90, largura: d.b - d.a, placa: d.placa });
+      min: d.o === 'h' ? [d.a, y + 2.1, d.c - e] : [d.c - e, y + 2.1, d.a], max: d.o === 'h' ? [d.b, y + topoVerga, d.c + e] : [d.c + e, y + topoVerga, d.b] });
+    if (!d.aberta) pecas.push({ tipo: 'porta', nome: `${nome}-porta-a${i}`, centro: [cx, y, cz], vira: d.o === 'h' ? 0 : 90, largura: d.b - d.a, placa: d.placa ?? (y > 3 ? true : undefined) }); // 1º andar: placa laranja de sala
   });
   return { ws, pecas, feitas };
 }
@@ -142,7 +144,7 @@ const filtroT = paredesTerreo.paredes.filter((w) => !(w.o === 'h' && w.z0 > 14.2
 const portasT = [
   ...paredesTerreo.portas.map(abreSala),
   { o: 'v', c: 17.53, a: 6.75, b: 7.65 },              // troca de macas → Bloco Cirúrgico (fotos f51–f52)
-  { o: 'v', c: 17.53, a: 7.65, b: 8.05 , aberta: true },
+  { o: 'v', c: 17.53, a: 7.65, b: 8.05 },                // folha menor da porta dupla (antes era um vão aberto e aparecia um rasgo preto)
 ];
 const rT = comPortas(filtroT, portasT, () => T, 'terreo');
 
@@ -183,8 +185,8 @@ export const pecas = [
   { tipo: 'balcao', nome: 'guiches-r1', min: [4.35, T, 9.2], max: [4.95, T + 1.05, 13.9], guiches: 5, eixo: 'z', marmore: true },
   { tipo: 'tv', nome: 'tv-r1', centro: [3.5, T + 2.25, 13.55], largura: 1.0, vira: 90 },
   // espera 87,8 m²: fileiras viradas para o painel "Nossa missão: Fazer história" (parede norte)
-  ...[9.4, 10.2, 11.8, 12.6, 13.4].map((z, i) => ({ tipo: 'cadeiras', nome: `espera-r1-${i}`, de: [8.1, T, z], n: 6, passo: [0.55, 0, 0], vira: 180, cor: 'cinza' })),
-  { tipo: 'cadeiras', nome: 'espera-r1-parede', de: [11.8, T, 10.2], n: 6, passo: [0, 0, 0.55], vira: -90, cor: 'cinza' },
+  ...[9.4, 10.2, 11.8, 12.6, 13.4].map((z, i) => ({ tipo: 'cadeiras', nome: `espera-r1-${i}`, de: [8.1, T, z], n: 6, passo: [0.55, 0, 0], vira: 180, cor: 'preto' })),
+  { tipo: 'cadeiras', nome: 'espera-r1-parede', de: [11.8, T, 10.2], n: 6, passo: [0, 0, 0.55], vira: -90, cor: 'preto' },
   // corredor até o Bloco Cirúrgico (z 6,3–8,3), entrada pela troca de macas (fotos f49–f52)
   { tipo: 'cadeiras', nome: 'cadeiras-bloco', de: [12.7, T, 6.6], n: 5, passo: [0.55, 0, 0], vira: 0, cor: 'preto' },
   { tipo: 'placa', nome: 'placa-bloco', centro: [17.4, T + 2.35, 7.2], texto: 'BLOCO CIRÚRGICO', vira: -90 },
@@ -207,7 +209,7 @@ export const pecas = [
   { tipo: 'degraus', nome: 'escada-treze', min: [35.86, N_RUA2, 4.05], max: [36.86, N_REC, 6.65], n: 3, eixo: 'x' },
   { tipo: 'corrimao', nome: 'corrimao-escada', de: [36.86, N_RUA2 + 0.9, 5.36], ate: [35.95, N_REC + 0.9, 5.36] },
   { tipo: 'caixa', nome: 'patamar-rampa', min: [29.2, N_RUA2 - 0.15, 8.23], max: [35.86, N_REC - 0.02, 9.5], mat: 'concreto' },
-  { tipo: 'guarda-vidro', nome: 'guarda-rampa-ext', de: [29.2, N_REC, 9.5], ate: [35.86, N_REC, 9.5] },
+  { tipo: 'gradil', nome: 'gradil-rampa-ext', de: [29.2, N_REC, 9.5], ate: [35.86, N_REC, 9.5] }, // grade preta, como nas fotos da Av. Treze
   // parede leste: janelão ao norte (direita de quem chega), porta de correr 220×210 no meio
   { tipo: 'caixa', nome: 'leste-norte', min: [35.72, N_REC - 0.12, 0.17], max: [35.86, N_REC + PE, 1.95], mat: 'parede' },
   { tipo: 'caixa', nome: 'leste-peitoril', min: [35.72, N_REC - 0.12, 1.95], max: [35.86, N_REC + 0.9, 4.1], mat: 'parede' },
@@ -271,7 +273,7 @@ export const materiais = {
   grama: '#6f8a4e',
   fachada: '#8a8d92',
   concreto: '#9a9ca0',
-  parede: '#e6e2dc',
+  parede: '#d6ccc1',   // bege acinzentado (fendi) das fotos; antes quase branco
   teto: '#f2f1ef',
   granito: '#d9d6cf',
   rampa: '#3a3b3e',
@@ -304,18 +306,28 @@ export const caminhos = {
       [17.5, o1 - 0.05, 7.2], [17.6, o1, 7.2], [17.7, o1, 7.2],
     ],
   },
-  // Recepção 2: Av. Treze → Portaria 2 → recepção → rampa → espera do painel → consultórios
+  // Recepção 2: Av. Treze → Portaria 2 → recepção → rampa (para no alto, olhando a espera)
   r2: {
     nome: 'Recepção 2',
     olho: [
       [45.0, oF, 5.36], [41.0, oF, 5.36], [37.6, oF + 0.2, 5.36], [35.0, oR, 5.36],
       [32.5, oR, 5.0], [28.5, oR, 5.3], [25.2, oR, 5.65], [21.9, oR, 7.2],
-      [18.8, (oR + oA) / 2, 7.2], [16.0, oA, 7.2], [14.6, oA, 6.9], [12.4, oA, 7.6],
-      [9.6, oA, 8.45], [6.2, oA, 8.45], [5.3, oA, 10.0], [5.3, oA, 12.0],
+      [18.8, (oR + oA) / 2, 7.2], [16.0, oA, 7.2],
     ],
     alvo: [
       [36, oF + 0.6, 5.36], [36, oF + 0.4, 5.36], [34, oR, 5.36], [30, oR - 0.15, 5.6],
       [26, oR - 0.15, 5.6], [22, oR - 0.2, 6.3], [19, oR - 0.15, 7.1], [16, oA - 0.1, 7.2],
+      [12, oA - 0.15, 7.0], [10.1, oA - 0.1, 6.5],
+    ],
+  },
+  // Consultórios: alto da rampa → espera do painel → corredor das faixas coloridas
+  r3: {
+    nome: 'Consultórios',
+    olho: [
+      [18.8, (oR + oA) / 2, 7.2], [16.0, oA, 7.2], [14.6, oA, 6.9], [12.4, oA, 7.6],
+      [9.6, oA, 8.45], [6.2, oA, 8.45], [5.3, oA, 10.0], [5.3, oA, 12.0],
+    ],
+    alvo: [
       [12, oA - 0.15, 7.0], [10.1, oA - 0.1, 6.5], [10.1, oA - 0.05, 6.3], [7.0, oA - 0.1, 8.45],
       [5.2, oA - 0.1, 8.5], [5.3, oA - 0.1, 10.5], [5.3, oA - 0.1, 14.0], [5.3, oA - 0.1, 16.0],
     ],
@@ -325,20 +337,32 @@ export const caminhos = {
 // ───────────── áreas (cada uma vira uma maquete, como os andares do ICG)
 // caminho/inicio: onde o "Entrar" começa; corte: altura acima da qual as paredes da frente somem
 // salas: a caixa termina no MEIO das paredes da frente (o corte mostra a face clara de corte, não a face de fora)
+// três partes, como os três andares do ICG: cada uma é uma maquete inteira e as salas abrem por dentro
 export const areas = [
-  { id: 'r1_entrada', andar: 'terreo', nome: 'Entrada pela Rua 128', caixa: { min: [-0.5, -0.3, 12.8], max: [19.6, 4.6, 21.5] }, caminho: 'r1', inicio: 0 },
-  { id: 'r1_recepcao', andar: 'terreo', nome: 'Recepção 1', caixa: { min: [2.9, -0.3, 7.0], max: [12.7, 3.2, 14.75] }, caminho: 'r1', inicio: 0.24, corte: 1.3 },
-  { id: 'r1_exames', andar: 'terreo', nome: 'Exames e consultórios', caixa: { min: [-0.2, -0.3, -0.2], max: [16.4, 3.2, 7.9] }, caminho: 'r1', inicio: 0.62, corte: 1.3, topo: 2.2 },
-  { id: 'sala_ergometria', andar: 'terreo', nome: 'Teste ergométrico', sala: 'ergometria', caixa: { min: [7.4, -0.3, 4.15], max: [11.9, 3.2, 7.67] }, caminho: 'r1', corte: 1.0, topo: 2.2 },
-  { id: 'sala_consultorio', andar: 'terreo', nome: 'Consultório indiferenciado', sala: 'consultorio-t', caixa: { min: [11.95, -0.3, 2.95], max: [15.9, 3.2, 6.24] }, caminho: 'r1', corte: 1.0, topo: 2.2 },
-  { id: 'r1_bloco', andar: 'terreo', nome: 'Bloco Cirúrgico', caixa: { min: [12.6, -0.3, -0.2], max: [34.6, 3.2, 9.9] }, caminho: 'r1', inicio: 0.74, corte: 1.3, topo: 2.2 },
-  { id: 'r2_entrada', andar: 'pav1', nome: 'Entrada pela Av. Treze', caixa: { min: [33.5, 2.5, -0.5], max: [39.5, 7.9, 10.0] }, caminho: 'r2', inicio: 0 },
-  { id: 'r2_recepcao', andar: 'pav1', nome: 'Recepção 2', caixa: { min: [24.2, 3.25, 0.0], max: [36.0, 6.3, 8.4] }, caminho: 'r2', inicio: 0.16, corte: 4.6 },
-  { id: 'sala_odonto', andar: 'pav1', nome: 'Consultório odontológico', sala: 'odonto', caixa: { min: [26.4, 3.25, 0.8], max: [29.88, 6.3, 4.4] }, caminho: 'r2', corte: 4.35, topo: 5.55 },
-  { id: 'r2_rampa', andar: 'pav1', nome: 'Corredor e rampa', caixa: { min: [16.0, 3.25, 0.0], max: [26.8, 6.3, 8.4] }, caminho: 'r2', inicio: 0.36, corte: 4.6 },
-  { id: 'r2_espera', andar: 'pav1', nome: 'Sala de espera', caixa: { min: [6.0, 3.68, -0.2], max: [16.45, 6.7, 9.4] }, caminho: 'r2', inicio: 0.56, corte: 5.1 },
-  { id: 'sala_pediatria', andar: 'pav1', nome: 'Consultório pediátrico', sala: 'pediatria', caixa: { min: [6.1, 3.68, 4.2], max: [9.95, 6.7, 7.84] }, caminho: 'r2', corte: 4.8, topo: 6.0 },
-  { id: 'r2_consultorios', andar: 'pav1', nome: 'Consultórios', caixa: { min: [-0.2, 3.68, -0.2], max: [10.2, 6.7, 14.8] }, caminho: 'r2', inicio: 0.78, corte: 5.1, topo: 6.0 },
+  { id: 'recepcao1', andar: 'terreo', nome: 'Recepção 1', sub: 'Rua 128 · exames, consultórios e Bloco Cirúrgico',
+    caixa: { min: [-0.5, -0.3, -0.2], max: [34.6, 3.2, 14.75] }, caminho: 'r1', inicio: 0, corte: 1.3, topo: 2.3 },
+  { id: 'recepcao2', andar: 'pav1', nome: 'Recepção 2', sub: 'Av. Treze · recepção, odontologia e rampa',
+    caixa: { min: [16.0, 2.5, -0.5], max: [39.5, 6.3, 8.45] }, caminho: 'r2', inicio: 0, corte: 4.6, topo: 5.6, zoom: 0.72 },
+  { id: 'consultorios', andar: 'pav1', nome: 'Consultórios', sub: 'Sala de espera, pediatria e especialidades',
+    caixa: { min: [-0.2, 3.68, -0.2], max: [16.45, 6.7, 14.8] }, caminho: 'r3', inicio: 0, corte: 5.1, topo: 6.0 },
+];
+
+// ───────────── grupos de luz (só para o Blender): cada um ganha o seu mapa de luz.
+// São as caixas antigas, menores que as 3 partes: mais detalhe de luz por metro quadrado.
+export const gruposLuz = [
+  { id: 'r1_entrada', caixa: { min: [-0.5, -0.3, 12.8], max: [19.6, 4.6, 21.5] } },
+  { id: 'r1_recepcao', caixa: { min: [2.9, -0.3, 7.0], max: [12.7, 3.2, 14.75] } },
+  { id: 'r1_exames', caixa: { min: [-0.2, -0.3, -0.2], max: [16.4, 3.2, 7.9] } },
+  { id: 'sala_ergometria', sala: true, caixa: { min: [7.4, -0.3, 4.15], max: [11.9, 3.2, 7.67] } },
+  { id: 'sala_consultorio', sala: true, caixa: { min: [11.95, -0.3, 2.95], max: [15.9, 3.2, 6.24] } },
+  { id: 'r1_bloco', caixa: { min: [12.6, -0.3, -0.2], max: [34.6, 3.2, 9.9] } },
+  { id: 'r2_entrada', caixa: { min: [33.5, 2.5, -0.5], max: [39.5, 7.9, 10.0] } },
+  { id: 'r2_recepcao', caixa: { min: [24.2, 3.25, 0.0], max: [36.0, 6.3, 8.4] } },
+  { id: 'sala_odonto', sala: true, caixa: { min: [26.4, 3.25, 0.8], max: [29.88, 6.3, 4.4] } },
+  { id: 'r2_rampa', caixa: { min: [16.0, 3.25, 0.0], max: [26.8, 6.3, 8.4] } },
+  { id: 'r2_espera', caixa: { min: [6.0, 3.68, -0.2], max: [16.45, 6.7, 9.4] } },
+  { id: 'sala_pediatria', sala: true, caixa: { min: [6.1, 3.68, 4.2], max: [9.95, 6.7, 7.84] } },
+  { id: 'r2_consultorios', caixa: { min: [-0.2, 3.68, -0.2], max: [10.2, 6.7, 14.8] } },
 ];
 
 // ───────────── pontos com olho (só dados reais: planta, fotos, site aprovado, parecer da Vigilância)
@@ -362,20 +386,20 @@ export const pontos = [
     texto: 'Cirurgias oftalmológicas de baixa complexidade e procedimentos cirúrgicos ambulatoriais.',
     link: { texto: 'Conhecer o site', href: '../v2/' } },
   // Recepção 2
-  { caminho: 'r2', pos: [36.15, N_REC + 1.9, 7.4], ate: 0.1, titulo: 'Clínica Dias', sub: 'Portaria 2 · Avenida Treze',
+  { caminho: 'r2', pos: [36.15, N_REC + 1.9, 7.4], titulo: 'Clínica Dias', sub: 'Portaria 2 · Avenida Treze',
     texto: 'Entrada com escada e rampa de acesso. Atendimento de segunda a sexta, das 8h às 18h.' },
-  { caminho: 'r2', pos: [30.8, N_REC + 1.35, 6.6], ate: 0.27, titulo: 'Recepção', sub: 'Seis guichês de atendimento',
+  { caminho: 'r2', pos: [30.8, N_REC + 1.35, 6.6], titulo: 'Recepção', sub: 'Seis guichês de atendimento',
     texto: 'Agende pelo telefone (31) 3849-6156.', link: { texto: 'Ligar agora', href: 'tel:+553138496156' } },
-  { id: 'odonto', caminho: 'r2', pos: [29.3, N_REC + 1.7, 4.9], ate: 0.22, video: './videos/odonto.mp4', titulo: 'Odontologia', sub: 'Dois consultórios odontológicos',
+  { id: 'odonto', caminho: 'r2', pos: [29.3, N_REC + 1.7, 4.9], video: './videos/odonto.mp4', titulo: 'Odontologia', sub: 'Dois consultórios odontológicos',
     texto: 'Consultas e tratamentos odontológicos ao lado da recepção.',
     sala: { olhos: [[29.4, oR, 4.95], [29.4, oR, 4.0], [29.45, oR, 3.7]], alvos: [[29.3, oR - 0.1, 3.3], [28.0, oR - 0.4, 2.4], [27.3, oR - 0.5, 1.9]] } },
-  { caminho: 'r2', pos: [18.8, N_REC + 1.2, 7.2], ate: 0.47, titulo: 'Acessibilidade', sub: 'Rampa com corrimão e guarda-corpo de vidro',
+  { caminho: 'r2', pos: [18.8, N_REC + 1.2, 7.2], titulo: 'Acessibilidade', sub: 'Rampa com corrimão e guarda-corpo de vidro',
     texto: 'O caminho até os consultórios do prédio antigo é feito sem degraus.' },
-  { id: 'pediatria', caminho: 'r2', pos: [6.69, N_ANT + 1.9, 7.75], titulo: 'Consultório pediátrico', sub: '1º pavimento, prédio antigo',
+  { id: 'pediatria', caminho: 'r3', pos: [6.69, N_ANT + 1.9, 7.75], titulo: 'Consultório pediátrico', sub: '1º pavimento, prédio antigo',
     texto: 'Mesa e sofá para a família.',
     sala: { olhos: [[6.95, oA, 8.45], [6.69, oA, 7.4], [6.75, oA, 7.1]], alvos: [[6.69, oA - 0.1, 6.6], [8.3, oA - 0.4, 5.6], [9.4, oA - 0.5, 5.0]] } },
-  { caminho: 'r2', pos: [10.15, N_ANT + 1.75, 6.5], ate: 0.66, titulo: 'Sala de espera', sub: 'Chamada pelo painel',
+  { caminho: 'r3', pos: [10.15, N_ANT + 1.75, 6.5], titulo: 'Sala de espera', sub: 'Chamada pelo painel',
     texto: 'Os pacientes são chamados pela TV do painel de madeira.' },
-  { caminho: 'r2', pos: [5.3, N_ANT + 2.3, 12.6], ate: 0.97, video: './videos/corredor.mp4', titulo: 'Consultórios', sub: 'Siga a cor da sua especialidade',
+  { caminho: 'r3', pos: [5.3, N_ANT + 2.3, 12.6], ate: 0.97, video: './videos/corredor.mp4', titulo: 'Consultórios', sub: 'Siga a cor da sua especialidade',
     texto: 'As faixas coloridas no piso levam até cada consultório.', link: { texto: 'Conhecer o site', href: '../v2/' } },
 ];

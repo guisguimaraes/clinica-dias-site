@@ -423,6 +423,49 @@ def lixeira(n, pos, vira):
     return chanfra(grupo(p, n), 0.01)
 
 
+def purificador(n, pos, vira):
+    """purificador de água branco na parede, com o tubo de copos ao lado (fotos r1 p02/p03, r2 p10)."""
+    em = _em(pos, vira)
+    p = [bx(n + '_corpo', em, (0, 1.38, 0.075), (0.3, 0.42, 0.15), 'branco', vira),
+         bx(n + '_painel', em, (0, 1.45, 0.152), (0.2, 0.12, 0.004), 'equip-escuro', vira),
+         bx(n + '_bica', em, (0, 1.2, 0.17), (0.08, 0.03, 0.06), 'inox', vira),
+         cil(n + '_copos', em, (0.27, 1.05, 0.06), (0.27, 1.6, 0.06), 0.04, 'branco', 12)]
+    return chanfra(grupo(p, n), 0.01)
+
+
+def ar_split(n, pos, vira, alt=2.45):
+    """ar-condicionado split na parede (foto r2 p06)."""
+    em = _em(pos, vira)
+    p = [bx(n + '_corpo', em, (0, alt, 0.11), (0.92, 0.3, 0.22), 'branco', vira),
+         bx(n + '_saida', em, (0, alt - 0.13, 0.2), (0.8, 0.025, 0.03), 'equip-escuro', vira)]
+    return chanfra(grupo(p, n), 0.02)
+
+
+def dea(n, pos, vira):
+    """caixa vermelha do desfibrilador (DEA) na parede da espera (foto r2 p21)."""
+    em = _em(pos, vira)
+    chave = 'vermelho-ext'
+    if chave not in MATS:
+        material(chave, cor='#c0272d', rug=0.35)
+    p = [bx(n + '_caixa', em, (0, 1.4, 0.07), (0.36, 0.44, 0.14), chave, vira),
+         bx(n + '_visor', em, (0, 1.36, 0.142), (0.24, 0.26, 0.004), 'branco', vira),
+         bx(n + '_placa', em, (0, 1.82, 0.005), (0.22, 0.22, 0.01), chave, vira)]
+    return chanfra(grupo(p, n), 0.01)
+
+
+def gradil(n, de, ate, alt=1.05, passo=0.13):
+    """grade de barras pretas (guarda-corpo de fora, fotos da Av. Treze)."""
+    comp = math.dist(de, ate)
+    k = max(2, int(comp / passo) + 1)
+    p = [cilindro(n + '_topo', (de[0], de[1] + alt, de[2]), (ate[0], ate[1] + alt, ate[2]), 0.025, 'preto', 8),
+         cilindro(n + '_base', (de[0], de[1] + 0.1, de[2]), (ate[0], ate[1] + 0.1, ate[2]), 0.018, 'preto', 6)]
+    for i in range(k):
+        f = i / (k - 1)
+        q = tuple(de[j] + (ate[j] - de[j]) * f for j in range(3))
+        p.append(cilindro(n + '_barra', q, (q[0], q[1] + alt, q[2]), 0.011 if i % 8 else 0.025, 'preto', 6))
+    return grupo(p, n)
+
+
 # ─────────────────────────────── despacho
 def monta_extra(p, objs_vidro, objs_luz):
     t, n = p['tipo'], p['nome']
@@ -477,6 +520,14 @@ def monta_extra(p, objs_vidro, objs_luz):
         extintor(n, pos, v)
     elif t == 'lixeira':
         lixeira(n, pos, v)
+    elif t == 'purificador':
+        purificador(n, pos, v)
+    elif t == 'ar-split':
+        ar_split(n, pos, v, p.get('alt', 2.45))
+    elif t == 'dea':
+        dea(n, pos, v)
+    elif t == 'gradil':
+        gradil(n, p['de'], p['ate'], p.get('alt', 1.05))
     elif t == 'totem':
         return False
     elif t == 'cobogo':
