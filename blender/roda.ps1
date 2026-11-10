@@ -12,5 +12,7 @@ $null = $p.Handle  # sem isso o ExitCode volta vazio
 $p.WaitForExit()
 Select-String -Path $log -Pattern '\[clinica\]|Error|Traceback' | ForEach-Object { $_.Line }
 # deixa o primeiro carregamento leve (texturas do glb e mapas de luz/oclusão com menos peso)
+# o bake não tem denoiser: tira o chiado dos mapas de luz/oclusão antes de enxugar
+if ($p.ExitCode -eq 0 -and $modo -ne 'rascunho') { python blender/limpa_luz.py site/passeio/modelos }
 if ($p.ExitCode -eq 0) { python blender/enxuga_pesos.py site/passeio/modelos }
 exit $p.ExitCode
