@@ -3,93 +3,65 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Clínica Dias por dentro</title>
-  <meta name="description" content="Conheça a Clínica Dias por dentro: entre pela portaria, passe pela recepção e chegue aos consultórios.">
+  <title>Clínica Dias por dentro · em manutenção</title>
+  <meta name="description" content="A visita em 3D da Clínica Dias está em manutenção. Volte em breve.">
   <meta name="robots" content="noindex">
   <link rel="icon" href="../assets/img/favicon-32.png">
   <link rel="preload" href="../assets/fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="./passeio.css">
-</head>
-<body class="carregando">
-  <canvas id="cena" aria-label="Clínica Dias em 3D"></canvas>
-
-  <!-- moldura de linhas finas -->
-  <div class="moldura" aria-hidden="true"><i class="m-topo"></i><i class="m-esq"></i><i class="m-dir"></i></div>
-
-  <header class="topo">
-    <a class="marca" href="../v2/" aria-label="Clínica Dias, ir para o site">
-      <img src="../v2/img/simbolo.svg" alt="" height="18">
-      <span>Clínica <b>Dias</b></span>
-    </a>
-    <button class="topo-centro" id="btn-areas-topo" type="button">Por dentro</button>
-    <nav class="topo-links">
-      <a href="../v2/#especialidades">Especialidades</a>
-      <a href="../v2/#unidades">Unidades</a>
-      <a href="tel:+553138496156">Agendar</a>
-      <button class="som" id="btn-som" type="button" aria-pressed="false" aria-label="Ligar o som">
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 6h3l4-3v10L5 10H2z" fill="none" stroke="currentColor" stroke-width="1.2"/><path class="onda" d="M11.5 5.5a3.5 3.5 0 0 1 0 5M13.5 3.5a6 6 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
-      </button>
-    </nav>
-  </header>
-
-  <!-- entrada -->
-  <section class="entrada" id="entrada" aria-live="polite">
-    <div class="entrada-marca">
-      <p>Bem-vindo à<br>Clínica Dias</p>
-      <i></i>
-      <img src="../v2/img/simbolo.svg" alt="" height="34">
-    </div>
-    <div class="entrada-barra"><i id="barra"></i></div>
-  </section>
-
-  <!-- tela das maquetes -->
-  <section class="maquetes" id="maquetes" hidden>
-    <button class="seta seta-esq" id="seta-esq" type="button"><span></span><svg viewBox="0 0 8 8" width="7" height="7" aria-hidden="true"><path d="M6 1 2 4l4 3z" fill="currentColor"/></svg></button>
-    <button class="seta seta-dir" id="seta-dir" type="button"><span></span><svg viewBox="0 0 8 8" width="7" height="7" aria-hidden="true"><path d="M2 1l4 3-4 3z" fill="currentColor"/></svg></button>
-    <div class="maquete-rodape">
-      <div class="area-titulo" id="area-titulo">
-        <p class="area-andar" id="area-andar">Térreo</p>
-        <h1 id="area-nome">Entrada</h1>
-      </div>
-      <button class="btn-entrar" id="btn-entrar" type="button">Entrar</button>
-    </div>
-  </section>
-
-  <!-- passeio por dentro -->
-  <section class="dentro" id="dentro" hidden>
-    <div class="pontos" id="pontos"></div>
-    <div class="dica" id="dica" role="dialog" aria-label="Como andar">
-      <div class="dica-topo"><span>Como andar</span><button type="button" id="dica-fechar" aria-label="Fechar">×</button></div>
-      <div class="dica-desenho" aria-hidden="true"><i></i><i></i><i class="ativo"></i><i class="ativo"></i><i></i><i></i></div>
-      <p>Role ou arraste para andar</p>
-    </div>
-    <button class="btn-areas" id="btn-areas" type="button">
-      Áreas
-      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2 14 5 8 8 2 5z M2 8l6 3 6-3 M2 11l6 3 6-3" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
-    </button>
-    <div class="progresso" aria-hidden="true"><i id="progresso"></i></div>
-  </section>
-
-  <aside class="painel" id="painel" hidden>
-    <button class="painel-fechar" id="painel-fechar" type="button" aria-label="Fechar">×</button>
-    <h2 id="painel-titulo"></h2>
-    <p class="painel-sub" id="painel-sub"></p>
-    <p id="painel-texto"></p>
-    <a class="painel-link" id="painel-link" hidden></a>
-  </aside>
-
-  <div class="veu" id="veu"></div>
-
-  <!-- No GitHub Pages não há Vite: os nomes 'three' e 'gsap' vêm do CDN (no Vite o importmap é ignorado) -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-      "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
-      "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.13.0/index.js"
+  <style>
+    @font-face { font-family: 'Jost'; src: url('../assets/fonts/jost-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+    :root {
+      --noite: #101E44; --laranja: #F7922D; --laranja-texto: #A8560B; --petroleo: #5C95A4;
+      --pedra: #F1ECE6; --apagado: #5D5F66; --linha: rgba(16, 30, 68, .14);
+      --faixa: linear-gradient(90deg, #F7922D 0%, #C8935F 22%, #5C95A4 52%, #2A4566 78%, #101E44 100%);
+      --gutter: clamp(16px, 4vw, 48px);
     }
-  }
-  </script>
-  <script type="module" src="./passeio.js"></script>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto;
+      font-family: 'Jost', 'Segoe UI', Arial, sans-serif; color: var(--noite); background: var(--pedra);
+      -webkit-font-smoothing: antialiased; position: relative; overflow-x: hidden;
+    }
+    body::before { content: ''; position: fixed; left: 0; right: 0; top: 0; height: 3px; background: var(--faixa); }
+    .contornos { position: fixed; right: -8%; bottom: -6%; height: 96vh; width: auto; opacity: .85; pointer-events: none; z-index: 0; }
+    header, main, footer { position: relative; z-index: 1; padding: 0 var(--gutter); }
+    header { height: 76px; display: flex; align-items: center; border-bottom: 1px solid var(--linha); }
+    header img { height: 48px; width: auto; display: block; }
+    main { display: flex; flex-direction: column; justify-content: center; gap: 22px; max-width: 760px; padding-top: 48px; padding-bottom: 48px; }
+    .sobretitulo { display: flex; align-items: center; gap: 10px; margin: 0; font-size: .82rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--laranja-texto); }
+    .sobretitulo::before { content: ''; width: 28px; height: 3px; background: var(--faixa); }
+    h1 { margin: 0; font-size: clamp(2rem, 1.3rem + 2.4vw, 3.2rem); font-weight: 400; line-height: 1.15; letter-spacing: -.01em; max-width: 18ch; text-wrap: balance; }
+    h1 em { font-style: normal; color: #CC6410; }
+    p.apoio { margin: 0; font-size: 1.08rem; font-weight: 300; line-height: 1.6; color: var(--apagado); max-width: 46ch; }
+    .acoes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .botao { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 24px; font: inherit; font-size: .98rem; text-decoration: none; border: 1px solid var(--noite); transition: background .25s, color .25s, border-color .25s; }
+    .botao-cheio { background: var(--laranja); border-color: var(--laranja); color: var(--noite); font-weight: 500; }
+    .botao-cheio:hover { background: var(--noite); border-color: var(--noite); color: #fff; }
+    .botao-linha { color: var(--noite); }
+    .botao-linha:hover { background: var(--noite); color: #fff; }
+    .botao:focus-visible { outline: 2px solid var(--laranja-texto); outline-offset: 3px; }
+    footer { padding-top: 18px; padding-bottom: 22px; border-top: 1px solid var(--linha); font-size: .88rem; color: var(--apagado); }
+    @media (max-width: 640px) {
+      .contornos { height: 60vh; right: -30%; opacity: .5; }
+      .botao { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <img class="contornos" src="../v2/img/contornos-claro.svg" alt="" aria-hidden="true">
+  <header>
+    <a href="../v2/" aria-label="Clínica Dias, voltar ao site"><img src="../v2/img/logo.svg" alt="Clínica Dias"></a>
+  </header>
+  <main>
+    <p class="sobretitulo">A clínica por dentro</p>
+    <h1>A visita em 3D está <em>em manutenção</em>.</h1>
+    <p class="apoio">Estamos terminando o passeio pelas duas recepções e pelos consultórios. Enquanto isso, você agenda pelo telefone ou volta para o site.</p>
+    <div class="acoes">
+      <a class="botao botao-cheio" href="tel:+553138496156">Agendar (31) 3849-6156</a>
+      <a class="botao botao-linha" href="../v2/">Voltar ao site</a>
+    </div>
+  </main>
+  <footer>Timóteo · Rua Cento e Vinte e Oito, 14 · segunda a sexta, das 8h às 18h</footer>
 </body>
 </html>
