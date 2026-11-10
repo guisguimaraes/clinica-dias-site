@@ -9,6 +9,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import gsap from 'gsap';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { areas, pontos, caminhos, andares } from './planta.js';
 
 const $ = (s) => document.querySelector(s);
@@ -18,7 +23,7 @@ const LEVE = q.has('leve');
 
 // ───────────────────────── renderizador
 const canvas = $('#cena');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: !LEVE, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !LEVE, alpha: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(LEVE ? 1 : Math.min(devicePixelRatio, 1.5));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.localClippingEnabled = true;
@@ -29,6 +34,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 // pêssego #FDE0C9, cinzas #A8A9AC / #828386. Fundo claro #F5F4F2.
 const COR_FUNDO = new THREE.Color('#F5F4F2');
 const COR_BASE = new THREE.Color('#D3DAE0'); // base da maquete: cinza-azulado suave
+const TOM_QUENTE = new THREE.Color('#f4e6d6');
 // cores dos materiais do Blender trocadas pela paleta da marca (nome do material → cor)
 const PALETA = {
   teal: '#5C95A4', 'faixa-azul': '#5C95A4', laranja: '#F7922D', roxo: '#101E44',
@@ -38,6 +44,32 @@ const scene = new THREE.Scene();
 scene.background = COR_FUNDO.clone();
 
 const camera = new THREE.PerspectiveCamera(22, 1, 0.05, 400);
+const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+
+// ───────────────────────── pós-processamento do passeio (desligado com ?leve=1)
+// tom quente e contraste suave + vinheta discreta + FXAA (antialias barato, bom para GPU integrada)
+const TomVinheta = {
+  uniforms: { tDiffuse: { value: null }, quente: { value: 0.035 }, contraste: { value: 1.06 }, vinheta: { value: 0.32 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float quente, contraste, vinheta; varying vec2 vUv;
+    void main(){
+      vec4 c = texture2D(tDiffuse, vUv);
+      c.rgb = (c.rgb - 0.5) * contraste + 0.5;
+      c.rgb += vec3(quente, quente * 0.4, -quente * 0.6);
+      float d = distance(vUv, vec2(0.5));
+      c.rgb *= mix(1.0, smoothstep(0.85, 0.25, d), vinheta);
+      gl_FragColor = c;
+    }`,
+};
+let composer = null, fxaa = null;
+if (!LEVE) {
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new OutputPass());            // tom (AgX) e sRGB antes dos efeitos de tela
+  composer.addPass(new ShaderPass(TomVinheta));
+  fxaa = new ShaderPass(FXAAShader);
+  composer.addPass(fxaa);
+}
 
 // desenho sob demanda: cada mudança "acorda" o laço por alguns quadros
 let quadros = 2;
@@ -46,13 +78,14 @@ const acorda = (n = 90) => { quadros = Math.max(quadros, n); };
 // luz para a maquete (barro) e para o rascunho sem luz calculada
 const pmrem = new THREE.PMREMGenerator(renderer);
 const ambiente = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-const hemi = new THREE.HemisphereLight('#ffffff', '#c9cfd6', 1.15);
-const sol = new THREE.DirectionalLight('#fff3e4', 2.6);
+const hemi = new THREE.HemisphereLight('#fff7ee', '#d9d1c6', 1.5);
+const sol = new THREE.DirectionalLight('#ffe9d2', 1.15);
 sol.castShadow = !LEVE;
 sol.shadow.mapSize.set(1024, 1024);
 sol.shadow.bias = -0.0005;
 sol.shadow.normalBias = 0.03;
-sol.shadow.radius = 4;
+sol.shadow.radius = 9;
+sol.shadow.blurSamples = 16;
 scene.add(hemi, sol, sol.target);
 
 // ───────────────────────── recorte da maquete (caixa da área, com fundo: esconde o andar de baixo)
@@ -83,7 +116,9 @@ function comCorte(mat) {
       .replace('#include <project_vertex>', '#include <project_vertex>\nvMundo = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vMundo;\nuniform vec2 uMax; uniform float uAltura; uniform float uTopo; uniform float uAtivo;')
-      .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif (uAtivo > 0.5 && ((vMundo.y > uAltura && (vMundo.x > uMax.x - 0.55 || vMundo.z > uMax.y - 0.55)) || vMundo.y > uTopo)) discard;');
+      .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif (uAtivo > 0.5 && ((vMundo.y > uAltura && (vMundo.x > uMax.x - 0.55 || vMundo.z > uMax.y - 0.55)) || vMundo.y > uTopo)) discard;')
+      // miolo das paredes cortadas: cor de corte clara e lisa (como as maquetes do ICG), nunca preto
+      .replace('#include <dithering_fragment>', '#include <dithering_fragment>\nif (uAtivo > 0.5 && !gl_FrontFacing) gl_FragColor = vec4(0.86, 0.83, 0.79, 1.0);');
   };
   mat.customProgramCacheKey = () => 'corte';
   return mat;
@@ -96,19 +131,23 @@ const matVidroMaq = comCorte(new THREE.MeshStandardMaterial({
   clippingPlanes: planos, depthWrite: false, envMapIntensity: 0.8,
 }));
 const maqCache = new Map();
-function materialMaquete(src) {
-  if (maqCache.has(src)) return maqCache.get(src);
+function materialMaquete(src, aoMap = null, decal = false) {
+  const chave = src.uuid + (aoMap ? aoMap.uuid : '') + (decal ? 'd' : '');
+  if (maqCache.has(chave)) return maqCache.get(chave);
   const m = comCorte(new THREE.MeshStandardMaterial({
-    color: src.color ? src.color.clone() : new THREE.Color('#e6e2dc'),
+    aoMap, aoMapIntensity: 0.8,
+    transparent: decal, alphaTest: decal ? 0.35 : 0, polygonOffset: decal, polygonOffsetFactor: -2,
+    // tom quente único por cima das cores reais (como a argila quente das maquetes do ICG)
+    color: (src.color ? src.color.clone() : new THREE.Color('#e6e2dc')).multiply(TOM_QUENTE),
     map: src.map || null,
     roughness: Math.min(src.roughness ?? 0.8, 0.9),
     metalness: src.metalness ?? 0,
     emissive: src.emissive ? src.emissive.clone() : new THREE.Color(0),
     emissiveIntensity: src.emissiveIntensity ?? 1,
     envMap: ambiente, envMapIntensity: 0.35,
-    clippingPlanes: planos, clipShadows: true, side: THREE.DoubleSide,
+    clippingPlanes: planos, clipShadows: true, side: decal ? THREE.FrontSide : THREE.DoubleSide,
   }));
-  maqCache.set(src, m);
+  maqCache.set(chave, m);
   return m;
 }
 const sombraBarro = comCorte(new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, clippingPlanes: planos }));
@@ -154,11 +193,16 @@ const texLoader = new THREE.TextureLoader();
 // Cada mapa de luz é carregado ANTES de montar os materiais; o grupo cujo mapa falhar
 // (404, arquivo velho, ?semluz) fica com luz em tempo real — nunca preto.
 let luz = null;
+let temAO = false;
 const lightmaps = {};
+const aomaps = {};
 const luzPronta = (q.has('semluz') ? Promise.resolve(null) : fetch('./modelos/luz.json').then((r) => (r.ok ? r.json() : null)).catch(() => null))
   .then(async (j) => {
     if (!j || !j.k || !Array.isArray(j.grupos)) return;
     luz = j;
+    await Promise.all((j.ao || []).map((g) => texLoader.loadAsync(`./modelos/ao_${g}.${j.ext || 'png'}`)
+      .then((t) => { t.flipY = false; t.channel = 1; aomaps[g] = t; temAO = true; })
+      .catch(() => console.warn('[passeio] sem oclusão para', g))));
     await Promise.all(j.grupos.map((g) => texLoader.loadAsync(`./modelos/luz_${g}.${j.ext || 'png'}`)
       .then((t) => {
         t.flipY = false;
@@ -185,12 +229,18 @@ luzPronta.then(() => loader.load(
       for (let n = o; n; n = n.parent) nomes += ' ' + (n.name || '');
       // some na maquete vista de cima (forros, luminárias e volumes dos andares de cima)
       const teto = /teto|luminaria|volume/i.test(nomes);
-      const vidro = /vidro/i.test(nomes) || o.material?.transmission > 0;
+      // vidro pelo material ou por nome de peça que COMEÇA com vidro (não por pedaço de nome herdado)
+      const vidro = o.material?.name === 'vidro' || o.material?.transmission > 0 || /(^|\s)vidro/i.test(nomes);
+      const decal = /decal_/i.test(nomes);
       if (o.material && PALETA[o.material.name]) o.material.color.set(PALETA[o.material.name]);
-      const maq = vidro ? matVidroMaq : materialMaquete(o.material);
-      let real = o.material;
+      if (o.material?.map) o.material.map.anisotropy = ANISO; // ripado e granito sem moiré de longe
       const g = grupoDe(o);
-      if (luz && g && lightmaps[g]) {
+      const maq = vidro ? matVidroMaq : materialMaquete(o.material, (g && aomaps[g]) || null, decal);
+      let real = o.material;
+      if (decal) {
+        // banner, logo e faixas: imagem com fundo transparente, um pouco à frente da parede
+        real = new THREE.MeshBasicMaterial({ map: real.map, transparent: true, alphaTest: 0.35, polygonOffset: true, polygonOffsetFactor: -2, color: '#e9e9e9' });
+      } else if (luz && g && lightmaps[g]) {
         // luz calculada no Blender: cor/textura × lightmap, sem luz em tempo real
         real = new THREE.MeshBasicMaterial({
           color: real.color, map: real.map,
@@ -202,13 +252,14 @@ luzPronta.then(() => loader.load(
         real.envMap = ambiente;
         real.envMapIntensity = 0.6;
       }
-      o.castShadow = !vidro;
+      o.castShadow = !vidro && !decal;
       o.receiveShadow = true;
       o.matrixAutoUpdate = false; // nada se mexe: economiza cálculo por quadro
       o.updateMatrix();
       malhas.push({ mesh: o, real, maq, teto, vidro });
     });
     scene.add(gltf.scene);
+    window.__passeio = { malhas, scene, camera }; // para conferência no console
     carregado = true;
     pronto();
   },
@@ -242,12 +293,13 @@ function modoBarro(sim) {
     m.mesh.visible = sim ? !m.teto : true;
   }
   base.visible = linhas.visible = sim;
-  hemi.intensity = sim ? 1.15 : 0.9;
-  sol.intensity = sim ? 2.6 : 0.0;
-  sol.castShadow = sim && !LEVE; // sem sombra em tempo real dentro (a luz já vem calculada)
-  scene.background = sim ? COR_FUNDO : ceu;
+  hemi.intensity = sim ? (temAO ? 1.75 : 1.45) : 0.9;
+  sol.intensity = sim ? 1.15 : 0.0;
+  // sombra de contato vem do mapa de oclusão (AO); sem AO, sombra macia de raio grande
+  sol.castShadow = sim && !LEVE && !temAO;
+  scene.background = sim ? null : ceu; // maquete: fundo transparente (a página é #F5F4F2 e a imagem pronta fica por baixo)
   renderer.toneMapping = THREE.AgXToneMapping;
-  renderer.toneMappingExposure = sim ? 1.1 : 1.15;
+  renderer.toneMappingExposure = sim ? 1.05 : 1.15;
   acorda(4);
 }
 
@@ -269,6 +321,20 @@ function poseNoCaminho(p, olho = tmpO, alvo = tmpA, id = caminhoAtual) {
   return { olho, alvo };
 }
 
+// salas: o ponto aparece no trecho do caminho mais perto da porta, e a maquete da sala entra por ali
+function trechoMaisPerto(id, pos) {
+  const alvoV = new THREE.Vector3(...pos), o = new THREE.Vector3(), a = new THREE.Vector3();
+  let melhor = 0, d = Infinity;
+  for (let k = 0; k <= 400; k++) {
+    poseNoCaminho(k / 400, o, a, id);
+    const dk = o.distanceToSquared(alvoV);
+    if (dk < d) { d = dk; melhor = k / 400; }
+  }
+  return melhor;
+}
+for (const pt of pontos) if (pt.ate == null) pt.ate = trechoMaisPerto(pt.caminho, pt.sala ? pt.sala.olhos[0] : pt.pos);
+for (const a of areas) if (a.sala) a.inicio = pontos.find((pt) => pt.id === a.sala)?.ate ?? 0;
+
 // ───────────────────────── estado
 let modo = 'carregando';
 let areaAtual = 0;
@@ -283,16 +349,19 @@ function enquadra(i) {
   const centro = min.clone().add(max).multiplyScalar(0.5);
   const raio = min.distanceTo(max) / 2;
   const aspecto = Math.min(camera.aspect, 1.6);
-  const dist = (raio / Math.sin(THREE.MathUtils.degToRad(vista.fov / 2))) * (aspecto < 1 ? 1.35 / aspecto : 1.08);
+  const dist = (raio / Math.sin(THREE.MathUtils.degToRad(vista.fov / 2))) * (aspecto < 1 ? 1.2 / aspecto : 0.94); // igual a blender/render_maquetes.py
   return { min, max, centro, dist };
 }
+
+// quanto a maquete sobe na tela (fração da altura): mais no celular, para não ficar atrás do título
+const deslocamento = () => (innerWidth < innerHeight ? 0.16 : 0.1);
 
 function aplicaVista() {
   camera.fov = vista.fov;
   camera.position.copy(vista.alvo).addScaledVector(DIR_ISO, vista.dist);
   camera.lookAt(vista.alvo);
   // sobe a maquete um pouco para não encostar no nome da área
-  camera.setViewOffset(innerWidth, innerHeight, 0, innerHeight * 0.1, innerWidth, innerHeight);
+  camera.setViewOffset(innerWidth, innerHeight, 0, innerHeight * deslocamento(), innerWidth, innerHeight);
   camera.updateProjectionMatrix();
   uCorte.uMax.value.set(corte.max.x, corte.max.z);
 }
@@ -303,25 +372,89 @@ function rotuloSeta(j) {
   return a.andar !== areas[areaAtual].andar ? `${nomeAndar[a.andar]} · ${a.nome}` : a.nome;
 }
 
+// ───────────────────────── maquetes pré-renderizadas (Cycles, como as iso_* do ICG)
+// A imagem pronta fica por baixo do canvas, com a mesma câmera; o 3D ao vivo só aparece nas transições.
+const imgMaq = $('#maq-img');
+const temImagem = {};
+function arquivoMaquete(i) {
+  const cel = innerHeight > innerWidth;
+  return `./modelos/maquetes/maq_${areas[i].id}${cel ? '_cel' : ''}.webp`;
+}
+function preCarrega(i) {
+  if (!areas[i] || temImagem[arquivoMaquete(i)] !== undefined) return;
+  const src = arquivoMaquete(i);
+  temImagem[src] = null;
+  const im = new Image();
+  im.onload = () => { temImagem[src] = true; if (i === areaAtual && modo === 'maquetes') mostraImagem(i); };
+  im.onerror = () => { temImagem[src] = false; };
+  im.src = src;
+}
+function malhasVisiveis(sim) {
+  for (const m of malhas) m.mesh.visible = sim && !m.teto;
+  base.visible = sim;
+  acorda(3);
+}
+// a render (blender/render_maquetes.py) sai com o conteúdo 10% da altura ABAIXO do centro;
+// aqui a imagem é posicionada para o conteúdo cair exatamente onde o 3D ao vivo desenha
+function posicionaImagem() {
+  const vw = innerWidth, vh = innerHeight;
+  const retrato = vw < vh;
+  const [iw, ih] = retrato ? [720, 1560] : [1600, 900];
+  let w, h;
+  if (retrato) { w = vw; h = vw * ih / iw; } else { h = vh; w = vh * iw / ih; }
+  const left = (vw - w) / 2;
+  const top = vh * (0.5 - deslocamento()) - h * 0.6;
+  Object.assign(imgMaq.style, { width: `${w}px`, height: `${h}px`, left: `${left}px`, top: `${top}px` });
+}
+
+function mostraImagem(i, dur = 0.5) {
+  const src = arquivoMaquete(i);
+  // girou o celular ou a imagem da orientação nova ainda não chegou: volta ao 3D ao vivo até ela carregar
+  if (!temImagem[src] && imgMaq.getAttribute('src') && !imgMaq.src.endsWith(src.slice(1))) escondeImagem(0);
+  if (!temImagem[src] || modo !== 'maquetes' || gsap.isTweening(vista)) return;
+  posicionaImagem();
+  imgMaq.src = src;
+  gsap.to(imgMaq, { opacity: 1, duration: dur, ease: 'power2.out', onComplete: () => { if (areaAtual === i && modo === 'maquetes') malhasVisiveis(false); } });
+}
+function escondeImagem(dur = 0.25) {
+  malhasVisiveis(true);
+  gsap.to(imgMaq, { opacity: 0, duration: dur, ease: 'power2.in' });
+}
+
 function mostraArea(i, imediato = false) {
   areaAtual = i;
+  preCarrega(i); preCarrega(i - 1); preCarrega(i + 1);
   const e = enquadra(i);
   $('#area-nome').textContent = areas[i].nome;
   $('#area-andar').textContent = nomeAndar[areas[i].andar];
   const esq = $('#seta-esq'), dir = $('#seta-dir');
   esq.disabled = i === 0;
   dir.disabled = i === areas.length - 1;
-  esq.querySelector('span').textContent = rotuloSeta(i - 1);
-  dir.querySelector('span').textContent = rotuloSeta(i + 1);
+  for (const [b, j, txt] of [[esq, i - 1, 'Área anterior'], [dir, i + 1, 'Próxima área']]) {
+    const r = rotuloSeta(j);
+    b.querySelector('span').textContent = r;
+    b.title = r;
+    b.setAttribute('aria-label', r ? `${txt}: ${r}` : txt);
+  }
+  $('#area-cont').textContent = `${i + 1} / ${areas.length}`;
   const dur = imediato || reduzido ? 0 : 1.4;
   gsap.to(corte.min, { x: e.min.x, y: e.min.y, z: e.min.z, duration: dur, ease: 'power3.inOut' });
   gsap.to(corte.max, { x: e.max.x, y: e.max.y, z: e.max.z, duration: dur, ease: 'power3.inOut' });
   gsap.to(vista.alvo, { x: e.centro.x, y: e.centro.y - 0.6, z: e.centro.z, duration: dur, ease: 'power3.inOut' });
-  gsap.to(vista, { dist: e.dist, duration: dur, ease: 'power3.inOut' });
+  if (dur) {
+    // voo em arco: afasta um pouco no meio da troca e aproxima na área nova
+    const longe = Math.max(vista.dist, e.dist) * 1.22;
+    gsap.timeline()
+      .to(vista, { dist: longe, duration: dur * 0.5, ease: 'power2.out' })
+      .to(vista, { dist: e.dist, duration: dur * 0.5, ease: 'power2.inOut' });
+  } else gsap.to(vista, { dist: e.dist, duration: 0 });
   gsap.to(uCorte.uAltura, { value: areas[i].corte ?? 99, duration: dur, ease: 'power3.inOut' });
   gsap.to(uCorte.uTopo, { value: areas[i].topo ?? 99, duration: dur, ease: 'power3.inOut' });
   gsap.fromTo('#area-titulo', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur ? 0.8 : 0, delay: dur ? 0.5 : 0, ease: 'power2.out' });
   acorda(dur * 60 + 10);
+  // troca: 3D ao vivo durante o voo, imagem pronta da área nova ao chegar
+  if (dur) escondeImagem();
+  gsap.delayedCall(dur + 0.05, () => mostraImagem(i));
 }
 
 function pronto() {
@@ -335,6 +468,7 @@ function pronto() {
 }
 
 function irParaMaquetes(primeira = false) {
+  if (visita) { ultimaSala = botoes[visita.i].pt.id; gsap.killTweensOf(visita); visita = null; }
   modo = 'maquetes';
   fechaPainel();
   document.body.classList.remove('modo-dentro');
@@ -352,7 +486,12 @@ function irParaMaquetes(primeira = false) {
 
 function areaMaisPerto() {
   let melhor = areaAtual;
-  areas.forEach((a, i) => { if (a.caminho === caminhoAtual && passeio.p >= a.inicio - 0.02) melhor = i; });
+  if (ultimaSala) {
+    const k = areas.findIndex((a) => a.sala === ultimaSala);
+    ultimaSala = null;
+    if (k >= 0) return k;
+  }
+  areas.forEach((a, i) => { if (!a.sala && a.caminho === caminhoAtual && passeio.p >= a.inicio - 0.02) melhor = i; });
   return melhor;
 }
 
@@ -368,6 +507,7 @@ function entrar() {
   const estado = { t: 0 };
   const veu = $('#veu');
   $('#maquetes').hidden = true;
+  escondeImagem(0.3);
   camera.clearViewOffset();
   acorda(200);
   gsap.timeline()
@@ -396,7 +536,12 @@ function entrar() {
       modo = 'dentro';
       acorda(60);
     })
-    .to(veu, { opacity: 0, duration: 0.9, ease: 'power2.out' });
+    .to(veu, { opacity: 0, duration: 0.9, ease: 'power2.out' })
+    .add(() => {
+      // maquete de uma sala: já entra nela
+      const k = botoes.findIndex((b) => b.pt.id && b.pt.id === areas[areaAtual].sala);
+      if (k >= 0) { abrePainel(k); gsap.delayedCall(reduzido ? 0 : 0.9, () => entraSala(k)); }
+    });
 }
 
 // ───────────────────────── entrada de rolagem/arrasto
@@ -420,6 +565,11 @@ canvas.addEventListener('pointermove', (e) => {
   if (!arrasto) return;
   const dx = e.clientX - arrasto.x, dy = e.clientY - arrasto.y;
   arrasto = { x: e.clientX, y: e.clientY };
+  if (visita) {
+    // dentro da sala: arrastar olha para os lados
+    if (visita.k > 0.98) { visita.giro = THREE.MathUtils.clamp(visita.giro + dx * 0.004, -0.75, 0.75); acorda(3); }
+    return;
+  }
   // arrastar para cima ou para a esquerda anda para frente
   empurra((-dy - dx) * 3.2);
 });
@@ -465,6 +615,21 @@ function abrePainel(i) {
   const link = $('#painel-link');
   link.hidden = !pt.link;
   if (pt.link) { link.textContent = pt.link.texto; link.href = pt.link.href; }
+  const bSala = $('#painel-sala');
+  bSala.hidden = !pt.sala;
+  bSala.textContent = 'Ver por dentro';
+  bSala.dataset.i = i;
+  // vídeo curto real da clínica (recorte do 0522.mp4), só carrega quando o painel abre
+  const video = $('#painel-video');
+  if (pt.video && !LEVE) {
+    video.src = pt.video;
+    video.hidden = false;
+    video.play().catch(() => {});
+  } else {
+    video.pause();
+    video.removeAttribute('src');
+    video.hidden = true;
+  }
   const painel = $('#painel');
   painel.hidden = false;
   requestAnimationFrame(() => painel.classList.add('aberto'));
@@ -474,18 +639,58 @@ function abrePainel(i) {
   som.clique();
 }
 function fechaPainel() {
+  if (visita) { saiSala(fechaPainel); return; } // sai da sala antes de fechar
   const painel = $('#painel');
   painel.classList.remove('aberto');
+  const video = $('#painel-video');
+  video.pause();
   setTimeout(() => { if (!painel.classList.contains('aberto')) painel.hidden = true; }, 500);
   gsap.to(passeio, { foco: 0, duration: reduzido ? 0 : 0.9, ease: 'power3.inOut', onUpdate: () => acorda(2) });
 }
 $('#painel-fechar').addEventListener('click', fechaPainel);
 
+// ───────────────────────── ver a sala por dentro
+// a câmera sai do caminho, passa pela porta (pt.sala.olhos/alvos) e para dentro da sala; volta pelo mesmo trajeto
+let visita = null, ultimaSala = null;
+function entraSala(i) {
+  const { pt } = botoes[i];
+  if (!pt.sala || visita || modo !== 'dentro') return;
+  const v3 = (p) => new THREE.Vector3(...p);
+  // começa exatamente na pose do caminho com o foco no ponto (a mesma em que a volta termina)
+  gsap.killTweensOf(passeio, 'foco');
+  passeio.foco = 1;
+  passeio.focoPos.copy(botoes[i].pos);
+  const { olho: o0 } = poseNoCaminho(passeio.p, new THREE.Vector3(), new THREE.Vector3());
+  o0.lerp(passeio.focoPos, 0.18);
+  visita = {
+    i, k: 0, giro: 0,
+    olho: new THREE.CatmullRomCurve3([o0, ...pt.sala.olhos.map(v3)], false, 'centripetal'),
+    alvo: new THREE.CatmullRomCurve3([passeio.focoPos.clone(), ...pt.sala.alvos.map(v3)], false, 'centripetal'),
+  };
+  $('#painel-sala').textContent = 'Voltar ao corredor';
+  escondeDica();
+  gsap.to(visita, { k: 1, duration: reduzido ? 0 : 3.2, ease: 'power2.inOut', onUpdate: () => acorda(2) });
+  som.clique();
+}
+function saiSala(depois) {
+  const v = visita;
+  if (!v) { depois?.(); return; }
+  gsap.killTweensOf(v);
+  gsap.to(v, {
+    k: 0, giro: 0, duration: reduzido ? 0 : 2.4, ease: 'power2.inOut', onUpdate: () => acorda(2),
+    onComplete: () => { if (visita === v) visita = null; $('#painel-sala').textContent = 'Ver por dentro'; acorda(4); depois?.(); },
+  });
+}
+$('#painel-sala').addEventListener('click', (e) => {
+  if (visita) saiSala();
+  else entraSala(Number(e.currentTarget.dataset.i));
+});
+
 const proj = new THREE.Vector3();
 function atualizaPontos() {
   const w = innerWidth, h = innerHeight;
   for (const { b, pos, pt } of botoes) {
-    let ver = modo === 'dentro' && pt.caminho === caminhoAtual && Math.abs(passeio.p - pt.ate) < 0.16;
+    let ver = modo === 'dentro' && !visita && pt.caminho === caminhoAtual && Math.abs(passeio.p - pt.ate) < 0.16;
     if (ver) {
       proj.copy(pos).project(camera);
       ver = proj.z < 1 && Math.abs(proj.x) < 0.92 && Math.abs(proj.y) < 0.85;
@@ -500,46 +705,83 @@ function atualizaPontos() {
 
 // ───────────────────────── som (gerado na hora, desligado por padrão)
 const som = (() => {
-  let ctx, mestre, ligado = false;
+  // som ambiente gerado na hora (nada baixado): ruído de sala bem baixo + pad de acordes lentos
+  // com reverberação; clique suave nos pontos. Desligado por padrão.
+  let ctx, mestre, reverb, ligado = false, timer = null;
+  const ACORDES = [[174.61, 220.0, 261.63, 329.63], [155.56, 196.0, 233.08, 293.66], [130.81, 196.0, 246.94, 329.63], [146.83, 220.0, 261.63, 349.23]];
+  function impulso(seg = 3.2) {
+    const n = ctx.sampleRate * seg;
+    const b = ctx.createBuffer(2, n, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) {
+      const d = b.getChannelData(c);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6);
+    }
+    return b;
+  }
+  function nota(f, t0, dur) {
+    for (const det of [-4, 3]) {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = f;
+      o.detune.value = det;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.018, t0 + dur * 0.35);
+      g.gain.linearRampToValueAtTime(0, t0 + dur);
+      o.connect(g).connect(reverb);
+      o.start(t0); o.stop(t0 + dur + 0.1);
+    }
+  }
+  function acorde(k) {
+    const t0 = ctx.currentTime + 0.05;
+    ACORDES[k % ACORDES.length].forEach((f, i) => nota(f, t0 + i * 0.35, 10));
+  }
   function inicia() {
     ctx = new AudioContext();
     mestre = ctx.createGain();
     mestre.gain.value = 0;
     mestre.connect(ctx.destination);
+    reverb = ctx.createConvolver();
+    reverb.buffer = impulso();
+    const molhado = ctx.createGain();
+    molhado.gain.value = 0.9;
+    reverb.connect(molhado).connect(mestre);
+    // ruído de sala (marrom, filtrado): presença discreta
+    const n = ctx.sampleRate * 2;
+    const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    let ult = 0;
+    for (let i = 0; i < n; i++) { ult = (ult + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = ult * 3.5; }
+    const ruido = ctx.createBufferSource();
+    ruido.buffer = buf; ruido.loop = true;
     const filtro = ctx.createBiquadFilter();
-    filtro.type = 'lowpass';
-    filtro.frequency.value = 900;
-    filtro.connect(mestre);
-    [174.6, 220, 261.6, 329.6].forEach((f, i) => {
-      const o = ctx.createOscillator();
-      o.type = i % 2 ? 'sine' : 'triangle';
-      o.frequency.value = f;
-      const g = ctx.createGain();
-      g.gain.value = 0.035;
-      const lfo = ctx.createOscillator();
-      lfo.frequency.value = 0.05 + i * 0.03;
-      const lg = ctx.createGain();
-      lg.gain.value = 0.02;
-      lfo.connect(lg).connect(g.gain);
-      o.connect(g).connect(filtro);
-      o.start(); lfo.start();
-    });
+    filtro.type = 'lowpass'; filtro.frequency.value = 420;
+    const gr = ctx.createGain(); gr.gain.value = 0.05;
+    ruido.connect(filtro).connect(gr).connect(mestre);
+    ruido.start();
   }
+  let k = 0;
   return {
     alterna() {
       if (!ctx) inicia();
       ligado = !ligado;
-      mestre.gain.setTargetAtTime(ligado ? 0.6 : 0, ctx.currentTime, 0.6);
+      if (ligado) { ctx.resume(); acorde(k++); timer = setInterval(() => acorde(k++), 8000); }
+      else { clearInterval(timer); }
+      mestre.gain.setTargetAtTime(ligado ? 0.7 : 0, ctx.currentTime, 0.8);
       return ligado;
     },
     clique() {
       if (!ligado) return;
+      const t0 = ctx.currentTime;
       const o = ctx.createOscillator(), g = ctx.createGain();
-      o.frequency.value = 880;
-      g.gain.setValueAtTime(0.08, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
-      o.connect(g).connect(ctx.destination);
-      o.start(); o.stop(ctx.currentTime + 0.3);
+      o.type = 'sine';
+      o.frequency.setValueAtTime(660, t0);
+      o.frequency.exponentialRampToValueAtTime(990, t0 + 0.08);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.05, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.5);
+      o.connect(g); g.connect(mestre); g.connect(reverb);
+      o.start(t0); o.stop(t0 + 0.55);
     },
   };
 })();
@@ -560,9 +802,13 @@ $('#btn-areas-topo').addEventListener('click', () => modo === 'dentro' && irPara
 function redimensiona() {
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false);
+  if (composer) {
+    composer.setSize(w, h);
+    fxaa.uniforms.resolution.value.set(1 / (w * renderer.getPixelRatio()), 1 / (h * renderer.getPixelRatio()));
+  }
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
-  if (modo === 'maquetes') mostraArea(areaAtual, true);
+  if (modo === 'maquetes') { mostraArea(areaAtual, true); posicionaImagem(); }
   acorda(4);
 }
 addEventListener('resize', redimensiona);
@@ -572,6 +818,7 @@ const relogio = new THREE.Clock();
 const qAlvo = new THREE.Quaternion();
 const mAux = new THREE.Matrix4();
 const olharFoco = new THREE.Vector3();
+const EIXO_Y = new THREE.Vector3(0, 1, 0);
 renderer.setAnimationLoop(() => {
   const dt = Math.min(relogio.getDelta(), 0.05);
   if (modo === 'maquetes') {
@@ -589,6 +836,14 @@ renderer.setAnimationLoop(() => {
       olharFoco.lerpVectors(alvo, passeio.focoPos, passeio.foco);
       olho.lerp(passeio.focoPos, passeio.foco * 0.18); // chega um pouco mais perto do ponto
     } else olharFoco.copy(alvo);
+    if (visita && visita.k > 0) {
+      visita.olho.getPointAt(visita.k, olho);
+      visita.alvo.getPointAt(visita.k, olharFoco);
+      if (visita.giro) olharFoco.sub(olho).applyAxisAngle(EIXO_Y, visita.giro * visita.k).add(olho);
+    }
+    // lente mais aberta dentro das salas (como foto de interiores): 60° no corredor, 74° na sala
+    const fovAlvo = 60 + 14 * (visita ? visita.k : 0);
+    if (Math.abs(camera.fov - fovAlvo) > 0.01) { camera.fov = fovAlvo; camera.updateProjectionMatrix(); }
     camera.position.copy(olho);
     mAux.lookAt(olho, olharFoco, camera.up);
     qAlvo.setFromRotationMatrix(mAux);
@@ -601,12 +856,15 @@ renderer.setAnimationLoop(() => {
   if (!carregado || quadros <= 0) return;
   quadros--;
   atualizaPontos();
-  renderer.render(scene, camera);
+  // dentro: pós-processamento leve (tom, vinheta, FXAA); maquete e ?leve=1: render direto
+  if (composer && modo === 'dentro') composer.render();
+  else renderer.render(scene, camera);
 });
 
 // atalhos para conferir: ?area=2 entra direto; ?ver=4 só mostra a maquete 4
 if (q.has('area') || q.has('ver')) {
-  const i = Number(q.get('area') ?? q.get('ver')) || 0;
+  gsap.ticker.lagSmoothing(0); // conferência no Chrome invisível (quadros lentos): animações seguem o relógio real
+  const i =Number(q.get('area') ?? q.get('ver')) || 0;
   const espera = setInterval(() => {
     if (modo === 'maquetes') {
       clearInterval(espera);

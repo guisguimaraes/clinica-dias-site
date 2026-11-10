@@ -13,3 +13,4 @@ imersao-flow
 blender/*.blend1
 blender/log-*.txt
 blender/teste-luz/
+blender/__pycache__/

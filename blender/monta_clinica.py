@@ -46,8 +46,7 @@ cena.cycles.transmission_bounces = 4
 cena.cycles.use_denoising = False
 cena.unit_settings.system = 'METRIC'
 # deixa 2 núcleos livres para o PC continuar usável enquanto calcula
-cena.render.threads_mode = 'FIXED'
-cena.render.threads = max(1, (os.cpu_count() or 4) - 2)
+cena.render.threads_mode = 'AUTO'  # todos os núcleos (pedido do Guilherme: o mais rápido possível)
 
 mundo = bpy.data.worlds.new('ceu')
 cena.world = mundo
@@ -176,6 +175,17 @@ def tex_marmore(n=512):
     return a
 
 
+def tex_ripado(n=256):
+    """painel ripado: 1 ripa de 7 cm + junta de 3 cm a cada 10 cm (a textura repete a cada 0,4 m = 4 ripas)."""
+    a = tex_madeira(n)
+    xx = np.arange(n)
+    junta = (xx % (n // 4)) >= int(n / 4 * 0.7)
+    a[:, junta] = a[:, junta] * 0.28
+    borda = ((xx % (n // 4)) == int(n / 4 * 0.7) - 1)
+    a[:, borda] *= 0.75
+    return a
+
+
 def tex_grama(n=256):
     a = np.full((n, n, 3), 0.0)
     a[:] = np.array([0.36, 0.48, 0.25])
@@ -187,11 +197,88 @@ def tex_grama(n=256):
 TEX = {}
 
 
+PH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'texturas-polyhaven')
+
+
+def carrega_ph(nome, passo=1):
+    """textura do Poly Haven (CC0) como array sRGB 0–1 (linhas de cima para baixo), reduzida por `passo`."""
+    caminho = os.path.join(PH, nome + '_Diffuse.jpg')
+    if not os.path.exists(caminho):
+        return None
+    img = bpy.data.images.load(caminho)
+    w, h = img.size
+    px = np.empty(w * h * 4, np.float32)
+    img.pixels.foreach_get(px)
+    bpy.data.images.remove(img)
+    a = px.reshape(h, w, 4)[::-1, :, :3]
+    return np.ascontiguousarray(a[::passo, ::passo])
+
+
+def lum(a):
+    return a @ np.array([0.299, 0.587, 0.114])
+
+
+def ph_granito():
+    """granito claro polido das fotos: quase branco-acinzentado com pontos escuros e juntas finas."""
+    a = carrega_ph('granite_tile_03')
+    if a is None:
+        return tex_granito()
+    L = lum(a)
+    v = np.clip(0.8 + (L - L.mean()) * 1.6, 0.22, 0.97)
+    return v[..., None] * np.array([1.0, 0.975, 0.94])
+
+
+def ph_madeira(passo=2):
+    a = carrega_ph('oak_veneer_01', passo)
+    if a is None:
+        return tex_madeira()
+    return np.clip(a * 1.05, 0, 1)
+
+
+def ph_ripado():
+    """ripas de carvalho (7 cm) com junta escura (3 cm): 4 ripas por repetição de 0,4 m."""
+    a = ph_madeira(2)
+    n = a.shape[1]
+    xx = np.arange(n)
+    junta = (xx % (n // 4)) >= int(n / 4 * 0.7)
+    a = a.copy()
+    a[:, junta] *= 0.22
+    return a
+
+
+def ph_fachada():
+    """placas cinza da Portaria 2 (concreto em placas, clareado para o cinza das fotos)."""
+    a = carrega_ph('concrete_tile_facade', 2)
+    if a is None:
+        return tex_fachada()
+    L = lum(a)
+    v = np.clip(L * 2.15 + 0.06, 0, 1)
+    return v[..., None] * np.array([0.97, 0.98, 1.0])
+
+
+def ph_calcada():
+    a = carrega_ph('concrete_pavement_03', 2)
+    if a is None:
+        return tex_calcada()
+    L = lum(a)[..., None]
+    a = L + (a - L) * 0.35
+    return np.clip(a * 1.55, 0, 1)
+
+
+def ph_asfalto():
+    a = carrega_ph('asphalt_floor', 2)
+    if a is None:
+        return tex_asfalto()
+    L = lum(a)[..., None]
+    return np.clip(L * 0.62, 0, 1) * np.array([1.0, 1.0, 1.02])
+
+
 def gera_texturas():
+    # tamanho real de cada repetição (m): granito em placas de 60 cm (3 × 2 placas por imagem)
     for nome, fn, tile in [
-        ('granito', tex_granito, 1.2), ('madeira', tex_madeira, 1.0), ('borracha', tex_borracha, 0.5),
-        ('calcada', tex_calcada, 1.6), ('asfalto', tex_asfalto, 2.0), ('fachada', tex_fachada, 2.4),
-        ('marmore', tex_marmore, 1.6), ('grama', tex_grama, 2.0),
+        ('granito', ph_granito, 1.8), ('madeira', ph_madeira, 1.2), ('borracha', tex_borracha, 0.5),
+        ('calcada', ph_calcada, 2.0), ('asfalto', ph_asfalto, 3.0), ('fachada', ph_fachada, 2.4),
+        ('marmore', tex_marmore, 1.6), ('grama', tex_grama, 2.0), ('ripado', ph_ripado, 0.4),
     ]:
         TEX[nome] = (salva_textura('tx_' + nome, fn()), tile)
 
@@ -354,6 +441,7 @@ def grupo(objs, nome):
     bpy.ops.object.join()
     ob = bpy.context.view_layer.objects.active
     ob.name = nome
+    ob.data.name = nome  # senão o glb herda o nome da 1ª peça (ex.: pele-vidro) e o site se confunde
     return ob
 
 
@@ -403,10 +491,16 @@ def porta(nome, centro, vira, placa, largura=0.95):
 
 def monta():
     objs_vidro, objs_luz = [], []
+    ESTRUTURA = {'caixa', 'rampa', 'degraus', 'vidro', 'porta-vidro', 'faixa-piso', 'faixas-cores', 'faixas-vaga',
+                 'painel-marmore', 'ripado', 'caixilho', 'cobogo', 'letras', 'decal', 'letreiro', 'placa', 'tv',
+                 'quadro', 'corrimao', 'guarda-vidro', 'porta'}
     for p in P['pecas']:
         t, n = p['tipo'], p['nome']
+        _antes = set(COLECAO.objects[:])
         if t == 'caixa':
             ob = caixa(n, p['min'], p['max'], p['mat'])
+            if p['mat'] == 'parede':
+                chanfra(ob, 0.012, 1)  # quina levemente arredondada (leitura de maquete)
             if p.get('teto'):
                 ob['teto'] = 1
         elif t == 'vidro':
@@ -595,20 +689,10 @@ def monta():
                 partes.append(texto(n + '_sub', p.get('sub', 'MEDICINA ESPECIALIZADA'), em((0, -0.5, 0.03)), L * 0.05, 'branco', v, 0.005))
             grupo(partes, n)
         elif t == 'ripado':
+            # painel ripado como UMA peça com textura de ripas (mipmap no navegador = sem moiré)
             mn, mx = p['min'], p['max']
-            if p.get('eixo') == 'z':  # painel numa parede oeste, ripas ao longo de z, viradas para +x
-                partes = [caixa(n + '_fundo', (mn[0] - 0.02, mn[1], mn[2]), (mn[0], mx[1], mx[2]), 'preto')]
-                z = mn[2]
-                while z < mx[2] - 0.01:
-                    partes.append(caixa(n + '_ripa', (mn[0], mn[1], z), (mx[0], mx[1], min(z + 0.07, mx[2])), 'madeira'))
-                    z += 0.1
-            else:
-                partes = [caixa(n + '_fundo', (mn[0], mn[1], mn[2] - 0.02), (mx[0], mx[1], mn[2]), 'preto')]
-                x = mn[0]
-                while x < mx[0] - 0.01:
-                    partes.append(caixa(n + '_ripa', (x, mn[1], mn[2]), (min(x + 0.07, mx[0]), mx[1], mx[2]), 'madeira'))
-                    x += 0.1
-            grupo(partes, n)
+            ob = caixa(n, mn, mx, 'ripado')
+            chanfra(ob, 0.01)
         elif t == 'tv':
             c, L, v = p['centro'], p['largura'], p.get('vira', 0)
             em = lambda l: soma(c, rot_vec(l, v))
@@ -641,7 +725,11 @@ def monta():
                     partes.append(caixa(f'{n}_{cor}', (x, a[1] - 0.002, min(a[2], b[2])), (x + 0.05, a[1] + 0.002, max(a[2], b[2])), cor))
             grupo(partes, n)
         else:
-            log('tipo desconhecido', t)
+            if not monta_extra(p, objs_vidro, objs_luz):
+                log('tipo desconhecido', t)
+        if t not in ESTRUTURA:
+            for o in set(COLECAO.objects[:]) - _antes:
+                o['movel'] = 1
     return objs_vidro, objs_luz
 
 
@@ -752,16 +840,43 @@ def area_de(ob):
     c = sum((ob.matrix_world @ Vector(v) for v in ob.bound_box), Vector()) / 8
     x, y, z = c.x, c.z, -c.y  # volta para a planta (y para cima, z para o sul)
     # a primeira área cuja caixa contém o centro; se nenhuma, a de centro mais próximo
+    # salas (consultórios vistos por dentro) primeiro: ganham grupo e mapa de luz próprios
     melhor, dist = None, 1e9
-    for a in P['areas']:
+    for a in sorted(P['areas'], key=lambda a: 0 if a.get('sala') else 1):
         mn, mx = a['caixa']['min'], a['caixa']['max']
         if mn[0] <= x <= mx[0] and mn[1] <= y <= mx[1] and mn[2] <= z <= mx[2]:
             return a['id']
+        if a.get('sala'):
+            continue
         cx, cy, cz = ((mn[i] + mx[i]) / 2 for i in range(3))
         d = (x - cx) ** 2 + (y - cy) ** 2 * 4 + (z - cz) ** 2
         if d < dist:
             melhor, dist = a['id'], d
     return melhor
+
+
+def res_de(nome):
+    """resolução do mapa de luz: móveis e forro com metade (aparecem menos), estrutura com a cheia."""
+    return max(256, RES // 2) if (nome.endswith('_moveis') or nome.endswith('_teto')) else RES
+
+
+def bilateral(img, r=3, ss=2.0, sr=0.12):
+    """filtro bilateral (preserva bordas): pesa vizinhos pela distância E pela diferença de brilho."""
+    L = img.mean(axis=2)
+    escala = max(1e-4, float(np.percentile(L, 90)))
+    acc = np.zeros_like(img)
+    pes = np.zeros(L.shape, np.float32)
+    pad = np.pad(img, ((r, r), (r, r), (0, 0)), mode='edge')
+    padL = np.pad(L, r, mode='edge')
+    h, w = L.shape
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            viz = pad[r + dy:r + dy + h, r + dx:r + dx + w]
+            vizL = padL[r + dy:r + dy + h, r + dx:r + dx + w]
+            wgt = np.exp(-(dy * dy + dx * dx) / (2 * ss * ss)) * np.exp(-np.square((vizL - L) / (sr * escala)) / 2)
+            acc += viz * wgt[..., None]
+            pes += wgt
+    return acc / pes[..., None]
 
 
 def suaviza(arr, cobertura, r=2):
@@ -782,7 +897,48 @@ def suaviza(arr, cobertura, r=2):
     return lisa
 
 
+def calcula_ao(ob, nome, res, amostras=24):
+    """mapa de oclusão (só a sombra de contato), com forro, luminárias, vidros e decalques escondidos:
+    é a luz da maquete vista de cima, como os renders de argila do ICG."""
+    img = bpy.data.images.new('ao_' + nome, res, res, alpha=True, float_buffer=True)
+    for m in ob.data.materials:
+        nt = m.node_tree
+        alvo = nt.nodes.get('luz_alvo') or nt.nodes.new('ShaderNodeTexImage')
+        alvo.name = 'luz_alvo'
+        alvo.image = img
+        nt.nodes.active = alvo
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    ob.data.uv_layers['luz'].active = True
+    antes = cena.cycles.samples
+    cena.cycles.samples = amostras
+    t0 = time.time()
+    bpy.ops.object.bake(type='AO', margin=6, margin_type='EXTEND', use_clear=True)
+    cena.cycles.samples = antes
+    px = np.empty(res * res * 4, dtype=np.float32)
+    img.pixels.foreach_get(px)
+    px = px.reshape(res, res, 4)
+    v = suaviza(px[..., :3], np.ones((res, res), np.float32), r=2)
+    v = np.clip(v, 0, 1) ** 0.85  # um pouco mais claro: oclusão suave
+    out = bpy.data.images.new('ao_' + nome + '_img', res, res, alpha=False)
+    out.colorspace_settings.name = 'Non-Color'
+    rgba = np.ones((res, res, 4), np.float32)
+    rgba[..., :3] = v
+    out.pixels.foreach_set(rgba.ravel())
+    out.filepath_raw = os.path.join(SAIDA, f'ao_{nome}.webp')
+    out.file_format = 'WEBP'
+    out.save()
+    for m in ob.data.materials:
+        n_ = m.node_tree.nodes.get('luz_alvo')
+        if n_:
+            m.node_tree.nodes.remove(n_)
+    log(f'oclusão de {nome}: {time.time() - t0:.0f}s')
+
+
 def calcula_luz(ob, nome):
+    RES = res_de(nome)
     img = bpy.data.images.new('luz_' + nome, RES, RES, alpha=True, float_buffer=True)
     for m in ob.data.materials:
         nt = m.node_tree
@@ -802,7 +958,7 @@ def calcula_luz(ob, nome):
     img.pixels.foreach_get(px)
     px = px.reshape(RES, RES, 4)
     rgb, a = px[..., :3], (px[..., 3] > 0.5).astype(np.float32)
-    rgb = suaviza(rgb, np.ones_like(a), r=5 if nome.endswith('teto') else 3)
+    rgb = bilateral(rgb, r=3, sr=0.12)  # tira o chiado sem borrar cantos e sombras de contato
     # sRGB de (luz / K)
     v = np.clip(rgb / K_LUZ, 0, 1)
     v = np.where(v <= 0.0031308, v * 12.92, 1.055 * np.power(v, 1 / 2.4) - 0.055)
@@ -824,13 +980,15 @@ def calcula_luz(ob, nome):
 
 # ─────────────────────────────────────────────── principal
 t_ini = time.time()
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'moveis.py'), encoding='utf-8').read(), globals())
 gera_texturas()
 prepara_materiais()
+material_extra()
 vidros, telas = monta()
 lumin = luzes()
 
 # junta tudo que recebe luz por área (como os "sets" do ICG); vidro e telas ficam separados
-fixos = [o for o in COLECAO.objects if o.type == 'MESH' and o not in vidros and o not in telas and o not in lumin]
+fixos = [o for o in COLECAO.objects if o.type == 'MESH' and o not in vidros and o not in telas and o not in lumin and not o.get('decal')]
 por_area = {}
 for o in fixos:
     por_area.setdefault(area_de(o), []).append(o)
@@ -841,9 +999,13 @@ for o in fixos:
 finais = []
 for nome, objs in por_area.items():
     tetos = [o for o in objs if o.get('teto')]
-    resto = [o for o in objs if not o.get('teto')]
+    moveis = [o for o in objs if o.get('movel') and not o.get('teto')]
+    resto = [o for o in objs if not o.get('teto') and not o.get('movel')]
     ob = grupo(resto, f'luz_{nome}')
     finais.append((ob, nome))
+    if moveis:
+        mv = grupo(moveis, f'luz_{nome}_moveis')  # móveis num atlas próprio: mais texels para piso e paredes
+        finais.append((mv, nome + '_moveis'))
     if tetos:
         tt = grupo(tetos, f'luz_{nome}_teto')
         finais.append((tt, nome + '_teto'))
@@ -857,13 +1019,30 @@ for ob, nome in finais:
     uv_luz(ob)
 
 manifesto = os.path.join(SAIDA, 'luz.json')
+if os.path.exists(manifesto):
+    os.remove(manifesto)  # mapas antigos não servem para a geometria nova
+grupos_luz, grupos_ao = [], []
+if MODO in ('ao', 'luz'):
+    # oclusão da maquete: esconde forro, luminárias, volumes de cima, vidros e decalques
+    escondidos = [o for o in cena.objects if o.type == 'MESH' and (
+        '_teto' in o.name or 'luminarias' in o.name or 'vidro' in o.name or o.name.startswith('decal_') or
+        o.name.endswith('_tela'))]
+    for o in escondidos:
+        o.hide_render = True
+    mundo.light_settings.distance = 1.1
+    for ob, nome in finais:
+        if not nome.endswith('_teto'):
+            calcula_ao(ob, nome, min(RES, 1024), 24 if MODO == 'luz' else 16)
+            grupos_ao.append(nome)
+    for o in escondidos:
+        o.hide_render = False
 if MODO == 'luz':
     for ob, nome in finais:
         calcula_luz(ob, nome)
+        grupos_luz.append(nome)
+if grupos_ao or grupos_luz:
     with open(manifesto, 'w', encoding='utf-8') as f:
-        json.dump({'k': K_LUZ, 'ext': 'webp', 'grupos': [n for _, n in finais], 'res': RES, 'amostras': AMOSTRAS}, f)
-elif os.path.exists(manifesto):
-    os.remove(manifesto)
+        json.dump({'k': K_LUZ, 'ext': 'webp', 'grupos': grupos_luz, 'ao': grupos_ao, 'res': RES, 'amostras': AMOSTRAS}, f)
 
 # exporta
 for o in bpy.context.selected_objects:
