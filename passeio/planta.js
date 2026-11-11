@@ -197,11 +197,11 @@ const portasP1 = [
   { o: 'h', c: 4.4, a: 29.0, b: 29.81, placa: '09', abre: 'n', visita: true },
   { o: 'h', c: 4.4, a: 32.41, b: 33.2, placa: 10, abre: 'n', visita: true },
   // banheiro masculino ao lado dos purificadores (f13): porta branca de almofada
-  { o: 'h', c: 2.695, a: 25.61, b: 26.52, almofada: true, texto: 'Masculino' },
+  { o: 'h', c: 2.695, a: 25.61, b: 26.52, almofada: true, texto: 'Masculino', placa: false },
   // sala 18: parede da esquerda da espera do 2º piso, colada na entrada do corredor das faixas (f27)
   { o: 'h', c: 9.08, a: 9.87, b: 10.93, placa: 18, placaPlana: true, almofada: false, abre: 's', visita: true },
   // banheiro PNE da Recepção 2, do outro lado do corredor (estava sem porta)
-  { o: 'h', c: 6.47, a: 25.61, b: 26.52, almofada: true, texto: 'Banheiro' },
+  { o: 'h', c: 6.47, a: 25.61, b: 26.52, almofada: true, texto: 'Banheiro', placa: false },
   // salinha da esterilização da odonto, no fim do corredor
   { o: 'h', c: 4.095, a: 22.92, b: 23.73 },
 ];
@@ -216,6 +216,8 @@ const tapasP1 = [
   tapa('tapa-1415-meio', [20.02, N_REC - 0.12, 3.6], [20.12, N_REC + PE, 4.36]),
   tapa('tapa-odonto-09', [29.81, N_REC - 0.12, 4.35], [30.08, N_REC + PE, 4.45]),
   tapa('tapa-odonto-10', [33.2, N_REC - 0.12, 4.35], [33.52, N_REC + PE, 4.45]),
+  // banheiro PNE da Recepção 2: a planta não tinha a parede do lado leste e o vaso aparecia do corredor
+  tapa('tapa-banheiro-pne-leste', [26.52, N_REC - 0.12, 6.42], [26.67, N_REC + PE, 8.03]),
   tapa('tapa-canto-banheiro', [3.95, N_ANT - 0.12, 6.902], [4.11, N_ANT + PE, 8.03]),
   tapa('verga-laboratorio', [13.0, N_ANT + 2.2, 4.4], [14.12, N_ANT + PE, 4.55]),
   { tipo: 'caixa', nome: 'batente-lab-a', min: [12.94, N_ANT, 4.36], max: [13.0, N_ANT + 2.26, 4.6], mat: 'preto' },

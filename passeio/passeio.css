@@ -124,21 +124,37 @@ body.modo-maquetes .folhas { opacity: 1; }
   position: absolute; top: 50%; transform: translateY(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 14px;
   padding: 16px 0; width: 44px; pointer-events: auto; color: var(--noite);
+  z-index: 2; /* no celular as setas descem para o lado do Entrar: ficam por cima da faixa do rodapé, que ocupa a largura toda */
   font-size: 13px; letter-spacing: .03em;
 }
 .nav-ant { left: calc(var(--gutter) + 6px); }
 .nav-prox { right: calc(var(--gutter) + 6px); }
 .nav-lado .nav-nome { writing-mode: vertical-rl; white-space: nowrap; }
 .nav-ant .nav-nome { transform: rotate(180deg); }
-.nav-lado svg { flex: none; transition: transform .35s var(--ease); }
-.nav-ant:hover svg { transform: translateY(-4px); }
-.nav-prox:hover svg { transform: translateY(4px); }
+.nav-lado { width: 58px; gap: 16px; }
+/* seta em círculo (bordas e ao lado do Entrar): maior e fácil de achar */
+.nav-bola, .seta-redonda {
+  display: grid; place-items: center; flex: none; width: 54px; height: 54px; border-radius: 50%;
+  border: 1px solid rgba(43, 65, 97, .3); background: rgba(255, 255, 255, .6); color: var(--noite);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: background .3s, color .3s, border-color .3s, transform .3s var(--ease);
+}
+.nav-bola svg, .seta-redonda svg { width: 24px; height: 24px; transition: transform .35s var(--ease); }
+.nav-lado:hover .nav-bola, .seta-redonda:hover { background: var(--noite); border-color: var(--noite); color: #fff; }
+.nav-ant:hover svg, .seta-redonda:first-child:hover svg { transform: translateX(-3px); }
+.nav-prox:hover svg, .seta-redonda:last-child:hover svg { transform: translateX(3px); }
+.seta-redonda:active { transform: scale(.94); }
+.seta-redonda:focus-visible { outline: 2px solid var(--laranja); outline-offset: 3px; }
+.seta-redonda[disabled] { visibility: hidden; }
+.entrar-linha { display: flex; align-items: center; gap: 16px; }
 .nav-lado:hover .nav-nome { text-decoration: underline; text-underline-offset: 4px; }
 .nav-lado:focus-visible { outline: 2px solid var(--laranja); outline-offset: 2px; }
 .nav-lado[disabled] { visibility: hidden; }
 @media (max-width: 640px) {
-  .nav-lado { top: auto; bottom: clamp(26px, 5.5vh, 60px); transform: none; width: 44px; height: 46px; padding: 0; justify-content: center; }
-  .nav-lado .nav-nome { display: none; }
+  /* no celular as setas das bordas saem: ficam só as redondas ao lado do Entrar */
+  .nav-lado { display: none; }
+  .entrar-linha { gap: 12px; }
+  .seta-redonda { width: 50px; height: 50px; }
   .maquete-rodape { gap: 18px; }
 }
 /* ── dentro ────────────────────────────── */

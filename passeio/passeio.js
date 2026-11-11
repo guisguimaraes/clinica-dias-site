@@ -492,9 +492,15 @@ function mostraArea(i, imediato = false) {
   const esq = $('#seta-esq'), dir = $('#seta-dir');
   esq.disabled = i === 0;
   dir.disabled = i === areas.length - 1;
+  $('#seta-ant2').disabled = i === 0;
+  $('#seta-prox2').disabled = i === areas.length - 1;
+  $('#seta-ant2').setAttribute('aria-label', rotuloSeta(i - 1) ? `Área anterior: ${rotuloSeta(i - 1)}` : 'Área anterior');
+  $('#seta-prox2').setAttribute('aria-label', rotuloSeta(i + 1) ? `Próxima área: ${rotuloSeta(i + 1)}` : 'Próxima área');
+  $('#seta-ant2').title = rotuloSeta(i - 1);
+  $('#seta-prox2').title = rotuloSeta(i + 1);
   for (const [b, j, txt] of [[esq, i - 1, 'Área anterior'], [dir, i + 1, 'Próxima área']]) {
     const r = rotuloSeta(j);
-    b.querySelector('span').textContent = r;
+    b.querySelector('.nav-nome').textContent = r;
     b.title = r;
     b.setAttribute('aria-label', r ? `${txt}: ${r}` : txt);
   }
@@ -801,11 +807,12 @@ function atualizaPontos() {
   }
 }
 
-// ───────────────────────── som (gerado na hora, desligado por padrão)
+// ───────────────────────── som: música do passeio (audio/musica.mp3) em repetição; sem o arquivo, pad gerado na hora
 const som = (() => {
-  // som ambiente gerado na hora (nada baixado): ruído de sala bem baixo + pad de acordes lentos
-  // com reverberação; clique suave nos pontos. Desligado por padrão.
-  let ctx, mestre, reverb, ligado = false, timer = null;
+  // música lofi tocando baixinho em repetição, só no 3D; se o arquivo não carregar, volta o pad de acordes
+  // lentos com ruído de sala. Clique suave nos pontos. Começa no "Entrar" (o navegador só deixa tocar depois de um clique).
+  const MUSICA = './audio/musica.mp3';
+  let ctx, mestre, reverb, ligado = false, timer = null, musica = null, temMusica = true, ruidoGanho = null;
   const ACORDES = [[174.61, 220.0, 261.63, 329.63], [155.56, 196.0, 233.08, 293.66], [130.81, 196.0, 246.94, 329.63], [146.83, 220.0, 261.63, 349.23]];
   function impulso(seg = 3.2) {
     const n = ctx.sampleRate * seg;
@@ -854,20 +861,45 @@ const som = (() => {
     ruido.buffer = buf; ruido.loop = true;
     const filtro = ctx.createBiquadFilter();
     filtro.type = 'lowpass'; filtro.frequency.value = 420;
-    const gr = ctx.createGain(); gr.gain.value = 0.05;
+    const gr = ctx.createGain(); gr.gain.value = 0;
+    ruidoGanho = gr;
     ruido.connect(filtro).connect(gr).connect(mestre);
     ruido.start();
+    // música: passa pelo mesmo volume geral, para entrar e sair devagar
+    musica = new Audio(MUSICA);
+    musica.loop = true;
+    musica.preload = 'auto';
+    musica.addEventListener('error', () => { temMusica = false; if (ligado) pad(true); });
+    const gm = ctx.createGain(); gm.gain.value = 0.6;
+    ctx.createMediaElementSource(musica).connect(gm).connect(mestre);
   }
   let k = 0;
+  function pad(sim) {
+    clearInterval(timer);
+    ruidoGanho.gain.setTargetAtTime(sim ? 0.05 : 0, ctx.currentTime, 0.5);
+    if (sim) { acorde(k++); timer = setInterval(() => acorde(k++), 8000); }
+  }
+  function liga(sim) {
+    if (!ctx) inicia();
+    if (sim === ligado) return ligado;
+    ligado = sim;
+    if (ligado) {
+      ctx.resume();
+      if (temMusica) musica.play().catch(() => { temMusica = false; pad(true); });
+      else pad(true);
+    } else {
+      pad(false);
+      setTimeout(() => { if (!ligado && musica) musica.pause(); }, 3000);
+    }
+    mestre.gain.setTargetAtTime(ligado ? 0.7 : 0, ctx.currentTime, 0.8);
+    $('#btn-som').setAttribute('aria-pressed', String(ligado));
+    $('#btn-som').setAttribute('aria-label', ligado ? 'Desligar o som' : 'Ligar o som');
+    return ligado;
+  }
+  let mexeu = false; // a pessoa já ligou/desligou no botão: o "Entrar" não liga mais sozinho
   return {
-    alterna() {
-      if (!ctx) inicia();
-      ligado = !ligado;
-      if (ligado) { ctx.resume(); acorde(k++); timer = setInterval(() => acorde(k++), 8000); }
-      else { clearInterval(timer); }
-      mestre.gain.setTargetAtTime(ligado ? 0.7 : 0, ctx.currentTime, 0.8);
-      return ligado;
-    },
+    alterna() { mexeu = true; return liga(!ligado); },
+    aoEntrar() { if (!mexeu) liga(true); },
     clique() {
       if (!ligado) return;
       const t0 = ctx.currentTime;
@@ -883,11 +915,8 @@ const som = (() => {
     },
   };
 })();
-$('#btn-som').addEventListener('click', (e) => {
-  const on = som.alterna();
-  e.currentTarget.setAttribute('aria-pressed', String(on));
-  e.currentTarget.setAttribute('aria-label', on ? 'Desligar o som' : 'Ligar o som');
-});
+$('#btn-som').addEventListener('click', () => som.alterna());
+$('#btn-entrar').addEventListener('click', () => som.aoEntrar());
 
 // ───────────────────────── botões
 for (const [k, a] of areas.entries()) {
@@ -902,6 +931,8 @@ for (const [k, a] of areas.entries()) {
 }
 $('#seta-esq').addEventListener('click', () => areaAtual > 0 && mostraArea(areaAtual - 1));
 $('#seta-dir').addEventListener('click', () => areaAtual < areas.length - 1 && mostraArea(areaAtual + 1));
+$('#seta-ant2').addEventListener('click', () => areaAtual > 0 && mostraArea(areaAtual - 1));
+$('#seta-prox2').addEventListener('click', () => areaAtual < areas.length - 1 && mostraArea(areaAtual + 1));
 $('#btn-entrar').addEventListener('click', entrar);
 $('#btn-areas').addEventListener('click', () => irParaMaquetes());
 $('#btn-areas-topo').addEventListener('click', () => modo === 'dentro' && irParaMaquetes());
