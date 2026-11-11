@@ -38,7 +38,7 @@
     <!-- abertura: foto real ao lado de um bloco claro (tom das paredes e do mármore da recepção) com os atalhos -->
     <section class="abertura">
       <figure class="abertura-foto">
-        <img src="img/fachada-hero.webp" alt="Fachada da Clínica Dias em Timóteo, com o letreiro CLÍNICA DIAS e o logo no painel ao lado da porta de vidro" width="1899" height="828" fetchpriority="high">
+        <img src="img/fachada-recepcao1.webp" alt="Prédio de vidro da Clínica Dias em Timóteo ao pôr do sol, com o letreiro CLÍNICA DIAS, o cobogó iluminado e o estacionamento na frente" width="1920" height="1080" fetchpriority="high" style="object-position: 50% 45%">
         <figcaption class="etiqueta">Timóteo · Rua Cento e Vinte e Oito, 14</figcaption>
       </figure>
       <div class="abertura-corpo bloco-pedra">
@@ -234,6 +234,50 @@
       </figure>
     </section>
 
+    <!-- CardFácil em destaque (pedido de 11/11): carteirinha em 3D que gira (arraste para girar) e os benefícios ao lado.
+         Benefícios e valores conforme o site do CardFácil (cardfacil.com.br), consultado em 11/11/2026. -->
+    <section class="secao cf" id="cardfacil" aria-labelledby="cf-titulo">
+      <div class="cf-painel">
+        <div class="cf-palco" data-cf-palco>
+          <div class="cf-luz" aria-hidden="true"></div>
+          <div class="cf-cena" aria-hidden="true">
+            <div class="cf-giro" data-cf-giro>
+              <div class="cf-face cf-frente">
+                <span class="cf-reflexo"></span>
+                <img class="cf-logo" src="../assets/img/convenios/cardfacil.svg" alt="" width="200" height="60">
+                <span class="cf-saude">Saúde</span>
+                <span class="cf-assoc"><small>Carteirinha do associado</small>Rede credenciada · Clínica Dias</span>
+              </div>
+              <div class="cf-borda" style="--z:-2.4px"></div><div class="cf-borda" style="--z:-1.2px"></div><div class="cf-borda" style="--z:0px"></div><div class="cf-borda" style="--z:1.2px"></div><div class="cf-borda" style="--z:2.4px"></div>
+              <div class="cf-face cf-verso">
+                <span class="cf-reflexo"></span>
+                <img class="cf-logo-clinica" src="img/logo.svg" alt="" width="180" height="67">
+                <span class="cf-assoc"><small>Rede credenciada</small>cardfacil.com.br</span>
+              </div>
+            </div>
+          </div>
+          <div class="cf-chao" aria-hidden="true"></div>
+          <p class="cf-dica">Arraste para girar</p>
+        </div>
+
+        <div class="cf-corpo">
+          <p class="sobretitulo">Cartão de benefícios</p>
+          <h2 id="cf-titulo" class="cf-titulo">Tem <em>CardFácil</em>? A Clínica Dias é rede credenciada.</h2>
+          <ul class="cf-beneficios">
+            <li><span class="cf-num"><small>a partir de</small>R$&nbsp;40</span><span class="cf-rot">por consulta com médico especialista da rede</span></li>
+            <li><span class="cf-num"><small>até</small>70%</span><span class="cf-rot">de desconto em exames de laboratório e de imagem</span></li>
+            <li><span class="cf-num">Zero</span><span class="cf-rot">carência: dá para usar logo depois de aderir</span></li>
+            <li><span class="cf-num"><small>até</small>6</span><span class="cf-rot">dependentes na mesma carteirinha, conforme o plano</span></li>
+          </ul>
+          <div class="acoes">
+            <a class="botao botao-laranja" href="https://wa.me/553139091000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Cl%C3%ADnica%20Dias%20e%20quero%20saber%20mais%20sobre%20o%20CardF%C3%A1cil." target="_blank" rel="noopener noreferrer"><svg class="botao-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/><path d="M9 9.5c.4 2 1.6 3.6 3.6 4.8l1.3-1 2 1-.4 1.5c-3.8.2-7.6-3.4-7.5-7.2l1.5-.4 1 2z"/></svg>Quero o CardFácil<span class="so-leitor"> (abre o WhatsApp)</span></a>
+            <a class="botao botao-linha" href="https://cardfacil.com.br/" target="_blank" rel="noopener noreferrer">Conhecer o CardFácil<span class="so-leitor"> (abre o site em nova aba)</span></a>
+          </div>
+          <p class="cf-nota">Valores e condições informados pelo CardFácil e sujeitos ao plano escolhido. Ao agendar, avise que é CardFácil.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- convênios -->
     <section class="secao" id="convenios" aria-labelledby="conv-titulo">
       <header class="secao-cabeca">
@@ -254,18 +298,59 @@
         <li><img src="../assets/img/convenios/saudecaixa.webp" alt="" loading="lazy"><span>Saúde Caixa</span></li>
         <li><img src="../assets/img/convenios/sulamerica.svg" alt="" loading="lazy"><span>SulAmérica</span></li>
         <li><img src="../assets/img/convenios/usisaude.svg" alt="" loading="lazy"><span>Usisaúde</span></li>
-        <li><b class="conv-sigla" aria-hidden="true">AAPI</b><span>AAPI</span></li>
+        <li><img src="../assets/img/convenios/aapi-marca.png" alt="" loading="lazy"><span>AAPI</span></li>
         <li><img src="../assets/img/convenios/aapt.webp" alt="" loading="lazy"><span>AAPT</span></li>
         <li><b class="conv-sigla" aria-hidden="true">Unipass</b><span>Unipass</span></li>
       </ul>
+    </section>
 
-      <div class="faixa-cardfacil">
-        <img src="../assets/img/convenios/cardfacil.svg" alt="CardFácil" width="140" height="40" loading="lazy">
-        <p>A Clínica Dias é credenciada ao CardFácil, cartão de benefícios para você e sua família.</p>
-        <div class="acoes">
-          <a class="botao botao-linha" href="https://wa.me/553139091000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Cl%C3%ADnica%20Dias%20e%20quero%20saber%20mais%20sobre%20o%20CardF%C3%A1cil." target="_blank" rel="noopener noreferrer">Falar no WhatsApp<span class="so-leitor"> (abre o WhatsApp)</span></a>
-          <a class="botao botao-linha" href="https://cardfacil.com.br/" target="_blank" rel="noopener noreferrer">Site do CardFácil<span class="so-leitor"> (abre em nova aba)</span></a>
+    <!-- avaliações reais do Google: com a chave em data-chave, vêm direto da API do Google Places;
+         sem ela, aparecem as avaliações copiadas do Google (data-av-fixas). -->
+    <section class="av bloco-noite" id="avaliacoes" aria-labelledby="av-titulo" data-avaliacoes
+      data-chave="" data-busca="Clínica Dias, Rua Cento e Vinte e Oito, 14, Timóteo - MG">
+      <p class="av-fundo" aria-hidden="true">AVALIAÇÕES</p>
+      <div class="av-miolo">
+        <header class="av-cabeca">
+          <p class="sobretitulo">Quem é atendido aqui</p>
+          <h2 id="av-titulo" class="av-titulo">A opinião de quem <em>cuida da saúde com a gente</em>.</h2>
+          <p class="av-nota" data-av-nota></p>
+          <p class="av-apoio">Atendimento, estrutura e cuidado contados por quem passou pela Clínica Dias.</p>
+          <div class="acoes av-acoes">
+            <a class="botao av-todas" data-av-link href="https://www.google.com/maps/place/Cl%C3%ADnica+Dias+-+Tim%C3%B3teo/data=!4m2!3m1!1s0x0:0x3a9d6b5a78d2d148" target="_blank" rel="noopener noreferrer"><svg class="botao-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.2l-5.9 3.3 1.4-6.6-5-4.5 6.6-.7z"/></svg>Ver todas no Google<span class="so-leitor"> (abre em nova aba)</span></a>
+            <!-- link de avaliação: troque pelo link curto "Pedir avaliações" do Perfil da Empresa no Google (g.page/r/.../review) -->
+            <a class="botao av-avaliar" data-av-avaliar href="https://www.google.com/maps/place/Cl%C3%ADnica+Dias+-+Tim%C3%B3teo/data=!4m2!3m1!1s0x0:0x3a9d6b5a78d2d148" target="_blank" rel="noopener noreferrer"><svg class="botao-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></svg>Avaliar a clínica<span class="so-leitor"> (abre o Google em nova aba)</span></a>
+          </div>
+        </header>
+        <div class="av-mural">
+          <span class="av-balao" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span>
+          <span class="av-bolha" aria-hidden="true"></span>
+          <ul class="av-lista" data-av-lista></ul>
         </div>
+        <!-- avaliações do Google copiadas pelo Guilherme em 11/11/2026 (usadas enquanto a chave da API não estiver ligada) -->
+        <script type="application/json" data-av-fixas>
+[
+          {
+            "nome": "Wellington S.",
+            "nota": 5,
+            "texto": "Gostei muito do atendimento, desde a recepção até a saída pós-atendimento. Local bem limpo, climatizado e uma equipe muito competente. Não deixou em nada a desejar. Pessoal muito atencioso e cordial. Nota 10!"
+          },
+          {
+            "nome": "Fernanda M.",
+            "nota": 5,
+            "texto": "Clínica excelente, profissionais altamente qualificados e dedicados. O atendimento médico é impecável, passam muita segurança, empatia e clareza durante toda a consulta. Super recomendo!"
+          },
+          {
+            "nome": "Camila R.",
+            "nota": 5,
+            "texto": "Ótima estrutura física e um ambiente muito organizado. Fui muito bem acolhida pelas recepcionistas e o tempo de espera foi bem tranquilo. Ter várias especialidades e exames no mesmo lugar facilita demais a nossa vida."
+          },
+          {
+            "nome": "Sônia L.",
+            "nota": 5,
+            "texto": "Sempre levo meus pais idosos para consultar lá e o tratamento com eles é sempre muito humanizado, respeitoso e paciente. Ambiente limpo, confortável e profissionais nota 10. Recomendo de olhos fechados."
+          }
+        ]
+        </script>
       </div>
     </section>
   </main>
