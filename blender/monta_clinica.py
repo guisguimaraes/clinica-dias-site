@@ -236,13 +236,22 @@ def ph_madeira(passo=2):
 
 
 def ph_ripado():
-    """ripas de carvalho (7 cm) com junta escura (3 cm): 4 ripas por repetição de 0,4 m."""
+    """painel ripado de carvalho claro (fotos f24–f27): ripas de ~4,5 cm com sulco de ~1 cm um pouco mais escuro,
+    7 ripas por repetição de 0,4 m. O veio vem da madeira do Poly Haven, clareado para o bege das fotos."""
     a = ph_madeira(2)
+    L = lum(a)
+    L = (L - L.mean()) * 0.6
+    base = np.array([0.80, 0.73, 0.62])
+    a = np.clip(base[None, None, :] * (1 + L[..., None]), 0, 1)
     n = a.shape[1]
     xx = np.arange(n)
-    junta = (xx % (n // 4)) >= int(n / 4 * 0.7)
+    passo = n / 7
+    pos = (xx % passo) / passo
+    junta = pos >= 0.8
+    borda = (pos >= 0.76) & (pos < 0.8)
     a = a.copy()
-    a[:, junta] *= 0.22
+    a[:, junta] *= 0.55
+    a[:, borda] *= 0.85
     return a
 
 
@@ -331,9 +340,12 @@ def prepara_materiais():
     material('madeira', tex='madeira', rug=0.6)
     material('branco', rug=0.3)
     material('preto', rug=0.45)
-    material('plastico', cor='#202022', rug=0.5)
-    material('inox', rug=0.25, metal=1.0)
-    material('porta', rug=0.5)
+    material('plastico', cor='#1e1f22', rug=0.5)
+    material('tubo', cor='#17181a', rug=0.35)
+    # inox claro e sem metal: no mapa de luz o metal sai quase preto (corrimão e guarda-corpo das fotos são inox claro)
+    material('inox', cor='#c9ccd0', rug=0.28, metal=0.0)
+    material('porta', cor='#f7f6f2', rug=0.42)
+    material('porta-madeira', cor='#9a7656', rug=0.5)
     material('laranja', rug=0.5)
     material('planta', rug=0.6)
     material('vaso', rug=0.7)
@@ -456,40 +468,279 @@ def soma(a, b):
     return tuple(a[i] + b[i] for i in range(3))
 
 
+def caixa_incl(nome, centro, tam, mat, vira, incl):
+    """caixa_local inclinada para trás (graus) em torno do eixo x local."""
+    ob = caixa_local(nome, centro, tam, mat, vira)
+    ob.rotation_euler = Euler((math.radians(-incl), 0, math.radians(vira)), 'XYZ')
+    return ob
+
+
+# ── cadeira fixa de espera, igual às das fotos (f26, f36, f42–f46):
+#    assento de polipropileno preto inteiro, côncavo, com a frente caindo e 5 fendas atrás;
+#    encosto em concha curva com 3 fendas no alto; estrutura de tubo redondo preto: a perna da frente
+#    dobra e vira o trilho do assento, a de trás sobe direto e segura o encosto pelos lados.
+#    Um molde só (feito uma vez) e cópias dele em cada lugar: cadeiras idênticas e arquivo mais leve.
+_MOLDE = {}
+
+
+def _arred(u, v, n=5.0):
+    """leva o quadrado [-1,1]² para um quadrado de cantos arredondados (superelipse)."""
+    r = max(abs(u), abs(v))
+    if r < 1e-9:
+        return 0.0, 0.0
+    du, dv = u / r, v / r
+    s = (abs(du) ** n + abs(dv) ** n) ** (-1.0 / n)
+    return du * r * s, dv * r * s
+
+
+def _casca(nome, nu, nv, f, mat, esp, chanfro=0.003):
+    bm = bmesh.new()
+    vs = [[bm.verts.new(B(*f(-1 + 2 * i / nu, -1 + 2 * j / nv))) for j in range(nv + 1)] for i in range(nu + 1)]
+    for i in range(nu):
+        for j in range(nv):
+            bm.faces.new((vs[i][j], vs[i + 1][j], vs[i + 1][j + 1], vs[i][j + 1]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    ob = novo_obj(nome, bm, mat)
+    m = ob.modifiers.new('esp', 'SOLIDIFY')
+    m.thickness = esp
+    m.offset = 0
+    m.use_even_offset = True
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.modifier_apply(modifier=m.name)
+    bpy.ops.object.shade_smooth()
+    return chanfra_obj(ob, chanfro, 2)
+
+
+def _filete(pts, rr=0.04, k=5):
+    """arredonda os cantos de uma poligonal (dobra de tubo)."""
+    out = [pts[0]]
+    for i in range(1, len(pts) - 1):
+        a, b, c = Vector(pts[i - 1]), Vector(pts[i]), Vector(pts[i + 1])
+        d1, d2 = a - b, c - b
+        r = min(rr, d1.length * 0.45, d2.length * 0.45)
+        p1, p2 = b + d1.normalized() * r, b + d2.normalized() * r
+        for t in range(k + 1):
+            t /= k
+            q = (1 - t) ** 2 * p1 + 2 * (1 - t) * t * b + t * t * p2
+            out.append(tuple(q))
+    out.append(pts[-1])
+    return out
+
+
+def tubo(nome, pts, r, mat, rr=0.04):
+    """tubo redondo seguindo uma poligonal com as dobras arredondadas (curva com espessura → malha)."""
+    pts = _filete(pts, rr)
+    cu = bpy.data.curves.new(nome, 'CURVE')
+    cu.dimensions = '3D'
+    cu.bevel_depth = r
+    cu.bevel_resolution = 2
+    cu.use_fill_caps = True
+    sp = cu.splines.new('POLY')
+    sp.points.add(len(pts) - 1)
+    for p, q in zip(sp.points, pts):
+        v = B(*q)
+        p.co = (v.x, v.y, v.z, 1.0)
+    ob = bpy.data.objects.new(nome, cu)
+    COLECAO.objects.link(ob)
+    ob.data.materials.append(MATS[mat])
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.convert(target='MESH')
+    ob = bpy.context.view_layer.objects.active
+    bpy.ops.object.shade_smooth()
+    return ob
+
+
+def _y_assento(a, b):
+    """altura do assento: côncavo nos lados, frente caindo (cascata), fundo subindo de leve."""
+    y = 0.452 + 0.014 * a * a
+    if b > 0.5:
+        y -= 0.05 * ((b - 0.5) / 0.5) ** 2
+    if b < -0.55:
+        y += 0.012 * ((-b - 0.55) / 0.45) ** 2
+    return y
+
+
+def _p_assento(u, v):
+    a, b = _arred(u, v, 4.5)
+    return (a * 0.232 * (1 + 0.04 * b), _y_assento(a, b), b * 0.215 + 0.01)
+
+
+INC_ENC = math.radians(11)
+
+
+def _p_encosto(u, v):
+    a, b = _arred(u, v, 4.0)
+    x = a * (0.212 + 0.014 * b)       # um pouco mais largo em cima
+    h = b * 0.15
+    zc = -0.195 + 0.05 * a * a          # concha: os lados vêm para a frente
+    return (x, 0.79 + h * math.cos(INC_ENC), zc - h * math.sin(INC_ENC))
+
+
+def _molde_concha():
+    if 'concha' in _MOLDE:
+        return _MOLDE['concha']
+    if 'furo' not in MATS:
+        material('furo', cor='#060607', rug=0.9)
+    p = [_casca('molde_assento', 14, 12, _p_assento, 'plastico', 0.013),
+         _casca('molde_encosto', 14, 8, _p_encosto, 'plastico', 0.013)]
+    for k in range(5):  # fendas no fundo do assento
+        x = -0.12 + k * 0.06
+        p.append(caixa_local('molde_fenda', (x, _y_assento(0, -0.8) + 0.002, -0.162), (0.026, 0.018, 0.007), 'furo'))
+    for k in range(3):  # fendas de pegar no alto do encosto
+        x, y, z = _p_encosto(-0.3 + k * 0.3, 0.72)
+        p.append(caixa_incl('molde_pega', (x, y, z), (0.034, 0.007, 0.018), 'furo', 0, 11))
+    ob = grupo(p, 'molde_concha')
+    COLECAO.objects.unlink(ob)
+    _MOLDE['concha'] = ob
+    return ob
+
+
+def _molde_tubos():
+    if 'tubos' in _MOLDE:
+        return _MOLDE['tubos']
+    r = 0.0105
+    p = []
+    for s in (-1, 1):
+        x = s * 0.208
+        # perna da frente que dobra e vira o trilho do assento
+        p.append(tubo('molde_frente', [(x * 1.03, 0.012, 0.215), (x, 0.418, 0.185), (x, 0.43, -0.17)], r, 'tubo', 0.05))
+        # perna de trás que sobe direto e segura o encosto pelo lado
+        p.append(tubo('molde_tras', [(x * 1.03, 0.012, -0.24), (x, 0.43, -0.205), (x * 0.985, 0.76, -0.205 + 0.05 - 0.035)], r, 'tubo', 0.06))
+        for z in (0.215, -0.24):  # ponteiras
+            p.append(cilindro('molde_ponteira', (x * 1.03, 0.0, z), (x * 1.03, 0.02, z), 0.0135, 'preto', 10))
+    p.append(tubo('molde_trav_t', [(-0.206, 0.22, -0.228), (0.206, 0.22, -0.228)], r * 0.9, 'tubo'))
+    p.append(tubo('molde_trav_f', [(-0.206, 0.41, 0.12), (0.206, 0.41, 0.12)], r * 0.9, 'tubo'))
+    ob = grupo(p, 'molde_tubos')
+    COLECAO.objects.unlink(ob)
+    _MOLDE['tubos'] = ob
+    return ob
+
+
+def _copia(molde, nome, pos, vira):
+    ob = molde.copy()
+    ob.data = molde.data.copy()
+    ob.name = nome
+    COLECAO.objects.link(ob)
+    ob.location = B(*pos)
+    ob.rotation_euler = Euler((0, 0, math.radians(vira)))
+    return ob
+
+
+def assento_encosto(nome, em, vira, mat='plastico'):
+    """só a concha (assento + encosto), para longarinas."""
+    return _copia(_molde_concha(), nome + '_concha', em((0, 0, 0)), vira)
+
+
 def cadeira(nome, pos, vira, cor='preto'):
-    """cadeira de espera (assento e encosto de plástico, pés de aço). cor: preto (R2) ou cinza (R1)."""
-    mat = 'plastico-cinza' if cor == 'cinza' else 'plastico'
-    partes = []
-    def em(local):
-        return soma(pos, rot_vec(local, vira))
-    partes.append(caixa_local(nome + '_assento', em((0, 0.46, 0)), (0.46, 0.04, 0.44), mat, vira))
-    partes.append(caixa_local(nome + '_encosto', em((0, 0.72, -0.21)), (0.44, 0.34, 0.03), mat, vira))
-    for sx in (-0.2, 0.2):
-        for sz in (-0.19, 0.19):
-            partes.append(cilindro(nome + '_pe', em((sx, 0, sz)), em((sx, 0.45, sz)), 0.012, 'preto', 4))
-        partes.append(cilindro(nome + '_haste', em((sx, 0.45, -0.19)), em((sx, 0.72, -0.2)), 0.012, 'preto', 4))
-    return partes
+    return [_copia(_molde_concha(), nome + '_concha', pos, vira), _copia(_molde_tubos(), nome + '_tubos', pos, vira)]
 
 
-def porta(nome, centro, vira, placa, largura=0.95):
-    """porta de madeira branca fechada, do tamanho do vão."""
+def chanfra_obj(ob, w=0.006, seg=2):
+    if ob is None or ob.type != 'MESH':
+        return ob
+    m = ob.modifiers.new('chanfro', 'BEVEL')
+    m.width = w
+    m.segments = seg
+    m.limit_method = 'ANGLE'
+    m.angle_limit = math.radians(40)
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.modifier_apply(modifier=m.name)
+    return ob
+
+
+def sinal_abre(vira, lado):
+    """giro (+1/-1, eixo y do three.js) que leva a folha para o lado pedido ('n', 's', 'e', 'w').
+    A folha vai da dobradiça (x local negativo) para +x local; girar +θ leva a ponta para -z local."""
+    frente = rot_vec((0, 0, 1), vira)
+    alvo = {'n': (0, 0, -1), 's': (0, 0, 1), 'e': (1, 0, 0), 'w': (-1, 0, 0)}[lado]
+    return -1 if frente[0] * alvo[0] + frente[2] * alvo[2] > 0 else 1
+
+
+def porta(nome, centro, vira, placa, largura=0.95, abre=None, visita=False, cor=None, almofada=False, texto_placa=None, plana=False):
+    """porta de abrir: batente e guarnição brancos marcando o vão, folha lisa (R1, R2) ou de almofada
+    (prédio antigo e banheiros), de madeira quando cor='madeira' (ergometria e corredor do Bloco),
+    maçaneta de alavanca dos dois lados. Com 'abre', a folha vira um objeto à parte (origem na dobradiça)
+    que o passeio gira durante o "Ver por dentro"."""
     x, y, z = centro
-    L = max(0.6, min(largura, 1.0))
-    partes = []
+    L = max(0.6, min(largura, 1.2))
     em = lambda l: soma((x, y, z), rot_vec(l, vira))
-    partes.append(caixa_local(nome + '_folha', em((0, 1.05, 0.0)), (L - 0.1, 2.08, 0.04), 'porta', vira))
-    partes.append(caixa_local(nome + '_batente', em((0, 2.11, 0.0)), (L, 0.06, 0.16), 'porta', vira))
-    for s in (-(L / 2 - 0.03), L / 2 - 0.03):
-        partes.append(caixa_local(nome + '_batente', em((s, 1.05, 0.0)), (0.06, 2.1, 0.16), 'porta', vira))
-    for lado in (0.03, -0.03):
-        partes.append(cilindro(nome + '_macaneta', em((L / 2 - 0.15, 1.02, lado)), em((L / 2 - 0.15, 1.02, lado * 3)), 0.012, 'inox', 6))
-    if placa:
-        partes.append(caixa_local(nome + '_placa', em((L / 2 + 0.17, 2.0, 0.06)), (0.2, 0.26, 0.012), 'laranja', vira))
-        if placa is not True:  # sem número ainda: só a placa laranja (como nas fotos do 1º andar)
-            partes.append(texto(nome + '_num', str(placa), em((L / 2 + 0.17, 1.97, 0.068)), 0.11, 'branco', vira, 0.002))
-        else:
-            partes.append(caixa_local(nome + '_placa_friso', em((L / 2 + 0.17, 1.91, 0.067)), (0.12, 0.012, 0.004), 'branco', vira))
-    return grupo(partes, nome)
+    mat_folha = 'porta-madeira' if cor == 'madeira' else 'porta'
+    jw = 0.045  # batente
+    fixos = [caixa_local(nome + '_batente_t', em((0, 2.13, 0)), (L, 0.05, 0.17), 'porta', vira)]
+    for s in (-1, 1):
+        fixos.append(caixa_local(nome + '_batente', em((s * (L / 2 - jw / 2), 1.07, 0)), (jw, 2.14, 0.17), 'porta', vira))
+        for f in (-1, 1):
+            fixos.append(caixa_local(nome + '_guarn', em((s * (L / 2 + 0.028), 1.09, f * 0.091)), (0.065, 2.18, 0.014), 'porta', vira))
+    for f in (-1, 1):
+        fixos.append(caixa_local(nome + '_guarn_t', em((0, 2.205, f * 0.091)), (L + 0.125, 0.065, 0.014), 'porta', vira))
+    W = L - 2 * jw - 0.006
+    folha = [caixa_local(nome + '_folha', em((0, 1.05, 0)), (W, 2.07, 0.036), mat_folha, vira)]
+    if almofada:
+        # almofadas em relevo (portas brancas do 1º andar, fotos f13, f31 e vídeo 1:38)
+        pw = (W - 0.26) / 2
+        for f in (-1, 1):
+            for cy, h in ((1.74, 0.46), (1.05, 0.66), (0.38, 0.44)):
+                for s in (-1, 1):
+                    folha.append(caixa_local(nome + '_almofada', em((s * (pw / 2 + 0.045), cy, f * 0.019)), (pw, h, 0.008), mat_folha, vira))
+    hx = W / 2 - 0.075
+    for f in (-1, 1):
+        folha.append(cilindro(nome + '_roseta', em((hx, 1.02, f * 0.018)), em((hx, 1.02, f * 0.03)), 0.027, 'inox', 14))
+        folha.append(cilindro(nome + '_haste', em((hx, 1.02, f * 0.03)), em((hx, 1.02, f * 0.052)), 0.008, 'inox', 8))
+        folha.append(caixa_local(nome + '_alavanca', em((hx - 0.06, 1.02, f * 0.056)), (0.13, 0.019, 0.019), 'inox', vira))
+        folha.append(cilindro(nome + '_espelho', em((hx, 0.88, f * 0.018)), em((hx, 0.88, f * 0.024)), 0.016, 'inox', 10))
+    if texto_placa:
+        # placa laranja com o nome da sala na folha (Tomografia, Sala de Exame... fotos f47, vídeo 0:18)
+        for f in (-1, 1):
+            folha.append(caixa_local(nome + '_placa_txt', em((0, 1.6, f * 0.02)), (0.3, 0.085, 0.006), 'laranja', vira))
+            folha.append(texto(nome + '_txt', texto_placa, em((0, 1.598, f * 0.0235)), 0.042, 'branco', vira + (180 if f < 0 else 0), 0.001))
+    if placa and plana:
+        # placa chapada na parede, em cima e ao lado da porta (sala 18, foto f27), nas duas faces
+        for f in (1, -1):
+            px = f * (L / 2 + 0.19)
+            rot = vira + (180 if f < 0 else 0)
+            fixos.append(caixa_local(nome + '_placa', em((px, 2.12, f * 0.094)), (0.2, 0.22, 0.012), 'laranja', vira))
+            if placa is not True:
+                fixos.append(texto(nome + '_sala', 'SALA', em((px - f * 0.045, 2.2, f * 0.101)), 0.035, 'branco', rot, 0.001))
+                fixos.append(texto(nome + '_num', str(placa), em((px, 2.09, f * 0.101)), 0.1, 'branco', rot, 0.002))
+    elif placa:
+        # placa "de bandeira": em pé, perpendicular à parede, saindo dela ao lado do alto da porta (fotos f08, f30–f32,
+        # vídeo 1:31). Uma de cada lado da parede, porque não se sabe de que lado fica o corredor.
+        px = L / 2 + 0.1
+        for f in (1, -1):
+            zc = f * 0.2
+            fixos.append(caixa_local(nome + '_bandeira', em((px, 2.24, zc)), (0.014, 0.22, 0.2), 'laranja', vira))
+            fixos.append(caixa_local(nome + '_suporte', em((px, 2.24, f * 0.09)), (0.02, 0.06, 0.02), 'inox', vira))
+            for lado in (1, -1):  # o número aparece dos dois lados da bandeira
+                rot = vira + (90 if lado > 0 else -90)
+                if placa is not True:
+                    fixos.append(texto(nome + '_sala', 'SALA', em((px + lado * 0.0075, 2.31, zc)), 0.03, 'branco', rot, 0.001))
+                    fixos.append(texto(nome + '_num', str(placa), em((px + lado * 0.0075, 2.21, zc)), 0.09, 'branco', rot, 0.002))
+                else:
+                    fixos.append(caixa_local(nome + '_friso', em((px + lado * 0.0075, 2.2, zc)), (0.002, 0.012, 0.11), 'branco', vira))
+    if not abre:
+        return grupo(fixos + folha, nome)
+    grupo(fixos, nome)
+    fol = grupo(folha, nome + '_folha')
+    bpy.context.scene.cursor.location = B(*em((-W / 2, 0, 0)))
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    fol.select_set(True)
+    bpy.context.view_layer.objects.active = fol
+    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+    fol['abre'] = sinal_abre(vira, abre)
+    if visita:
+        fol['visita'] = 1
+    portas_abrem.append(fol)
+    return fol
 
 
 portas_abrem = []  # folhas de porta de vidro que abrem sozinhas no site (sem mapa de luz próprio)
@@ -497,7 +748,7 @@ portas_abrem = []  # folhas de porta de vidro que abrem sozinhas no site (sem ma
 
 def monta():
     objs_vidro, objs_luz = [], []
-    ESTRUTURA = {'caixa', 'rampa', 'degraus', 'vidro', 'porta-vidro', 'faixa-piso', 'faixas-cores', 'faixas-vaga',
+    ESTRUTURA = {'caixa', 'rampa', 'degraus', 'vidro', 'porta-vidro', 'faixa-piso', 'faixas-cores', 'faixas-l', 'faixas-vaga',
                  'painel-marmore', 'ripado', 'caixilho', 'cobogo', 'letras', 'decal', 'letreiro', 'placa', 'tv',
                  'quadro', 'corrimao', 'guarda-vidro', 'porta'}
     for p in P['pecas']:
@@ -621,7 +872,7 @@ def monta():
                     if i:
                         partes.append(caixa(f'{n}_div{i}', (mn[0], mx[1], mn[2] + larg * i - 0.01), (mx[0], mx[1] + 0.4, mn[2] + larg * i + 0.01), 'acrilico'))
                     partes += cadeira(f'{n}_cad{i}', (mn[0] - 0.55, mn[1], cz), 90)
-                    partes += cadeira(f'{n}_pac{i}', (mx[0] + 0.5, mn[1], cz), -90, 'cinza')
+                    partes += cadeira(f'{n}_pac{i}', (mx[0] + 0.5, mn[1], cz), -90, 'preto')
             else:
                 # guichês em fila ao longo de x; atendente do lado sul (+z)
                 larg = (mx[0] - mn[0]) / g
@@ -640,7 +891,8 @@ def monta():
                 partes += cadeira(f'{n}_{i}', pos, p['vira'], p.get('cor', 'preto'))
             grupo(partes, n)
         elif t == 'porta':
-            porta(n, p['centro'], p['vira'], p.get('placa'), p.get('largura', 0.95))
+            porta(n, p['centro'], p['vira'], p.get('placa'), p.get('largura', 0.95), p.get('abre'), p.get('visita'),
+                  p.get('cor'), p.get('almofada'), p.get('texto'), p.get('placaPlana', False))
         elif t == 'faixas-vaga':
             # vagas de estacionamento: faixas brancas no chão
             x0, y, z0 = p['de']
@@ -734,6 +986,17 @@ def monta():
                 caixa(n + '_c', (mn[0], mn[1], mn[2]), (mn[0] + w, y, mx[2]), 'preto'),
                 caixa(n + '_d', (mx[0] - w, mn[1], mn[2]), (mx[0], y, mx[2]), 'preto'),
             ]
+            grupo(partes, n)
+        elif t == 'faixas-l':
+            # trecho para oeste e trecho para o sul com a dobra de cada cor no mesmo canto (sem se cruzarem)
+            x0, y, _ = p['de']
+            xc, zc = p['canto']
+            partes = []
+            for i, cor in enumerate(['azul', 'amarelo', 'vermelho', 'verde']):
+                d = -0.2 + i * 0.13
+                xi, zi = xc + d, zc + d
+                partes.append(caixa(f'{n}_{cor}_o', (xi, y - 0.002, zi), (x0, y + 0.002, zi + 0.05), cor))
+                partes.append(caixa(f'{n}_{cor}_s', (xi, y - 0.002, zi), (xi + 0.05, y + 0.002, p['fim']), cor))
             grupo(partes, n)
         elif t == 'faixas-cores':
             a, b = p['de'], p['ate']

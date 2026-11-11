@@ -121,7 +121,7 @@ def mesa(n, pos, vira, larg=1.4, prof=0.7, pacientes=2, medico=True, monitor=Tru
     return out
 
 
-def bancada(n, mn, mx, pia=0, tampo='marmore'):
+def bancada(n, mn, mx, pia=0, tampo='marmore', gavetas=False):
     """bancada com armários embaixo (min/max da planta, altura 0,9) e pias opcionais."""
     x0, y0, z0 = mn
     x1, _, z1 = mx
@@ -135,6 +135,19 @@ def bancada(n, mn, mx, pia=0, tampo='marmore'):
         cz = z0 + (z1 - z0) * (0.5 if longo_x else f)
         p.append(caixa(n + f'_cuba{k}', (cx - 0.22, y0 + 0.9, cz - 0.17), (cx + 0.22, y0 + 0.905, cz + 0.17), 'inox'))
         p.append(cilindro(n + f'_torneira{k}', (cx, y0 + 0.9, cz), (cx, y0 + 1.15, cz), 0.015, 'inox', 8))
+    if gavetas:
+        # frente (+z): módulos de 50 cm com três gavetas e puxadores (armário branco da ponta dos guichês)
+        mods = max(1, round((x1 - x0) / 0.5))
+        wmod = (x1 - x0) / mods
+        for k in range(mods):
+            xa = x0 + k * wmod
+            if k:
+                p.append(caixa(n + f'_junta{k}', (xa - 0.002, y0 + 0.1, z1), (xa + 0.002, y0 + 0.84, z1 + 0.003), 'equip-escuro'))
+            for yy in (0.35, 0.6):
+                p.append(caixa(n + f'_frisog{k}', (xa + 0.01, y0 + yy - 0.002, z1), (xa + wmod - 0.01, y0 + yy + 0.002, z1 + 0.003), 'equip-escuro'))
+            for yy in (0.24, 0.49, 0.74):
+                cx = xa + wmod / 2
+                p.append(caixa(n + f'_puxador{k}', (cx - 0.07, y0 + yy - 0.008, z1), (cx + 0.07, y0 + yy + 0.008, z1 + 0.018), 'inox'))
     return chanfra(grupo(p, n), 0.008)
 
 
@@ -412,15 +425,23 @@ def extintor(n, pos, vira):
         material(chave, cor='#c0272d', rug=0.35)
     p = [cil(n + '_corpo', em, (0, 0.95, 0.1), (0, 1.5, 0.1), 0.085, chave, 14),
          cil(n + '_bico', em, (0, 1.5, 0.1), (0, 1.6, 0.1), 0.03, 'preto', 8),
-         bx(n + '_placa', em, (0, 1.95, 0.005), (0.22, 0.3, 0.01), chave, vira)]
-    return chanfra(grupo(p, n), 0.01)
+         cil(n + '_alca', em, (-0.04, 1.62, 0.1), (0.06, 1.64, 0.1), 0.008, 'preto', 6),
+         cil(n + '_mangueira', em, (0.05, 1.55, 0.1), (0.09, 1.1, 0.12), 0.009, 'preto', 6),
+         bx(n + '_suporte', em, (0, 1.42, 0.008), (0.06, 0.12, 0.016), 'equip-escuro', vira),
+         # placa de sinalização (vermelha com o desenho branco), 15 × 20 cm
+         bx(n + '_placa', em, (0, 1.93, 0.004), (0.15, 0.2, 0.008), chave, vira),
+         bx(n + '_placa_desenho', em, (0, 1.93, 0.0085), (0.06, 0.11, 0.002), 'branco', vira)]
+    return chanfra(grupo(p, n), 0.006)
 
 
 def lixeira(n, pos, vira):
+    """lixeira branca de pedal, retangular, tampa cinza-clara (fotos f50–f52, f14)."""
     em = _em(pos, vira)
-    p = [cil(n + '_corpo', em, (0, 0.0, 0), (0, 0.45, 0), 0.16, 'branco', 16),
-         cil(n + '_tampa', em, (0, 0.45, 0), (0, 0.49, 0), 0.165, 'equip', 16)]
-    return chanfra(grupo(p, n), 0.01)
+    p = [bx(n + '_corpo', em, (0, 0.215, 0), (0.3, 0.41, 0.27), 'branco', vira),
+         bx(n + '_tampa', em, (0, 0.44, -0.005), (0.31, 0.045, 0.28), 'equip', vira),
+         bx(n + '_aro', em, (0, 0.415, 0.0), (0.305, 0.012, 0.275), 'equip-escuro', vira),
+         bx(n + '_pedal', em, (0, 0.035, 0.155), (0.12, 0.025, 0.06), 'equip-escuro', vira)]
+    return chanfra(grupo(p, n), 0.012)
 
 
 def purificador(n, pos, vira):
@@ -466,6 +487,113 @@ def gradil(n, de, ate, alt=1.05, passo=0.13):
     return grupo(p, n)
 
 
+
+# ─────────────────────────────── peças das fotos de 2026-11-06 e do vídeo 0522.mp4 (rodada de 11/11)
+def quadro_medicos(n, centro, larg, alt, vira):
+    """quadro bege (MDF) apoiado no chão e na parede, com as placas dos médicos (vídeo 0:14–0:17)."""
+    em = _em(centro, vira)
+    ob = bx(n + '_quadro', em, (0, alt / 2 + 0.02, 0.014), (larg, alt, 0.028), 'creme', vira)
+    chanfra(ob, 0.004)
+    decal(n + '_placas', 'placas-medicos', em((0, alt / 2 + 0.02, 0.0295)), larg, alt, vira)
+    return ob
+
+
+def longarina(n, pos, lugares, vira):
+    """longarina: conchas pretas sobre uma barra de aço com pés em T nas pontas (corredor do Bloco, f51)."""
+    em = _em(pos, vira)
+    passo = 0.56
+    L = lugares * passo
+    aco = [bx(n + '_barra', em, (0, 0.37, -0.02), (L + 0.06, 0.05, 0.05), 'tubo', vira)]
+    for s in (-1, 1):
+        x = s * (L / 2 - 0.12)
+        aco.append(bx(n + f'_pe{s}', em, (x, 0.19, -0.02), (0.05, 0.36, 0.05), 'tubo', vira))
+        aco.append(bx(n + f'_sapata{s}', em, (x, 0.015, -0.02), (0.05, 0.03, 0.55), 'tubo', vira))
+    for k in range(lugares):
+        x = -L / 2 + passo * (k + 0.5)
+        aco.append(bx(n + f'_mao{k}', em, (x, 0.41, -0.02), (0.05, 0.05, 0.36), 'tubo', vira))
+        aco.append(bx(n + f'_hasteb{k}', em, (x, 0.62, -0.25), (0.04, 0.42, 0.03), 'tubo', vira))
+        emk = _em(em((x, 0, 0)), vira)
+        assento_encosto(n + f'_{k}', emk, vira, 'plastico')
+    return grupo(aco, n + '_aco')
+
+
+def totem_senha(n, pos, vira, objs_luz):
+    """totem branco "Retire sua Senha" (f37–f39, vídeo 0:12): tela, impressora e placa no alto."""
+    em = _em(pos, vira)
+    chave = 'tela-senha'
+    if chave not in MATS:
+        material(chave, cor='#c23a8a', emissao=1.6)
+    p = [bx(n + '_base', em, (0, 0.025, 0), (0.5, 0.05, 0.38), 'equip-escuro', vira),
+         bx(n + '_corpo', em, (0, 0.72, 0), (0.46, 1.34, 0.32), 'branco', vira),
+         bx(n + '_cabeca', em, (0, 1.52, -0.01), (0.46, 0.3, 0.3), 'branco', vira),
+         bx(n + '_moldura', em, (0, 1.12, 0.162), (0.38, 0.3, 0.008), 'preto', vira),
+         bx(n + '_saida', em, (0, 0.86, 0.163), (0.16, 0.025, 0.01), 'preto', vira),
+         bx(n + '_faixa', em, (0, 1.42, 0.151), (0.4, 0.015, 0.004), 'teal', vira)]
+    ob = chanfra(grupo(p, n), 0.012)
+    letras(n + '_txt1', 'Retire sua', em((0.03, 1.6, 0.151)), 0.05, 'roxo', vira, 0.001)
+    letras(n + '_txt2', 'Senha', em((0.03, 1.53, 0.151)), 0.06, 'roxo', vira, 0.001)
+    objs_luz.append(bx(n + '_tela', em, (0, 1.12, 0.1665), (0.34, 0.26, 0.002), chave, vira))
+    return ob
+
+
+def cafeteira(n, pos, vira, objs_luz):
+    """máquina preta "iVision" no alto da rampa (f19–f21): painel preto brilhante e fino, tela de vidro escuro
+    em cima, caixa mais funda atrás da tela, nicho aberto embaixo com luz azul e base com pés."""
+    em = _em(pos, vira)
+    if 'preto-brilho' not in MATS:
+        material('preto-brilho', cor='#141416', rug=0.2)
+        material('vidro-escuro', cor='#1d2126', rug=0.06)
+    if 'led-azul' not in MATS:
+        material('led-azul', cor='#3a52ff', emissao=3.0)
+    p = [bx(n + '_base', em, (0, 0.02, -0.02), (0.66, 0.04, 0.44), 'preto', vira),
+         bx(n + '_painel', em, (0, 0.92, 0.0), (0.58, 1.76, 0.06), 'preto-brilho', vira),
+         bx(n + '_caixa', em, (0, 1.3, -0.17), (0.54, 0.84, 0.3), 'equip-escuro', vira),
+         bx(n + '_moldura_tela', em, (0, 1.28, 0.032), (0.5, 0.74, 0.006), 'equip-escuro', vira),
+         bx(n + '_tela', em, (0, 1.28, 0.036), (0.46, 0.7, 0.006), 'vidro-escuro', vira),
+         bx(n + '_nicho_fundo', em, (0.0, 0.6, -0.02), (0.22, 0.38, 0.02), 'equip-escuro', vira),
+         bx(n + '_nicho_l', em, (-0.115, 0.6, 0.012), (0.01, 0.38, 0.05), 'preto', vira),
+         bx(n + '_nicho_r', em, (0.115, 0.6, 0.012), (0.01, 0.38, 0.05), 'preto', vira),
+         bx(n + '_nicho_t', em, (0.0, 0.795, 0.012), (0.24, 0.01, 0.05), 'preto', vira)]
+    ob = chanfra(grupo(p, n), 0.006)
+    letras(n + '_marca', 'iVISION', em((-0.12, 1.69, 0.032)), 0.03, 'inox', vira, 0.001)
+    objs_luz.append(grupo([bx(n + '_led_b', em, (0.0, 0.415, 0.0), (0.2, 0.012, 0.03), 'led-azul', vira),
+                           bx(n + '_led_r', em, (0.104, 0.6, 0.0), (0.012, 0.36, 0.03), 'led-azul', vira)], n + '_led'))
+    return ob
+
+
+def mesa_oftalmo(n, pos, vira):
+    """mesinha de coluna com o autorrefrator (corredor do Bloco, f50)."""
+    em = _em(pos, vira)
+    p = [bx(n + '_tampo', em, (0, 0.76, 0), (0.62, 0.03, 0.46), 'equip', vira),
+         bx(n + '_saia', em, (0, 0.71, 0), (0.5, 0.08, 0.36), 'equip', vira),
+         cil(n + '_coluna', em, (0, 0.06, 0), (0, 0.7, 0), 0.06, 'equip', 16),
+         bx(n + '_base', em, (0, 0.03, 0), (0.52, 0.06, 0.42), 'equip', vira),
+         bx(n + '_aparelho', em, (0, 0.99, -0.06), (0.27, 0.42, 0.34), 'equip', vira),
+         bx(n + '_topo', em, (0, 1.22, -0.08), (0.24, 0.06, 0.28), 'equip', vira),
+         bx(n + '_painel', em, (0, 1.0, -0.232), (0.18, 0.13, 0.006), 'equip-escuro', vira),
+         cil(n + '_ocular', em, (0, 1.06, 0.11), (0, 1.06, 0.16), 0.035, 'equip-escuro', 14)]
+    for s in (-1, 1):
+        p.append(cil(n + f'_haste{s}', em, (s * 0.09, 0.77, 0.19), (s * 0.09, 1.2, 0.19), 0.008, 'equip', 8))
+    p.append(bx(n + '_queixo', em, (0, 0.93, 0.2), (0.12, 0.02, 0.06), 'equip-escuro', vira))
+    p.append(bx(n + '_testa', em, (0, 1.17, 0.19), (0.2, 0.02, 0.02), 'equip-escuro', vira))
+    return chanfra(grupo(p, n), 0.006)
+
+
+def mesinha_preta(n, pos, vira):
+    """mesinha preta do Pós Consulta com monitor e impressora (f48–f49)."""
+    em = _em(pos, vira)
+    p = [bx(n + '_tampo', em, (0, 0.745, 0), (0.76, 0.03, 0.46), 'preto', vira),
+         bx(n + '_prateleira', em, (0, 0.24, 0), (0.7, 0.02, 0.4), 'preto', vira)]
+    for sx in (-0.35, 0.35):
+        for sz in (-0.2, 0.2):
+            p.append(cil(n + '_perna', em, (sx, 0.0, sz), (sx, 0.73, sz), 0.014, 'tubo', 6))
+    p += [bx(n + '_monitor', em, (0.12, 0.99, -0.13), (0.5, 0.31, 0.025), 'preto', vira),
+          bx(n + '_pe_monitor', em, (0.12, 0.8, -0.13), (0.07, 0.12, 0.12), 'preto', vira),
+          bx(n + '_teclado', em, (0.1, 0.77, 0.06), (0.4, 0.015, 0.13), 'equip-escuro', vira),
+          bx(n + '_impressora', em, (-0.25, 0.83, -0.06), (0.24, 0.14, 0.3), 'equip-escuro', vira)]
+    return chanfra(grupo(p, n), 0.004)
+
+
 # ─────────────────────────────── despacho
 def monta_extra(p, objs_vidro, objs_luz):
     t, n = p['tipo'], p['nome']
@@ -479,7 +607,7 @@ def monta_extra(p, objs_vidro, objs_luz):
     elif t == 'cadeira-escritorio':
         cadeira_escritorio(n, pos, v)
     elif t == 'bancada':
-        bancada(n, p['min'], p['max'], p.get('pia', 0), p.get('tampo', 'marmore'))
+        bancada(n, p['min'], p['max'], p.get('pia', 0), p.get('tampo', 'marmore'), p.get('gavetas', False))
     elif t == 'armario':
         armario(n, p['min'], p['max'])
     elif t == 'pia':
@@ -520,6 +648,18 @@ def monta_extra(p, objs_vidro, objs_luz):
         extintor(n, pos, v)
     elif t == 'lixeira':
         lixeira(n, pos, v)
+    elif t == 'quadro-medicos':
+        quadro_medicos(n, p['centro'], p['larg'], p['alt'], v)
+    elif t == 'longarina':
+        longarina(n, pos, p.get('lugares', 3), v)
+    elif t == 'totem-senha':
+        totem_senha(n, pos, v, objs_luz)
+    elif t == 'cafeteira':
+        cafeteira(n, pos, v, objs_luz)
+    elif t == 'mesa-oftalmo':
+        mesa_oftalmo(n, pos, v)
+    elif t == 'mesinha-preta':
+        mesinha_preta(n, pos, v)
     elif t == 'purificador':
         purificador(n, pos, v)
     elif t == 'ar-split':
@@ -564,7 +704,10 @@ def caixilho(n, mn, mx, modulo, eixo, objs_vidro):
     """pele de vidro com caixilhos (montantes e travessas) — volume envidraçado da fachada."""
     x0, y0, z0 = mn
     x1, y1, z1 = mx
-    objs_vidro.append(caixa('vidro_' + n, mn, mx, 'vidro'))
+    # vidro espelhado azulado, opaco (no vídeo 0:00–0:04 a pele de vidro reflete o céu e não mostra o andar de dentro)
+    if 'vidro-fachada' not in MATS:
+        material('vidro-fachada', cor='#4d6680', rug=0.08)
+    caixa('espelho_' + n, (mn[0], mn[1], (mn[2] + mx[2]) / 2 - 0.005), (mx[0], mx[1], (mn[2] + mx[2]) / 2 + 0.005), 'vidro-fachada')
     p = []
     if eixo == 'x':
         k = max(1, round((x1 - x0) / modulo))

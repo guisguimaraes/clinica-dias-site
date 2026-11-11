@@ -142,3 +142,200 @@
     if (e.key === 'Escape' && !painel.hidden) fecha();
   });
 })();
+
+// CardFácil: a carteirinha flutua em diagonal (como a referência), balança de leve e, a cada 8 s, vira para mostrar o verso
+// (nunca fica parada de lado). Arrastar gira com a mão; ao soltar, ela assenta no lado mais perto.
+// Para quem pede menos movimento, fica parada de frente (o arrasto continua).
+(() => {
+  const palco = document.querySelector('[data-cf-palco]');
+  if (!palco) return;
+  const giro = palco.querySelector('[data-cf-giro]');
+  const cena = palco.querySelector('.cf-cena');
+  const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const VIRA_A_CADA = 8, BASE_X = 18;
+  let lado = 0, ang = -24, t = 0, desdeVirada = 0, arrasto = null, inclX = BASE_X, alvoX = BASE_X, visivel = false, ant = 0, quadro = 0;
+
+  const desenha = () => {
+    giro.style.transform = `rotateY(${ang}deg)`;
+    const flutua = reduzido ? 0 : Math.sin(t * 0.9) * 10;
+    cena.style.transform = `translateY(${flutua}px) rotateX(${inclX}deg) rotateZ(-26deg)`;
+    const r = (ang * Math.PI) / 180;
+    giro.style.setProperty('--brilho', `${Math.sin(r * 2 + t * 0.6) * -40}%`);
+    palco.style.setProperty('--sombra', (0.5 + 0.5 * Math.abs(Math.cos(r))).toFixed(3));
+  };
+  const passo = (now) => {
+    const dt = Math.min((now - (ant || now)) / 1000, 0.05);
+    ant = now;
+    if (!arrasto) {
+      t += dt;
+      desdeVirada += dt;
+      if (!reduzido && desdeVirada > VIRA_A_CADA) { lado += 180; desdeVirada = 0; }
+      const balanco = reduzido ? -24 : Math.sin(t * 0.8) * 10 - 24;
+      ang += (lado + balanco - ang) * (1 - Math.exp(-dt * 2.6));
+    }
+    inclX += (alvoX - inclX) * (1 - Math.exp(-dt * 6));
+    desenha();
+    quadro = visivel ? requestAnimationFrame(passo) : 0;
+  };
+  const liga = () => { if (!quadro) { ant = 0; quadro = requestAnimationFrame(passo); } };
+  new IntersectionObserver(([e]) => { visivel = e.isIntersecting; if (visivel) liga(); }).observe(palco);
+
+  palco.addEventListener('pointerdown', (e) => {
+    arrasto = { x: e.clientX };
+    palco.setPointerCapture(e.pointerId);
+  });
+  palco.addEventListener('pointermove', (e) => {
+    const caixa = palco.getBoundingClientRect();
+    alvoX = BASE_X - ((e.clientY - caixa.top) / caixa.height - 0.5) * 14;
+    if (!arrasto) return;
+    ang += (e.clientX - arrasto.x) * 0.5;
+    arrasto.x = e.clientX;
+    liga();
+  });
+  const solta = () => {
+    if (!arrasto) return;
+    arrasto = null;
+    lado = Math.round(ang / 180) * 180; // assenta na frente ou no verso, o que estiver mais perto
+    desdeVirada = 0;
+  };
+  palco.addEventListener('pointerup', solta);
+  palco.addEventListener('pointercancel', solta);
+  palco.addEventListener('pointerleave', () => { alvoX = BASE_X; });
+  desenha();
+})();
+
+// Avaliações do Google: a seção só aparece com avaliações reais, puxadas da API do Google Places
+// (chave em data-chave do #avaliacoes). Guarda a resposta por 12 h para não gastar a cota.
+(() => {
+  const av = document.querySelector('[data-avaliacoes]');
+  if (!av) return;
+  const lista = av.querySelector('[data-av-lista]');
+  const nota = av.querySelector('[data-av-nota]');
+  const link = av.querySelector('[data-av-link]');
+  const chave = (av.dataset.chave || '').trim();
+  const NS = 'http://www.w3.org/2000/svg';
+
+  const estrelas = (n) => {
+    const box = document.createElement('span');
+    box.className = 'av-estrelas';
+    box.setAttribute('aria-label', `${n} de 5 estrelas`);
+    for (let i = 1; i <= 5; i++) {
+      const s = document.createElementNS(NS, 'svg');
+      s.setAttribute('viewBox', '0 0 24 24');
+      s.setAttribute('aria-hidden', 'true');
+      if (i > Math.round(n)) s.classList.add('apagada');
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', 'M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.2l-5.9 3.3 1.4-6.6-5-4.5 6.6-.7z');
+      s.append(p);
+      box.append(s);
+    }
+    return box;
+  };
+  const logoG = () => {
+    const s = document.createElementNS(NS, 'svg');
+    s.setAttribute('viewBox', '0 0 48 48');
+    s.setAttribute('class', 'av-g');
+    s.setAttribute('aria-hidden', 'true');
+    [['#4285F4', 'M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 0 1-4.4 6.6v5.5h7.1C42.6 36.8 45 31.2 45 24.5z'],
+     ['#34A853', 'M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0 0 24 46z'],
+     ['#FBBC05', 'M11.8 28.2a13 13 0 0 1 0-8.4v-5.7H4.5a22 22 0 0 0 0 19.8z'],
+     ['#EA4335', 'M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 0 0 4.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z']]
+      .forEach(([c, d]) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('fill', c); p.setAttribute('d', d); s.append(p); });
+    return s;
+  };
+  const iniciais = (nome) => nome.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+
+  const cartao = (r, exemplo) => {
+    const li = document.createElement('li');
+    li.className = 'av-card' + (exemplo ? ' exemplo' : '');
+    const quem = document.createElement('div');
+    quem.className = 'av-quem';
+    let foto;
+    if (r.foto) {
+      foto = document.createElement('img');
+      foto.src = r.foto; foto.alt = ''; foto.loading = 'lazy'; foto.referrerPolicy = 'no-referrer';
+    } else {
+      foto = document.createElement('span');
+      foto.textContent = iniciais(r.nome);
+      foto.setAttribute('aria-hidden', 'true');
+    }
+    foto.classList.add('av-foto');
+    const nome = document.createElement('div');
+    nome.className = 'av-nome';
+    const b = document.createElement('b');
+    b.textContent = r.nome;
+    nome.append(b, estrelas(r.nota));
+    quem.append(foto, nome, logoG());
+    const texto = document.createElement('p');
+    texto.className = 'av-texto';
+    texto.textContent = r.texto;
+    const quando = document.createElement('p');
+    quando.className = 'av-quando';
+    quando.textContent = r.quando || '';
+    li.append(quem, texto, quando);
+    return li;
+  };
+
+  const mostra = ({ nota: media, total, itens, url }, exemplo = false) => {
+    if (!itens.length) return;
+    lista.replaceChildren(...itens.map((r) => cartao(r, exemplo)));
+    nota.replaceChildren();
+    if (media) {
+      const b = document.createElement('b');
+      b.textContent = media.toFixed(1).replace('.', ',');
+      const t = document.createElement('span');
+      t.textContent = total ? `${total} avaliações no Google` : 'no Google';
+      nota.append(b, estrelas(media), t);
+    } else {
+      const t = document.createElement('span');
+      t.textContent = 'Avaliações reais de pacientes no Google';
+      nota.append(estrelas(5), t);
+    }
+    if (url) link.href = url;
+    av.hidden = false;
+  };
+
+  // sem chave: as avaliações copiadas do Google que estão no HTML
+  const fixas = (() => { try { return JSON.parse(av.querySelector('[data-av-fixas]')?.textContent || '[]'); } catch (e) { return []; } })();
+  if (!chave) {
+    mostra({ itens: fixas.map((r) => ({ ...r, quando: r.quando || 'Avaliação no Google' })) });
+    return;
+  }
+
+  const CACHE = 'clinicadias-avaliacoes-v1';
+  try {
+    const salvo = JSON.parse(localStorage.getItem(CACHE) || 'null');
+    if (salvo && Date.now() - salvo.em < 12 * 3600e3) { mostra(salvo.dados); return; }
+  } catch (e) { /* sem armazenamento: busca de novo */ }
+
+  fetch('https://places.googleapis.com/v1/places:searchText', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': chave,
+      'X-Goog-FieldMask': 'places.rating,places.userRatingCount,places.reviews,places.googleMapsUri',
+    },
+    body: JSON.stringify({ textQuery: av.dataset.busca, languageCode: 'pt-BR' }),
+  })
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((j) => {
+      const lugar = j.places && j.places[0];
+      if (!lugar) return;
+      const itens = (lugar.reviews || [])
+        .filter((r) => r.rating >= 4 && (r.text?.text || r.originalText?.text))
+        .map((r) => ({
+          nome: r.authorAttribution?.displayName || 'Paciente',
+          foto: r.authorAttribution?.photoUri || '',
+          nota: r.rating,
+          texto: r.text?.text || r.originalText?.text,
+          quando: r.relativePublishTimeDescription || '',
+        }));
+      const dados = { nota: lugar.rating, total: lugar.userRatingCount, itens, url: lugar.googleMapsUri };
+      try { localStorage.setItem(CACHE, JSON.stringify({ em: Date.now(), dados })); } catch (e) { /* ok */ }
+      mostra(dados);
+    })
+    .catch((e) => {
+      console.warn('[avaliações] Google não respondeu', e);
+      mostra({ itens: fixas.map((r) => ({ ...r, quando: r.quando || 'Avaliação no Google' })) });
+    });
+})();

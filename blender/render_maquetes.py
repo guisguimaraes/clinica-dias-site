@@ -40,7 +40,8 @@ cena.cycles.glossy_bounces = 1
 cena.cycles.transmission_bounces = 2
 cena.cycles.transparent_max_bounces = 48  # muitas paredes recortadas uma atrás da outra
 cena.render.resolution_x, cena.render.resolution_y = W, H
-cena.render.resolution_percentage = 100
+# 4K: 1600×900 → 3840×2160 no computador; 720×1560 → 1440×3120 no celular (o site só usa a proporção)
+cena.render.resolution_percentage = 240 if W >= H else 200
 cena.render.film_transparent = True
 cena.view_settings.view_transform = 'AgX'
 cena.view_settings.look = 'None'
@@ -62,12 +63,12 @@ for o in bpy.data.objects:
 mundo = cena.world
 mundo.use_nodes = True
 bg = mundo.node_tree.nodes['Background']
-bg.inputs['Color'].default_value = (1.0, 0.965, 0.92, 1)
+bg.inputs['Color'].default_value = (1.0, 0.94, 0.86, 1)
 bg.inputs['Strength'].default_value = 0.72
 sd = bpy.data.lights.new('sol_estudio', 'SUN')
 sd.energy = 4.4
 sd.angle = math.radians(12)
-sd.color = (1.0, 0.93, 0.84)
+sd.color = (1.0, 0.9, 0.78)
 sol = bpy.data.objects.new('sol_estudio', sd)
 cena.collection.objects.link(sol)
 d = B(14, -22, -12).normalized()  # do sol para o alvo (igual ao passeio.js)
@@ -172,7 +173,7 @@ for m in bpy.data.materials:
     nt.links.new(mx_.outputs[0], out.inputs['Surface'])
 
 # ── argila (como as maquetes do ICG): tudo numa cor só, fosca; logos e placas (decalques) e vidro ficam como estão
-BARRO = (0.863, 0.815, 0.745, 1)  # #EFE9E0 em linear (igual ao COR_BARRO do passeio.js)
+BARRO = (0.807, 0.716, 0.597, 1)  # #E8DCCB em linear (igual ao COR_BARRO do passeio.js): argila quente como a do ICG
 for m in bpy.data.materials:
     if not m.node_tree or m.name.startswith('decal_') or m.name in ('vidro', 'acrilico'):
         continue
@@ -267,7 +268,8 @@ for i in INDICES:
     asp = min(aspecto, 1.6)
     dist = (raio / math.sin(math.radians(11))) * ((1.05 / asp) if asp < 1 else 0.9) * a.get('zoom', 1)  # igual a enquadra() do passeio.js
     alvo = centro - Vector((0, 0.6, 0))
-    pos = alvo + DIR * dist
+    d_area = Vector(a['vista']['dir']).normalized() if a.get('vista') else DIR  # igual a dirDe() do passeio.js
+    pos = alvo + d_area * dist
     cam.location = B(*pos)
     olhar = (B(*alvo) - B(*pos)).normalized()
     cam.rotation_mode = 'QUATERNION'

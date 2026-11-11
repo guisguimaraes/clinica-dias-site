@@ -34,7 +34,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 // pêssego #FDE0C9, cinzas #A8A9AC / #828386. Fundo claro #F5F4F2.
 const COR_FUNDO = new THREE.Color('#E9E2D7'); // fundo bege das maquetes (como o ICG)
 const COR_BASE = new THREE.Color('#DDD3C5');  // base da maquete: argila um tom abaixo
-const COR_BARRO = new THREE.Color('#EFE9E0'); // tudo da maquete em argila; só logos e placas ficam com cor
+const COR_BARRO = new THREE.Color('#E8DCCB'); // tudo da maquete em argila; só logos e placas ficam com cor
 const TOM_QUENTE = new THREE.Color('#f4e6d6');
 // cores dos materiais do Blender trocadas pela paleta da marca (nome do material → cor)
 const PALETA = {
@@ -213,6 +213,16 @@ const luzPronta = (q.has('semluz') ? Promise.resolve(null) : fetch('./modelos/lu
       })
       .catch(() => console.warn('[passeio] sem mapa de luz para', g, '— usando luz em tempo real'))));
   });
+const PLASTICO = new Set(['plastico', 'tubo', 'preto-brilho', 'vidro-escuro']);
+let _ceuReflexo = null;
+function ceuReflexo() {
+  if (!_ceuReflexo) { _ceuReflexo = ceu.clone(); _ceuReflexo.mapping = THREE.EquirectangularReflectionMapping; _ceuReflexo.needsUpdate = true; }
+  return _ceuReflexo;
+}
+function folhaPorta(o) {
+  for (let n = o; n; n = n.parent) if (n.userData?.abre != null && n.userData?.visita) return true;
+  return false;
+}
 function grupoDe(o) {
   for (let n = o; n; n = n.parent) {
     const m = /^luz_(\w+?)(?:_\d+)?$/.exec(n.name || '');
@@ -241,6 +251,9 @@ luzPronta.then(() => loader.load(
       if (decal) {
         // banner, logo e faixas: imagem com fundo transparente, um pouco à frente da parede
         real = new THREE.MeshBasicMaterial({ map: real.map, transparent: true, alphaTest: 0.35, polygonOffset: true, polygonOffsetFactor: -2, color: '#e9e9e9' });
+      } else if (o.material?.name === 'vidro' && luz && g && lightmaps[g]) {
+        // vidro dentro dos móveis = espelho dos lavatórios: assado ele vira mancha preta, então reflete o ambiente
+        real = new THREE.MeshStandardMaterial({ color: '#c9d3d6', metalness: 1, roughness: 0.04, envMap: ambiente, envMapIntensity: 1.1 });
       } else if (luz && g && lightmaps[g]) {
         // luz calculada no Blender: cor/textura × lightmap, sem luz em tempo real
         real = new THREE.MeshBasicMaterial({
@@ -249,6 +262,19 @@ luzPronta.then(() => loader.load(
         });
       } else if (vidro) {
         real = new THREE.MeshBasicMaterial({ color: '#dfeef0', transparent: true, opacity: 0.16, depthWrite: false });
+      } else if (real && real.name === 'vidro-fachada') {
+        // pele de vidro da fachada: espelho azulado refletindo o céu de fim de tarde
+        real = new THREE.MeshStandardMaterial({ color: '#5f7d9c', metalness: 0.6, roughness: 0.14, envMap: ambiente, envMapIntensity: 1.25, emissive: '#22344a', emissiveIntensity: 0.6 });
+      } else if (real && PLASTICO.has(real.name)) {
+        // plástico e tubo pretos (cadeiras, longarina): mapa de luz + reflexo do ambiente, senão viram borrões marrons
+        real = new THREE.MeshStandardMaterial({
+          color: real.color, roughness: { tubo: 0.32, 'preto-brilho': 0.18, 'vidro-escuro': 0.05 }[real.name] ?? 0.5, metalness: 0,
+          lightMap: (luz && g && lightmaps[g]) || null, lightMapIntensity: luz ? luz.k * Math.PI * 0.6 : 1,
+          envMap: ambiente, envMapIntensity: 0.9,
+        });
+      } else if (folhaPorta(o) && real) {
+        // folha de porta que abre na visita: fica fora do mapa de luz; cor chapada no tom das portas assadas
+        real = new THREE.MeshBasicMaterial({ color: real.color.clone().multiplyScalar(0.84), map: real.map });
       } else if (real) {
         real.envMap = ambiente;
         real.envMapIntensity = 0.6;
@@ -266,9 +292,23 @@ luzPronta.then(() => loader.load(
       if (o.userData?.abre == null) return;
       o.matrixAutoUpdate = true;
       const caixa = new THREE.Box3().setFromObject(o);
-      portas.push({ obj: o, sinal: Math.sign(o.userData.abre), giro0: o.rotation.y, aberta: 0, centro: caixa.getCenter(new THREE.Vector3()) });
+      portas.push({ obj: o, sinal: Math.sign(o.userData.abre), giro0: o.rotation.y, aberta: 0, centro: caixa.getCenter(new THREE.Vector3()), visita: !!o.userData.visita });
     });
     window.__passeio = { malhas, scene, camera, portas }; // para conferência no console
+    // conferência: __passeio.olha([x,y,z], [x,y,z]) põe a câmera parada num ponto qualquer (fora do caminho)
+    window.__passeio.olha = (o, a, fov = 70) => {
+      modo = 'livre';
+      $('#maquetes').hidden = true;
+      escondeImagem(0);
+      camera.clearViewOffset();
+      camera.zoom = 1;
+      modoBarro(false);
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+      camera.position.set(...o);
+      camera.lookAt(...a);
+      acorda(10);
+    };
     carregado = true;
     pronto();
   },
@@ -349,7 +389,11 @@ for (const a of areas) if (a.sala) a.inicio = pontos.find((pt) => pt.id === a.sa
 let modo = 'carregando';
 let areaAtual = 0;
 const vista = { alvo: new THREE.Vector3(), dist: 30, fov: 22 }; // câmera da maquete
+const tmpDir = new THREE.Vector3();
 const DIR_ISO = new THREE.Vector3(1.05, 1.0, 1.15).normalize();
+// cada área tem o seu ângulo (vista.dir na planta): mais baixo e de lado, como os recortes do ICG
+const dirDe = (i) => (areas[i]?.vista?.dir ? new THREE.Vector3(...areas[i].vista.dir) : DIR_ISO.clone()).normalize();
+vista.dir = dirDe(0);
 const passeio = { p: 0, alvoP: 0, foco: 0, focoPos: new THREE.Vector3(), olhar: new THREE.Quaternion() };
 const nomeAndar = Object.fromEntries(andares.map((a) => [a.id, a.nome]));
 
@@ -364,14 +408,18 @@ function enquadra(i) {
 }
 
 // quanto a maquete sobe na tela (fração da altura): mais no celular, para não ficar atrás do título
-const deslocamento = () => (innerWidth < innerHeight ? 0.16 : 0.17);
+const deslocamento = () => (innerWidth < innerHeight ? 0.16 : 0.1);
+// tamanho da maquete na tela: no computador ela fica menor, inteira entre o topo e o nome da área
+// (camera.zoom amplia em volta do alvo, igual à imagem pronta, então as duas continuam batendo)
+const escalaMaq = () => (innerWidth < innerHeight ? 1 : 0.8);
 
 function aplicaVista() {
   camera.fov = vista.fov;
-  camera.position.copy(vista.alvo).addScaledVector(DIR_ISO, vista.dist);
+  camera.position.copy(vista.alvo).addScaledVector(tmpDir.copy(vista.dir).normalize(), vista.dist);
   camera.lookAt(vista.alvo);
   // sobe a maquete um pouco para não encostar no nome da área
   camera.setViewOffset(innerWidth, innerHeight, 0, innerHeight * deslocamento(), innerWidth, innerHeight);
+  camera.zoom = escalaMaq();
   camera.updateProjectionMatrix();
   uCorte.uMax.value.set(corte.max.x, corte.max.z);
 }
@@ -412,6 +460,8 @@ function posicionaImagem() {
   const [iw, ih] = retrato ? [720, 1560] : [1600, 900];
   let w, h;
   if (retrato) { w = vw; h = vw * ih / iw; } else { h = vh; w = vh * iw / ih; }
+  const s = escalaMaq();
+  w *= s; h *= s;
   const left = (vw - w) / 2;
   const top = vh * (0.5 - deslocamento()) - h * 0.6;
   Object.assign(imgMaq.style, { width: `${w}px`, height: `${h}px`, left: `${left}px`, top: `${top}px` });
@@ -452,6 +502,8 @@ function mostraArea(i, imediato = false) {
   gsap.to(corte.min, { x: e.min.x, y: e.min.y, z: e.min.z, duration: dur, ease: 'power3.inOut' });
   gsap.to(corte.max, { x: e.max.x, y: e.max.y, z: e.max.z, duration: dur, ease: 'power3.inOut' });
   gsap.to(vista.alvo, { x: e.centro.x, y: e.centro.y - 0.6, z: e.centro.z, duration: dur, ease: 'power3.inOut' });
+  const nd = dirDe(i);
+  gsap.to(vista.dir, { x: nd.x, y: nd.y, z: nd.z, duration: dur, ease: 'power3.inOut' });
   if (dur) {
     // voo em arco: afasta um pouco no meio da troca e aproxima na área nova
     const longe = Math.max(vista.dist, e.dist) * 1.22;
@@ -493,7 +545,33 @@ function irParaMaquetes(primeira = false) {
       .to(veu, { opacity: 1, duration: 0.45, ease: 'power2.in' })
       .add(() => { modoBarro(true); vista.fov = 22; mostraArea(areaMaisPerto(), true); })
       .to(veu, { opacity: 0, duration: 0.8, ease: 'power2.out' });
+  } else {
+    // primeira vez: a imagem pronta pode ter chegado ainda na tela de carregamento, quando não podia aparecer
+    gsap.delayedCall(0.1, () => mostraImagem(areaAtual, 0.8));
   }
+}
+
+// "Conhecer os consultórios": troca de caminho com um véu (fim da Recepção 2 → começo dos Consultórios)
+function trocaCaminho(id) {
+  if (modo !== 'dentro' || !curvas[id]) return;
+  if (passeio.foco > 0) fechaPainel();
+  const veu = $('#veu');
+  som.clique();
+  gsap.timeline()
+    .to(veu, { opacity: 1, duration: reduzido ? 0 : 0.5, ease: 'power2.in' })
+    .add(() => {
+      caminhoAtual = id;
+      const k = areas.findIndex((a) => !a.sala && a.caminho === id);
+      if (k >= 0) areaAtual = k;
+      passeio.p = passeio.alvoP = 0;
+      passeio.foco = 0;
+      const { olho, alvo } = poseNoCaminho(0, new THREE.Vector3(), new THREE.Vector3());
+      camera.position.copy(olho);
+      camera.lookAt(alvo);
+      passeio.olhar.copy(camera.quaternion);
+      acorda(30);
+    })
+    .to(veu, { opacity: 0, duration: reduzido ? 0 : 0.8, ease: 'power2.out' });
 }
 
 function areaMaisPerto() {
@@ -516,12 +594,13 @@ function entrar() {
   const { olho, alvo } = poseNoCaminho(p0, new THREE.Vector3(), new THREE.Vector3());
   // voa da vista de cima até perto do ponto de partida, ainda em barro
   const de = { pos: camera.position.clone(), alvo: vista.alvo.clone(), fov: camera.fov };
-  const meio = olho.clone().add(new THREE.Vector3(0, 4, 0)).addScaledVector(DIR_ISO, 3);
+  const meio = olho.clone().add(new THREE.Vector3(0, 4, 0)).addScaledVector(tmpDir.copy(vista.dir).normalize(), 3);
   const estado = { t: 0 };
   const veu = $('#veu');
   $('#maquetes').hidden = true;
   escondeImagem(0.3);
   camera.clearViewOffset();
+  const zoom0 = camera.zoom;
   acorda(200);
   gsap.timeline()
     .to(estado, {
@@ -531,6 +610,7 @@ function entrar() {
         camera.position.lerpVectors(de.pos, meio, k);
         const a = de.alvo.clone().lerp(olho, k);
         camera.fov = THREE.MathUtils.lerp(de.fov, 50, k);
+        camera.zoom = THREE.MathUtils.lerp(zoom0, 1, k);
         camera.updateProjectionMatrix();
         camera.lookAt(a);
       },
@@ -613,9 +693,14 @@ const botoes = pontos.map((pt, i) => {
   const b = document.createElement('button');
   b.className = 'ponto';
   b.type = 'button';
-  b.innerHTML = icone;
-  b.setAttribute('aria-label', pt.titulo);
-  b.addEventListener('click', () => abrePainel(i));
+  b.innerHTML = icone + (pt.rotulo ? `<span class="ponto-rotulo">${pt.rotulo}</span>` : '');
+  b.setAttribute('aria-label', pt.rotulo ? `${pt.rotulo}: ${pt.titulo}` : pt.titulo);
+  b.addEventListener('click', () => {
+    if (pt.vaiPara) { trocaCaminho(pt.vaiPara); return; }
+    abrePainel(i);
+    // sala com "Ver por dentro": o clique no olhinho já abre a porta e entra
+    if (pt.sala) gsap.delayedCall(reduzido ? 0 : 0.9, () => entraSala(i));
+  });
   camadaPontos.appendChild(b);
   return { b, pos: new THREE.Vector3(...pt.pos), pt };
 });
@@ -847,11 +932,13 @@ const EIXO_Y = new THREE.Vector3(0, 1, 0);
 const ABERTURA = THREE.MathUtils.degToRad(84);
 function abrePortas(dt) {
   if (!portas.length) return;
-  const k = 1 - Math.exp(-dt * 3.2);
   for (const pt of portas) {
     const d = modo === 'dentro' ? Math.hypot(camera.position.x - pt.centro.x, camera.position.z - pt.centro.z) : 99;
-    const alvo = modo === 'dentro' && Math.abs(camera.position.y - pt.centro.y) < 2.5
-      ? 1 - THREE.MathUtils.smoothstep(d, 2.4, 4.8) : 0;
+    const perto = modo === 'dentro' && Math.abs(camera.position.y - pt.centro.y) < 2.5;
+    // porta de sala: só abre durante o "Ver por dentro" (e mais rápido, a câmera passa logo por ela);
+    // porta de vidro da entrada: abre quando a câmera chega perto
+    const alvo = pt.visita ? (perto && visita && d < 4.5 ? 1 : 0) : (perto ? 1 - THREE.MathUtils.smoothstep(d, 2.4, 4.8) : 0);
+    const k = 1 - Math.exp(-dt * (pt.visita ? 5.5 : 3.2));
     const antes = pt.aberta;
     pt.aberta += (alvo - pt.aberta) * k;
     if (Math.abs(pt.aberta - antes) > 1e-4) {

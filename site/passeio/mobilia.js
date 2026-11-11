@@ -24,8 +24,9 @@ export const mobilia = [
   { tipo: 'poltrona', nome: 'm-trocador', pos: t(0.55, 3.75), vira: 90, mat: 'estofado-claro' },
   { tipo: 'cadeira-oftalmo', nome: 'm-oftalmo-a', pos: t(1.1, 5.05), vira: 90 },
   { tipo: 'pia', nome: 'm-dml', pos: t(0.45, 6.5), vira: 90 },
+  // ponta dos guichês: armário branco baixo, com gavetas (f38–f39, vídeo 0:12); não tem pia
+  { tipo: 'bancada', nome: 'm-armario-guiches', min: [3.2, T, 7.19], max: [5.3, T, 7.6], pia: 0, tampo: 'branco', gavetas: true },
   // posto de enfermagem (térreo)
-  { tipo: 'bancada', nome: 'm-posto-bancada', min: [3.2, T, 7.05], max: [5.85, T, 7.6], pia: 1 },
   { tipo: 'lavatorio', nome: 'm-posto-lav', pos: t(3.4, 5.2), vira: 90 },
   { tipo: 'poltrona', nome: 'm-posto-poltrona', pos: t(5.45, 6.35), vira: -90 },
   { tipo: 'cadeira-escritorio', nome: 'm-posto-cad', pos: t(4.4, 6.6), vira: 0 },
@@ -73,11 +74,15 @@ export const mobilia = [
   // recepção 1: logo oficial na parede de mármore, banners da espera
   { tipo: 'decal', nome: 'logo-marmore-r1', imagem: 'logo', centro: [3.49, T + 1.95, 11.65], larg: 2.6, alt: 0.975, vira: 90 },
   // banners reais, recortados das fotos f45 e f49 com a perspectiva corrigida (blender/decais)
-  { tipo: 'decal', nome: 'banner-missao', imagem: 'banner-missao', centro: [10.35, T + 1.9, 7.8], larg: 2.9, alt: 1.66, vira: 0 },
-  { tipo: 'caixa', nome: 'totem-pos', min: [3.48, T + 0.02, 8.18], max: [4.98, T + 2.2, 8.26], mat: 'branco' }, // painel em pé 1,5 × 2,2 m (foto f49)
-  { tipo: 'decal', nome: 'banner-pos', imagem: 'banner-pos', centro: [4.23, T + 1.11, 8.27], larg: 1.48, alt: 2.12, vira: 0 },
-  { tipo: 'cadeiras', nome: 'cadeira-pos', de: [3.95, T, 8.75], n: 1, passo: [0, 0, 0], vira: 0, cor: 'preto' },
-  { tipo: 'mesa', nome: 'm-pos-consulta', pos: t(4.62, 8.62), vira: 0, larg: 0.8, prof: 0.5, pacientes: 0, medico: false },
+  // "Nossa missão": parede do fundo da espera, de frente para os guichês (f43–f45, confirmado em 11/11)
+  { tipo: 'caixa', nome: 'painel-missao', min: [11.99, T + 0.98, 9.94], max: [12.12, T + 2.82, 12.96], mat: 'branco' },
+  { tipo: 'decal', nome: 'banner-missao', imagem: 'banner-missao', centro: [11.985, T + 1.9, 11.45], larg: 2.9, alt: 1.66, vira: -90 },
+  // quadro bege com as placas dos médicos na parede da ergometria (vídeo 0:14–0:17, f42 e f48)
+  { tipo: 'quadro-medicos', nome: 'placas-medicos', centro: [10.55, T, 7.78], larg: 1.45, alt: 2.45, vira: 0 },
+  // "Pós Consulta": cartaz na parede do canto, antes do corredor do Bloco, com mesinha preta e cadeira (f48–f49)
+  { tipo: 'decal', nome: 'banner-pos', imagem: 'banner-pos', centro: [13.395, T + 1.08, 9.07], larg: 1.36, alt: 1.95, vira: -90 },
+  { tipo: 'mesinha-preta', nome: 'mesa-pos-consulta', pos: t(13.12, 9.25), vira: -90 },
+  { tipo: 'cadeiras', nome: 'cadeira-pos', de: [12.55, T, 9.2], n: 1, passo: [0, 0, 0], vira: 90, cor: 'preto' },
   { tipo: 'planta-vaso', nome: 'planta-r1-a', pos: t(11.55, 13.9), altura: 1.4 },
   { tipo: 'planta-vaso', nome: 'planta-r1-b', pos: t(3.8, 13.9), altura: 1.2 },
 
@@ -93,18 +98,18 @@ export const mobilia = [
   ...[1.2, 4.6, 6.7, 8.8, 10.9, 13.0, 15.2, 17.4].map((x, i) => ({ tipo: 'caixa', nome: `spot-marquise-r1-${i}`, min: [x - 0.09, T + 2.88, 15.1], max: [x + 0.09, T + 2.9, 15.28], mat: 'luz' })),
   { tipo: 'letras', nome: 'letreiro-r1', texto: 'CLÍNICA DIAS', centro: [7.4, T + 4.0, 15.15], tamanho: 0.62, mat: 'branco', vira: 0, prof: 0.1 },
   { tipo: 'letras', nome: 'telefone-r1', texto: '3849.6156', centro: [1.9, T + 3.27, 15.76], tamanho: 0.34, mat: 'branco', vira: 0, prof: 0.02 },
-  { tipo: 'caixilho', nome: 'pele-vidro-r1', min: [-0.05, T + 3.65, 14.48], max: [16.3, T + 9.7, 14.54], modulo: 1.3, eixo: 'x' },
+  // pele de vidro na frente da parede do 1º andar (antes ficava atrás e o andar de dentro aparecia)
+  { tipo: 'caixilho', nome: 'pele-vidro-r1', min: [-0.05, T + 3.65, 14.66], max: [16.3, T + 9.7, 14.72], modulo: 1.3, eixo: 'x' },
   { tipo: 'caixa', nome: 'vaga-pne', min: [6.3, T - 0.015, 16.6], max: [7.5, T + 0.006, 17.6], mat: 'azul' },
   ...[1.1, 3.7, 6.85, 9.4, 12.0].map((x, i) => ({ tipo: 'caixa', nome: `batente-vaga-${i}`, min: [x - 0.45, T, 15.35], max: [x + 0.45, T + 0.1, 15.5], mat: 'amarelo' })),
 
   // carros simples nas vagas da Rua 128, extintores, lixeiras, totem de senha (fotos f39, f45, f14)
-  { tipo: 'carro', nome: 'carro-1', pos: t(1.7, 17.8), vira: 0, cor: '#8a8f96' },
-  { tipo: 'carro', nome: 'carro-2', pos: t(12.1, 17.8), vira: 180, cor: '#2d3a4f' },
-  { tipo: 'extintor', nome: 'ext-r1', pos: t(12.05, 10.0), vira: -90 },
+  // (os carros saíram em 11/11: o modelo simples ficava tosco na frente da fachada)
+  { tipo: 'extintor', nome: 'ext-r1', pos: t(12.1, 13.55), vira: -90 }, // à direita do painel "Nossa missão" (f45)
   { tipo: 'extintor', nome: 'ext-bloco', pos: t(14.7, 6.29), vira: 0 }, // na parede sul do corredor (antes flutuava no meio)
-  { tipo: 'lixeira', nome: 'lix-r1', pos: t(5.6, 8.9), vira: 0 },
-  { tipo: 'lixeira', nome: 'lix-r1b', pos: t(11.6, 14.0), vira: 0 },
-  { tipo: 'totem', nome: 'totem-senha-r1', centro: [11.75, T, 12.7] },
+  { tipo: 'lixeira', nome: 'lix-r1b', pos: t(11.85, 14.05), vira: 0, pedal: true },
+  // totem branco "Retire sua Senha" na ponta dos guichês, ao lado do armário branco (f37–f39, vídeo 0:12)
+  { tipo: 'totem-senha', nome: 'totem-senha-r1', pos: t(5.57, 7.83), vira: 0 },
 
   // ═════════════ 1º PAVIMENTO ═════════════
   // prédio antigo (+3,79)
@@ -152,17 +157,15 @@ export const mobilia = [
   { tipo: 'bancada', nome: 'm-odonto-1-banc', min: [26.72, N_REC, 1.65], max: [27.25, N_REC, 3.4], pia: 1 },
   { tipo: 'cadeira-odonto', nome: 'm-odonto-2', pos: r(32.0, 2.75), vira: 140 },
   { tipo: 'bancada', nome: 'm-odonto-2-banc', min: [30.1, N_REC, 1.65], max: [30.63, N_REC, 3.4], pia: 1 },
-  { tipo: 'extintor', nome: 'ext-r2', pos: r(21.9, 4.45), vira: 0 }, // na parede do corredor (antes ficava a 70 cm dela)
-  { tipo: 'extintor', nome: 'ext-espera', pos: a(13.6, 9.03), vira: 180 }, // na parede norte da espera
-  { tipo: 'lixeira', nome: 'lix-r2', pos: r(26.9, 5.1), vira: 0 },
-  { tipo: 'lixeira', nome: 'lix-espera', pos: a(10.5, 8.75), vira: 0 },
+  { tipo: 'extintor', nome: 'ext-r2', pos: r(22.62, 4.45), vira: 0 }, // na parede do corredor, antes das cadeiras (f14)
+  { tipo: 'lixeira', nome: 'lix-espera', pos: a(12.45, 8.84), vira: 180, pedal: true }, // embaixo da prateleira (f24)
   // como nas fotos: purificadores de água na parede, split na recepção 2, DEA vermelho na espera
   { tipo: 'purificador', nome: 'pur-r1', pos: t(13.6, 6.29), vira: 0 },
   { tipo: 'purificador', nome: 'pur-r2-a', pos: r(24.53, 4.05), vira: 90 },
   { tipo: 'purificador', nome: 'pur-r2-b', pos: r(24.53, 4.7), vira: 90 },
   { tipo: 'ar-split', nome: 'split-r2-a', pos: r(27.8, 4.45), vira: 0 },
   { tipo: 'ar-split', nome: 'split-r2-b', pos: r(31.2, 4.45), vira: 0 },
-  { tipo: 'dea', nome: 'dea-espera', pos: a(12.7, 9.03), vira: 180 },
+  { tipo: 'dea', nome: 'dea-espera', pos: a(13.05, 9.03), vira: 180 },
   { tipo: 'vaso', nome: 'm-isfunc-1p', pos: r(25.1, 1.95), vira: 0 },
   { tipo: 'vaso', nome: 'm-ispne-pac-1p', pos: r(24.95, 7.55), vira: 90 },
 ];

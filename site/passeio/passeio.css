@@ -7,7 +7,7 @@
 
 :root {
   /* paleta oficial (Manual da Marca) */
-  --noite: #101E44;      /* azul noite: texto e botões */
+  --noite: #2B4161;      /* azul do logo: texto e botões (o #101E44 puxava para o roxo) */
   --petroleo: #5C95A4;
   --laranja: #F7922D;
   --pessego: #FDE0C9;
@@ -156,6 +156,9 @@ body.modo-maquetes .folhas { opacity: 1; }
 .ponto::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .7); animation: pulso 2.4s var(--ease) infinite; }
 @keyframes pulso { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; } }
 .ponto:hover { transform: scale(1.08); }
+/* olhinho com rótulo ("Ver por dentro", "Conhecer os consultórios"): pílula branca com o texto ao lado do olho */
+.ponto-rotulo { position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 7px 12px; background: #fff; color: var(--noite); font-size: .78rem; font-weight: 500; letter-spacing: .02em; box-shadow: 0 4px 18px rgba(0, 0, 0, .18); pointer-events: none; }
+.ponto-rotulo::before { content: ''; position: absolute; left: -5px; top: 50%; margin-top: -5px; border: 5px solid transparent; border-left: 0; border-right-color: #fff; }
 
 .dica {
   position: absolute; left: 50%; top: 50%; width: min(250px, 80vw); transform: translate(-50%, -50%);
