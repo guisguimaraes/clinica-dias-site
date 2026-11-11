@@ -63,12 +63,12 @@
   <section class="maquetes" id="maquetes" hidden>
     <!-- setas nas bordas, com o nome da parte vizinha na vertical (como o ICG) -->
     <button class="nav-lado nav-ant" id="seta-esq" type="button">
-      <svg viewBox="0 0 8 10" width="8" height="10" aria-hidden="true"><path d="M7 0 0 5l7 5z" fill="currentColor"/></svg>
+      <span class="nav-bola"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="nav-nome"></span>
     </button>
     <button class="nav-lado nav-prox" id="seta-dir" type="button">
       <span class="nav-nome"></span>
-      <svg viewBox="0 0 8 10" width="8" height="10" aria-hidden="true"><path d="M1 0l7 5-7 5z" fill="currentColor"/></svg>
+      <span class="nav-bola"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     </button>
 
     <div class="maquete-rodape">
@@ -77,7 +77,12 @@
         <h1 id="area-nome">Recepção 1</h1>
         <p class="area-sub" id="area-sub"></p>
       </div>
-      <button class="btn-entrar" id="btn-entrar" type="button">Entrar</button>
+      <!-- Entrar com uma seta de cada lado para passar de área (computador e celular) -->
+      <div class="entrar-linha">
+        <button class="seta-redonda" id="seta-ant2" type="button" aria-label="Área anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="btn-entrar" id="btn-entrar" type="button">Entrar</button>
+        <button class="seta-redonda" id="seta-prox2" type="button" aria-label="Próxima área"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
       <ol class="passos" id="passos" aria-label="Partes da clínica"></ol>
     </div>
   </section>
