@@ -1,16 +1,20 @@
+# ferramentas
 node_modules
 dist
-.astro
 .claude
-_versoes-anteriores
-skills-lock.json
 .taste-skill
-site/previa-celular.html
-maquete-3d
-imersao-flow
+skills-lock.json
 
-# Blender: cópias automáticas, logs e testes de luz
+# material de trabalho que fica só no PC
+imersao-flow
+arquivo/versoes-anteriores
+arquivo/maquete-3d
+arquivo/site-antigo/imersao
+arquivo/site-antigo/previa-celular.html
+
+# Blender: cópias automáticas, logs, texturas intermediárias e testes de luz
 blender/*.blend1
-blender/log-*.txt
+blender/logs/
+blender/temp/
 blender/teste-luz/
-blender/__pycache__/
+__pycache__/

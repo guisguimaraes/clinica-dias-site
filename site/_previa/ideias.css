@@ -1,0 +1,79 @@
+/* Prévia das ideias (12/11/2026): só para o Guilherme ver. Usa as cores e peças do v2.css. */
+
+/* ── avisos da prévia ─────────────────── */
+.previa-aviso { background: var(--pessego); padding: 14px var(--gutter); }
+.previa-aviso p { max-width: var(--largura); margin: 0 auto; font-size: .95rem; }
+.previa-rotulo {
+  max-width: var(--largura); margin: 56px auto 0; padding: 12px var(--gutter);
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline;
+  font-size: .9rem; color: var(--apagado); border-top: 1px dashed var(--linha-forte);
+}
+.previa-rotulo b { color: var(--laranja-texto); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: .8rem; }
+.previa-rotulo + .secao { padding-top: clamp(40px, 5vw, 72px); }
+.previa-rotulo + .bloco-noite, .previa-rotulo + .chegar { margin-top: 12px; }
+
+/* ── ideia 1: especialidades em lista editorial ── */
+.esp2-corpo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 80px); padding-top: 36px; align-items: start; }
+.esp2-grupo + .esp2-grupo { margin-top: 44px; }
+.esp2-grupo-nome { display: flex; align-items: baseline; gap: 10px; font-size: .82rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--petroleo-texto); padding-bottom: 10px; border-bottom: 1px solid var(--linha-forte); }
+.esp2-grupo-nome span { color: var(--apagado); font-weight: 400; font-variant-numeric: tabular-nums; }
+.esp2-lista { columns: 2; column-gap: 32px; }
+.esp2-lista li { break-inside: avoid; border-bottom: 1px solid var(--linha); }
+.esp2-lista button {
+  position: relative; width: 100%; text-align: left; display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; font-size: clamp(1.08rem, .9rem + .55vw, 1.42rem); font-weight: 300; line-height: 1.2; color: var(--apagado);
+  transition: color .25s, padding .35s var(--saida);
+}
+.esp2-lista button::after {
+  content: ''; margin-left: auto; width: 16px; height: 9px; flex: none; background: currentColor; opacity: 0; transform: translateX(-6px);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 10'%3E%3Cpath d='M0 5h16M12 1l4 4-4 4' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 10'%3E%3Cpath d='M0 5h16M12 1l4 4-4 4' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: opacity .25s, transform .35s var(--saida);
+}
+.esp2-lista button:hover, .esp2-lista button[aria-pressed="true"] { color: var(--noite); padding-left: 12px; }
+.esp2-lista button[aria-pressed="true"] { font-weight: 400; }
+.esp2-lista button[aria-pressed="true"]::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; background: var(--laranja); }
+.esp2-lista button:hover::after, .esp2-lista button[aria-pressed="true"]::after { opacity: 1; transform: none; color: var(--laranja-texto); }
+
+.esp2-painel { position: sticky; top: calc(var(--topo) + 28px); background: var(--pedra); border-radius: var(--raio, 5px); overflow: hidden; }
+.esp2-sala { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: radial-gradient(ellipse at 50% 60%, #fff 0%, var(--pedra) 70%); border-bottom: 1px solid var(--pedra-linha); }
+.esp2-sala img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transform: scale(1.55); transition: opacity .3s; }
+.esp2-sala img.trocando { opacity: 0; }
+.esp2-sala figcaption { position: absolute; left: 12px; bottom: 12px; padding: 4px 10px; border-radius: 3px; background: rgba(255, 255, 255, .85); font-size: .78rem; letter-spacing: .02em; color: var(--apagado); }
+.esp2-texto { display: grid; gap: 14px; padding: clamp(22px, 2.6vw, 36px); }
+.esp2-conta { font-size: .8rem; color: var(--laranja-texto); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+.esp2-nome { font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem); font-weight: 400; line-height: 1.1; letter-spacing: -.01em; }
+.esp2-texto > p:not(.esp2-conta) { color: var(--apagado); font-weight: 300; max-width: 52ch; min-height: 6.2em; }
+.esp2-texto .acoes { margin-top: 6px; }
+
+/* ── ideia 3: porta-cartão do CardFácil ── */
+.cf-saida { position: absolute; inset: 0; display: grid; place-items: center; z-index: 1; perspective: 1400px; }
+.cf-capa-fundo, .cf-capa-frente { position: absolute; left: 50%; width: min(70%, 430px); margin-left: calc(min(70%, 430px) / -2); border-radius: 14px; pointer-events: none; visibility: hidden; }
+.cf-capa-fundo { top: 52%; aspect-ratio: 1.45; background: #1c2d4a; z-index: 0; }
+.cf-capa-frente {
+  top: calc(52% + min(70%, 430px) / 1.45 * .22); aspect-ratio: 1.86; z-index: 2; display: grid; place-items: center;
+  background: linear-gradient(170deg, #34507a 0%, var(--noite) 55%, #233656 100%);
+  box-shadow: 0 -6px 14px rgba(16, 30, 68, .28), inset 0 1px 0 rgba(255, 255, 255, .14);
+}
+.cf-capa-frente::before { content: ''; position: absolute; inset: 9px; border: 1px dashed rgba(255, 255, 255, .22); border-radius: 9px; }
+.cf-capa-frente img { width: 42%; height: auto; opacity: .75; }
+.cf-com-capa.preparada :is(.cf-capa-fundo, .cf-capa-frente) { visibility: visible; }
+
+/* ── ideia 5: link da bio ─────────────── */
+.bio-corpo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(32px, 6vw, 96px); align-items: center; }
+.bio-texto { display: grid; gap: 20px; justify-items: start; }
+.bio-texto > p:not(.sobretitulo) { color: var(--apagado); font-weight: 300; max-width: 50ch; }
+.bio-celular { width: 340px; height: 680px; padding: 12px; border-radius: 44px; background: #1b2638; box-shadow: 0 30px 60px -20px rgba(16, 30, 68, .45); }
+.bio-celular iframe { width: 100%; height: 100%; border: 0; border-radius: 33px; background: var(--papel); }
+
+/* ── telas menores ────────────────────── */
+@media (max-width: 900px) {
+  .esp2-corpo { grid-template-columns: 1fr; padding-top: 24px; }
+  .esp2-lista { columns: 1; }
+  /* no celular a explicação abre logo abaixo do nome tocado (o script move o painel para lá) */
+  .esp2-painel { position: static; margin: 4px 0 14px; }
+  .esp2-painel:not(.no-item) { display: none; }
+  .esp2-sala { aspect-ratio: 16 / 9; }
+  .bio-corpo { grid-template-columns: 1fr; justify-items: center; }
+  .bio-celular { width: min(340px, 100%); height: 640px; }
+}

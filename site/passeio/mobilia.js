@@ -1,6 +1,6 @@
 // Móveis, plantas, banners e fachadas da Clínica Dias.
 // Posições lidas na "planta layout" das folhas 01/05 (térreo) e 02/05 (1º pav.), com grade de 1 m
-// (blender/grade_layout.py), e acabamentos das fotos de 2026-11-06 e das fachadas em site/v2/img/.
+// (blender/grade_layout.py), e acabamentos das fotos de 2026-11-06 e das fachadas em site/img/.
 // Convenção (ver blender/moveis.py): frente = +z local; vira 0 = encostado na parede norte,
 // 90 = parede oeste, -90 = parede leste, 180 = parede sul.
 
@@ -86,7 +86,7 @@ export const mobilia = [
   { tipo: 'planta-vaso', nome: 'planta-r1-a', pos: t(11.55, 13.9), altura: 1.4 },
   { tipo: 'planta-vaso', nome: 'planta-r1-b', pos: t(3.8, 13.9), altura: 1.2 },
 
-  // fachada da Rua 128 (como site/v2/img/fachada-recepcao1.webp)
+  // fachada da Rua 128 (como site/img/fachada-recepcao1.webp)
   { tipo: 'caixa', nome: 'painel-creme-r1', min: [-0.05, T, 14.57], max: [3.3, T + 2.9, 14.66], mat: 'creme' },
   { tipo: 'decal', nome: 'logo-fachada-r1', imagem: 'logo', centro: [1.62, T + 1.55, 14.67], larg: 2.7, alt: 1.01, vira: 0 },
   { tipo: 'cobogo', nome: 'cobogo-r1', min: [7.55, T + 0.35, 14.66], max: [11.95, T + 2.85, 14.74] },

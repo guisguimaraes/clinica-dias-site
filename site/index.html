@@ -3,245 +3,470 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Clínica Dias | Medicina Especializada em Timóteo - MG</title>
-  <meta name="description" content="Clínica Dias em Timóteo - MG: consultas, check-ups e exames com atendimento humanizado. Acesse seus resultados de exames online.">
-  <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#3b2d63">
-  <link rel="canonical" href="https://clinicadias.com/">
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="pt_BR">
-  <meta property="og:site_name" content="Clínica Dias">
-  <meta property="og:title" content="Clínica Dias | Medicina Especializada em Timóteo - MG">
-  <meta property="og:description" content="Clínica Dias em Timóteo - MG: consultas, check-ups e exames com atendimento humanizado. Acesse seus resultados de exames online.">
-  <meta property="og:url" content="https://clinicadias.com/">
-  <meta property="og:image" content="https://clinicadias.com/assets/img/hero-consulta.webp">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
-  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/style.css">
-  <script src="assets/js/main.js" defer></script>
-
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"MedicalClinic","name":"Clínica Dias","url":"https://clinicadias.com","logo":"https://clinicadias.com/assets/img/logo.png","telephone":"+553138496156","address":{"@type":"PostalAddress","streetAddress":"Rua Cento e Vinte e Oito, 14","addressLocality":"Timóteo","addressRegion":"MG","postalCode":"35180-002","addressCountry":"BR"},"hasMap":"https://www.google.com/maps/place/Cl%C3%ADnica+Dias+-+Tim%C3%B3teo/data=!4m2!3m1!1s0x0:0x3a9d6b5a78d2d148?sa=X&ved=1t:2428&ictx=111"}</script>
+  <meta name="robots" content="noindex">
+  <title>Clínica Dias | Medicina especializada em Timóteo - MG</title>
+  <meta name="description" content="Clínica Dias em Timóteo, Coronel Fabriciano e Ipatinga: 29 especialidades, da clínica geral à cardiologia, desde 2010.">
+  <link rel="icon" type="image/svg+xml" href="img/simbolo.svg">
+  <link rel="preload" href="fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/site.css">
+  <script src="js/site.js" defer></script>
+  <script src="js/vendor/gsap.min.js" defer></script>
+  <script src="js/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="js/vendor/SplitText.min.js" defer></script>
+  <script src="js/anima.js" defer></script>
+  <!-- animações: esconde os títulos só até o anima.js prepará-los (se ele não rodar, volta tudo em 3 s) -->
+  <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('anima');setTimeout(function(){if(!window.__anima)document.documentElement.classList.remove('anima')},3000)}</script>
 </head>
-<body class="home">
-  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-  <header class="site-header" data-header>
-    <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="Clínica Dias - página inicial">
-        <img src="assets/img/logo.webp" alt="Clínica Dias - Medicina Especializada" width="480" height="180">
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <a class="marca" href="#conteudo" aria-label="Clínica Dias, Medicina Especializada, início">
+      <img src="img/logo.svg" alt="" width="268" height="100">
+    </a>
+    <nav class="topo-links" id="menu" aria-label="Menu principal">
+      <a href="a-clinica.html">A clínica</a>
+      <a href="#especialidades">Especialidades</a>
+      <a href="#unidades">Unidades</a>
+      <a href="atendimento.html">Atendimento</a>
+      <a href="passeio/">Por dentro</a>
+      <a class="topo-resultados" href="exames.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z M14 3v5h5 M10 13h6 M10 17h6"/></svg>Resultados de exames
       </a>
-
-      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu-principal" data-nav-toggle>
-        <span class="nav-toggle-bar" aria-hidden="true"></span>
-        <span class="sr-only">Abrir menu</span>
-      </button>
-
-      <nav class="site-nav" id="menu-principal" aria-label="Menu principal" data-nav>
-        <ul class="nav-list">
-          <li><a href="index.html" aria-current="page">Home</a></li>
-          <li><a href="quem-somos.html">Quem Somos</a></li>
-          <li><a href="contato.html">Contato</a></li>
-          <li><a href="localizacao.html">Localização</a></li>
-        </ul>
-        <a class="btn btn-accent nav-cta" href="https://core.feegow.com/patient-interface/vy2m/login" target="_blank" rel="noopener noreferrer">
-          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 3h6m-5 0v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3M7.5 15h9"/></svg>
-          Resultados de Exames
-          <span class="sr-only">(abre em nova aba)</span>
-        </a>
-      </nav>
-    </div>
+    </nav>
+    <a class="botao botao-laranja topo-agendar" href="tel:+553138496156">Agendar <span>(31) 3849-6156</span></a>
+    <button class="topo-menu" type="button" aria-expanded="false" aria-controls="menu" data-menu>
+      <span aria-hidden="true"></span><span class="so-leitor">Abrir menu</span>
+    </button>
   </header>
 
-
   <main id="conteudo">
-    <section class="home-stage" aria-label="Apresentação da clínica">
-      <div class="home-frame">
-        <div class="home-intro">
-          <div class="home-title">
-            <p class="eyebrow">Clínica Dias, Timóteo - MG</p>
-            <h1>Medicina especializada perto da sua família</h1>
-          </div>
-          <div class="home-text">
-            <p class="lead">Consultas de clínica médica, check-ups, exames, hematologia, prevenção e acompanhamento contínuo, com atendimento próximo e respeitoso.</p>
-            <div class="hero-actions">
-              <a class="btn btn-primary" href="#especialidades-titulo">Ver áreas de atendimento</a>
-              <a class="btn btn-outline" href="quem-somos.html">Conhecer a clínica</a>
-            </div>
-          </div>
-        </div>
-        <img class="home-photo" src="assets/img/fachada.webp" alt="Fachada da Clínica Dias, na Rua Cento e Vinte e Oito, em Timóteo" width="1899" height="828" fetchpriority="high">
+    <!-- abertura: foto real ao lado de um bloco claro (tom das paredes e do mármore da recepção) com os atalhos -->
+    <section class="abertura">
+      <figure class="abertura-foto">
+        <img src="img/fachada-recepcao1.webp" alt="Prédio de vidro da Clínica Dias em Timóteo ao pôr do sol, com o letreiro CLÍNICA DIAS, o cobogó iluminado e o estacionamento na frente" width="1920" height="1080" fetchpriority="high" style="object-position: 50% 45%">
+        <figcaption class="etiqueta">Timóteo · Rua Cento e Vinte e Oito, 14</figcaption>
+      </figure>
+      <div class="abertura-corpo bloco-pedra">
+        <img class="contornos" src="img/contornos-claro.svg" alt="" aria-hidden="true">
+        <p class="sobretitulo">Medicina especializada desde 2010</p>
+        <h1 class="declaracao">Cuidado de especialista <em>perto de casa</em>, em Timóteo, Coronel Fabriciano e Ipatinga.</h1>
+        <p class="abertura-apoio">29 especialidades, da clínica geral à cardiologia, com agendamento por telefone.</p>
+
+        <ol class="atalhos">
+          <li>
+            <a class="atalho" href="tel:+553138496156">
+              <span class="atalho-num" aria-hidden="true">01</span>
+              <span class="atalho-texto"><b>Agendar consulta</b><span>(31) 3849-6156 · segunda a sexta, das 8h às 18h</span></span>
+              <span class="quadrado-seta" aria-hidden="true"></span>
+            </a>
+          </li>
+          <li>
+            <a class="atalho" href="exames.html">
+              <span class="atalho-num" aria-hidden="true">02</span>
+              <span class="atalho-texto"><b>Resultados de exames</b><span>Pelo portal do paciente, no celular ou no computador</span></span>
+              <span class="quadrado-seta" aria-hidden="true"></span>
+            </a>
+          </li>
+          <li>
+            <a class="atalho" href="passeio/">
+              <span class="atalho-num" aria-hidden="true">03</span>
+              <span class="atalho-texto"><b>A clínica por dentro</b><span>Da portaria aos consultórios, em 3D</span></span>
+              <span class="quadrado-seta" aria-hidden="true"></span>
+            </a>
+          </li>
+        </ol>
       </div>
     </section>
 
-    <div class="home-sheet">
-      <ul class="quick-info">
-        <li>
-          <span class="quick-label">Horário</span>
-          <span class="quick-value">Seg. a sex., das 8h às 18h</span>
+    <!-- unidades -->
+    <section class="secao" id="unidades" aria-labelledby="unidades-titulo">
+      <header class="secao-cabeca">
+        <h2 id="unidades-titulo" class="secao-titulo">Unidades</h2>
+        <p class="secao-nota">Três endereços no Vale do Aço. Ligue para a unidade mais perto de você.</p>
+      </header>
+
+      <ul class="unidades">
+        <li class="unidade">
+          <div class="galeria" data-galeria>
+            <div class="galeria-trilho" data-galeria-trilho tabindex="0" role="group" aria-roledescription="galeria" aria-label="Fotos das duas entradas de Timóteo. Arraste para o lado.">
+              <figure class="unidade-foto">
+                <img src="img/fachada-recepcao1.webp" alt="Prédio de vidro da Clínica Dias na Rua Cento e Vinte e Oito, com o letreiro CLÍNICA DIAS e o estacionamento na frente" width="1920" height="1080" loading="lazy" draggable="false">
+                <figcaption class="etiqueta">Recepção 1 · Rua 128</figcaption>
+              </figure>
+              <figure class="unidade-foto">
+                <img src="img/fachada-portaria2.webp" alt="Fachada cinza da Portaria 2 da Clínica Dias, pela Avenida Treze, com escada e o logo na parede" width="1920" height="1080" loading="lazy" draggable="false">
+                <figcaption class="etiqueta">Portaria 2 · Av. Treze</figcaption>
+              </figure>
+            </div>
+            <div class="galeria-controles">
+              <button type="button" data-galeria-passo="-1" aria-label="Foto anterior">←</button>
+              <span class="galeria-conta" data-galeria-conta aria-live="polite">1 / 2</span>
+              <button type="button" data-galeria-passo="1" aria-label="Próxima foto">→</button>
+            </div>
+          </div>
+          <div class="unidade-texto">
+            <h3>Timóteo</h3>
+            <p class="unidade-resumo">Unidade principal, com duas entradas: a recepção da Rua Cento e Vinte e Oito, com estacionamento, e a Portaria 2, pela Avenida Treze.</p>
+            <dl class="dados">
+              <div><dt>Endereço</dt><dd>Rua Cento e Vinte e Oito, 14 · Santa Maria</dd></div>
+              <div><dt>Horário</dt><dd>Segunda a sexta, das 8h às 18h</dd></div>
+              <div><dt>Telefone</dt><dd><a href="tel:+553138496156">(31) 3849-6156</a></dd></div>
+            </dl>
+            <div class="acoes">
+              <a class="botao botao-linha" href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG" target="_blank" rel="noopener noreferrer">Como chegar<span class="so-leitor"> (abre o Google Maps)</span></a>
+              <a class="botao botao-linha" href="passeio/">Ver por dentro</a>
+            </div>
+          </div>
         </li>
-        <li>
-          <span class="quick-label">Telefone</span>
-          <a class="quick-value" href="tel:+553138496156">(31)&nbsp;3849&#8209;6156</a>
+        <li class="unidade">
+          <figure class="unidade-foto">
+            <img src="img/fachada-fabriciano.webp" alt="Fachada da Clínica Dias em Coronel Fabriciano, na Rua Pedro Nolasco, 107" width="1400" height="788" loading="lazy">
+            <figcaption class="etiqueta">Rua Pedro Nolasco, 107</figcaption>
+          </figure>
+          <div class="unidade-texto">
+            <h3>Coronel Fabriciano</h3>
+            <p class="unidade-resumo">No centro da cidade. Ligue para saber os horários e as especialidades atendidas nesta unidade.</p>
+            <dl class="dados">
+              <div><dt>Endereço</dt><dd>Rua Pedro Nolasco, 107 · Centro</dd></div>
+              <div><dt>Telefone</dt><dd><a href="tel:+5531997600755">(31) 99760-0755</a></dd></div>
+            </dl>
+            <div class="acoes">
+              <a class="botao botao-linha" href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Pedro%20Nolasco%2C%20107%20-%20Centro%2C%20Coronel%20Fabriciano%20-%20MG" target="_blank" rel="noopener noreferrer">Como chegar<span class="so-leitor"> (abre o Google Maps)</span></a>
+            </div>
+          </div>
         </li>
-        <li>
-          <span class="quick-label">Endereço</span>
-          <a class="quick-value" href="localizacao.html">Rua Cento e Vinte e Oito, 14</a>
+        <li class="unidade">
+          <figure class="unidade-foto">
+            <img src="img/fachada-ipatinga.webp" alt="Fachada da Clínica Dias em Ipatinga, na esquina da Avenida Brasil, 700" width="1400" height="788" loading="lazy">
+            <figcaption class="etiqueta">Avenida Brasil, 700</figcaption>
+          </figure>
+          <div class="unidade-texto">
+            <h3>Ipatinga</h3>
+            <p class="unidade-resumo">Na esquina da Avenida Brasil, ao lado da Drogaria Popular.</p>
+            <dl class="dados">
+              <div><dt>Endereço</dt><dd>Avenida Brasil, 700 · Iguaçu</dd></div>
+              <div><dt>Horário</dt><dd>Das 8h às 18h</dd></div>
+              <div><dt>Telefone</dt><dd><a href="tel:+5531997454281">(31) 99745-4281</a></dd></div>
+            </dl>
+            <div class="acoes">
+              <a class="botao botao-linha" href="https://www.google.com/maps/dir/?api=1&amp;destination=Avenida%20Brasil%2C%20700%20-%20Igua%C3%A7u%2C%20Ipatinga%20-%20MG" target="_blank" rel="noopener noreferrer">Como chegar<span class="so-leitor"> (abre o Google Maps)</span></a>
+            </div>
+          </div>
         </li>
       </ul>
+    </section>
 
-      <section class="section" aria-labelledby="especialidades-titulo">
-        <div class="container">
-          <div class="section-head">
-            <p class="eyebrow">Como podemos ajudar</p>
-            <h2 id="especialidades-titulo">Nossas áreas de atendimento</h2>
-            <p>Atendimento completo para cuidar da sua saúde com prevenção, diagnóstico e acompanhamento.</p>
-          </div>
-
-          <div class="card-grid">
-            <article class="service-card reveal">
-              <img src="assets/img/esp-clinica-geral.webp" alt="Estetoscópio sobre fundo claro" width="800" height="532" loading="lazy">
-              <div class="service-body">
-                <h3>Clínica Médica</h3>
-                <p>Consultas para avaliação, diagnóstico e tratamento, com orientação clara sobre cada passo do cuidado.</p>
-              </div>
-            </article>
-            <article class="service-card reveal">
-              <img src="assets/img/esp-cardiologia.webp" alt="Modelo anatômico de coração" width="800" height="1200" loading="lazy">
-              <div class="service-body">
-                <h3>Check-up</h3>
-                <p>Avaliações periódicas para acompanhar sua saúde e identificar precocemente qualquer alteração.</p>
-              </div>
-            </article>
-            <article class="service-card reveal">
-              <img src="assets/img/esp-exames.webp" alt="Laboratório de análises clínicas" width="800" height="533" loading="lazy">
-              <div class="service-body">
-                <h3>Exames</h3>
-                <p>Solicitação e acompanhamento de exames, com resultados disponíveis online de forma prática.</p>
-              </div>
-            </article>
-            <article class="service-card reveal">
-              <img src="assets/img/esp-hematologia.webp" alt="Profissional analisando amostra ao microscópio" width="800" height="533" loading="lazy">
-              <div class="service-body">
-                <h3>Hematologia</h3>
-                <p>Investigação e acompanhamento de alterações do sangue com atenção especializada.</p>
-              </div>
-            </article>
-            <article class="service-card reveal">
-              <img src="assets/img/esp-prevencao.webp" alt="Profissional de saúde atendendo paciente idosa" width="800" height="529" loading="lazy">
-              <div class="service-body">
-                <h3>Prevenção</h3>
-                <p>Orientação e cuidados preventivos para manter a qualidade de vida em todas as idades.</p>
-              </div>
-            </article>
-            <article class="service-card reveal">
-              <img src="assets/img/esp-geriatria.webp" alt="Médico acompanhando paciente em leito" width="800" height="533" loading="lazy">
-              <div class="service-body">
-                <h3>Acompanhamento contínuo</h3>
-                <p>Seguimento próximo de tratamentos e condições crônicas, com escuta e cuidado individualizado.</p>
-              </div>
-            </article>
-          </div>
+    <!-- a clínica e o fundador -->
+    <section class="dividida" id="clinica" aria-labelledby="clinica-titulo">
+      <div class="dividida-corpo bloco-pessego">
+        <p class="sobretitulo">A clínica</p>
+        <h2 id="clinica-titulo" class="declaracao">Fundada em 2010 pelo cardiologista Douglas Lourenço Dias, para trazer a medicina especializada para perto das famílias de Timóteo e região.</h2>
+        <dl class="dados dados-largo">
+          <div><dt>Sócio-fundador</dt><dd>Dr. Douglas Lourenço Dias, cardiologista</dd></div>
+          <div><dt>Formação</dt><dd>Medicina pela Faculdade de Medicina do Vale do Aço (FAMEVAÇO), 2008</dd></div>
+          <div><dt>Especialista</dt><dd>Título em Cardiologia pela Sociedade Brasileira de Cardiologia (SBC)</dd></div>
+          <div><dt>Pós-graduação</dt><dd>Emergências Clínicas e Nutrologia</dd></div>
+          <div><dt>Atende</dt><dd>Cardiologia clínica e ecocardiografia</dd></div>
+        </dl>
+        <div class="acoes">
+          <a class="botao" href="tel:+553138496156">Agende sua consulta</a>
+          <a class="botao botao-linha" href="a-clinica.html">Conhecer a nossa história</a>
         </div>
-      </section>
+      </div>
+      <figure class="dividida-foto">
+        <img src="img/equipe-jaleco.webp" alt="Os seis sócios da Clínica Dias de jaleco branco" width="1353" height="1162" loading="lazy">
+      </figure>
+    </section>
 
-      <section class="section section-soft" aria-labelledby="diferenciais-titulo">
-        <div class="container split">
-          <figure class="split-media reveal">
-            <img src="assets/img/recepcao.webp" alt="Recepção ampla e iluminada de clínica" width="1200" height="817" loading="lazy">
-          </figure>
-          <div class="split-content">
-            <p class="eyebrow">Por que escolher a Clínica Dias</p>
-            <h2 id="diferenciais-titulo">Atendimento humano, do primeiro contato ao resultado</h2>
-            <ul class="feature-list">
-              <li>
-                <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></span>
-                <div><h3>Acolhimento</h3><p>Escuta atenta e explicações claras para você entender e participar do seu cuidado.</p></div>
-              </li>
-              <li>
-                <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/></svg></span>
-                <div><h3>Segurança</h3><p>Protocolos e cuidados que priorizam o bem-estar e a privacidade de cada paciente.</p></div>
-              </li>
-              <li>
-                <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M3 9h18M8 2v4m8-4v4"/></svg></span>
-                <div><h3>Praticidade</h3><p>Agendamento por telefone e resultados de exames disponíveis online, quando e onde você precisar.</p></div>
-              </li>
-            </ul>
-            <a class="text-link" href="quem-somos.html">Conheça a nossa história <span aria-hidden="true">&rarr;</span></a>
-          </div>
+    <ul class="numeros bloco-noite" aria-label="A clínica em números">
+      <li><b data-desde="2010">16</b><span>anos em Timóteo</span></li>
+      <li><b>29</b><span>especialidades</span></li>
+      <li><b>3</b><span>unidades no Vale do Aço</span></li>
+      <li><b>16</b><span>convênios e cartões</span></li>
+    </ul>
+
+    <!-- especialidades -->
+    <section class="secao" id="especialidades" aria-labelledby="esp-titulo">
+      <header class="secao-cabeca">
+        <h2 id="esp-titulo" class="secao-titulo">Especialidades</h2>
+        <p class="secao-nota">29 especialidades médicas e terapêuticas. Toque no nome para ler o que cada uma cuida.</p>
+      </header>
+      <ol class="indice" data-especialidades>
+        <li><button type="button">Anestesiologia</button></li>
+        <li><button type="button">Cardiologia</button></li>
+        <li><button type="button">Cirurgia Vascular</button></li>
+        <li><button type="button">Clínica Geral</button></li>
+        <li><button type="button">Coloproctologia</button></li>
+        <li><button type="button">Dermatologia</button></li>
+        <li><button type="button">Endocrinologia</button></li>
+        <li><button type="button">Endoscopia</button></li>
+        <li><button type="button">Fonoaudiologia</button></li>
+        <li><button type="button">Gastroenterologia</button></li>
+        <li><button type="button">Geriatria</button></li>
+        <li><button type="button">Ginecologia e Obstetrícia</button></li>
+        <li><button type="button">Hematologia</button></li>
+        <li><button type="button">Infectologia</button></li>
+        <li><button type="button">Mastologia</button></li>
+        <li><button type="button">Nefrologia</button></li>
+        <li><button type="button">Neurologia</button></li>
+        <li><button type="button">Nutrição</button></li>
+        <li><button type="button">Nutrologia</button></li>
+        <li><button type="button">Odontologia</button></li>
+        <li><button type="button">Oftalmologia</button></li>
+        <li><button type="button">Ortopedia e Traumatologia</button></li>
+        <li><button type="button">Pediatria Geral</button></li>
+        <li><button type="button">Pneumologia</button></li>
+        <li><button type="button">Psicanálise</button></li>
+        <li><button type="button">Psicologia</button></li>
+        <li><button type="button">Psicopedagogia</button></li>
+        <li><button type="button">Psiquiatria</button></li>
+        <li><button type="button">Reumatologia</button></li>
+      </ol>
+    </section>
+
+    <!-- por dentro: fotos reais da unidade de Timóteo passando devagar (aprovado em 12/11) -->
+    <section class="dentro2 bloco-noite" aria-labelledby="dentro2-titulo">
+      <img class="contornos" src="img/contornos.svg" alt="" aria-hidden="true">
+      <div class="dentro2-cabeca">
+        <div>
+          <p class="sobretitulo">Por dentro</p>
+          <h2 id="dentro2-titulo" class="declaracao">Conheça o caminho antes de chegar: da portaria à recepção, da sala de espera aos consultórios.</h2>
         </div>
-      </section>
+        <div class="dentro2-lado">
+          <p>Fotos da unidade de Timóteo. No passeio em 3D, feito a partir da planta, dá para andar por cada lugar.</p>
+          <a class="botao botao-laranja" href="passeio/">Entrar no passeio 3D</a>
+        </div>
+      </div>
+      <div class="faixa-fotos" data-faixa data-sem-anima tabindex="0" aria-label="Fotos da clínica. Passe o mouse para parar.">
+        <ul class="faixa-trilho" data-faixa-trilho>
+          <li><figure><div class="faixa-foto"><img src="img/dentro/f36.webp" alt="Balcão de mármore da Recepção 1 com o logo Clínica Dias na parede" width="1400" height="1050" loading="lazy"></div><figcaption><span class="faixa-num">01</span><b>Recepção 1</b><span>Rua Cento e Vinte e Oito</span></figcaption></figure></li>
+          <li><figure><div class="faixa-foto"><img src="img/dentro/f29.webp" alt="Corredor dos consultórios com faixas coloridas no chão indicando os caminhos" width="1400" height="1050" loading="lazy"></div><figcaption><span class="faixa-num">02</span><b>Corredor dos consultórios</b><span>As faixas no piso levam a cada sala</span></figcaption></figure></li>
+          <li><figure><div class="faixa-foto"><img src="img/sala-espera.webp" alt="Sala de espera da Recepção 1 com fileiras de cadeiras" width="1920" height="1080" loading="lazy"></div><figcaption><span class="faixa-num">03</span><b>Sala de espera</b><span>Recepção 1</span></figcaption></figure></li>
+          <li><figure><div class="faixa-foto"><img src="img/dentro/f27.webp" alt="Sala de espera da Recepção 2 com painel de madeira e televisão" width="1400" height="1050" loading="lazy"></div><figcaption><span class="faixa-num">04</span><b>Sala de espera</b><span>Recepção 2</span></figcaption></figure></li>
+          <li><figure><div class="faixa-foto"><img src="img/dentro/f22.webp" alt="Rampa de acesso com corrimão de inox e vasos de planta, entrando pela Portaria 2" width="1400" height="1050" loading="lazy"></div><figcaption><span class="faixa-num">05</span><b>Rampa de acesso</b><span>Portaria 2, pela Avenida Treze</span></figcaption></figure></li>
+          <li><figure><div class="faixa-foto"><img src="img/dentro/f50.webp" alt="Sala com aparelhos de exame de vista" width="1400" height="1050" loading="lazy"></div><figcaption><span class="faixa-num">06</span><b>Exames de vista</b><span>Recepção 1</span></figcaption></figure></li>
+        </ul>
+      </div>
+    </section>
 
-      <section class="section" aria-labelledby="resultados-titulo">
-        <div class="container">
-          <div class="cta-banner reveal">
-            <div>
-              <h2 id="resultados-titulo">Seus resultados de exames, online</h2>
-              <p>Acesse o portal do paciente com segurança e consulte seus resultados sem sair de casa.</p>
+    <!-- CardFácil em destaque (pedido de 11/11): carteirinha em 3D que gira (arraste para girar) e os benefícios ao lado.
+         Benefícios e valores conforme o site do CardFácil (cardfacil.com.br), consultado em 11/11/2026. -->
+    <section class="secao cf" id="cardfacil" aria-labelledby="cf-titulo">
+      <div class="cf-painel">
+        <div class="cf-palco" data-cf-palco>
+          <div class="cf-luz" aria-hidden="true"></div>
+          <div class="cf-cena" aria-hidden="true">
+            <div class="cf-giro" data-cf-giro>
+              <div class="cf-face cf-frente">
+                <span class="cf-reflexo"></span>
+                <img class="cf-logo" src="img/convenios/cardfacil.svg" alt="" width="200" height="60">
+                <span class="cf-saude">Saúde</span>
+                <span class="cf-assoc"><small>Carteirinha do associado</small>Rede credenciada · Clínica Dias</span>
+              </div>
+              <div class="cf-borda" style="--z:-2.4px"></div><div class="cf-borda" style="--z:-1.2px"></div><div class="cf-borda" style="--z:0px"></div><div class="cf-borda" style="--z:1.2px"></div><div class="cf-borda" style="--z:2.4px"></div>
+              <div class="cf-face cf-verso">
+                <span class="cf-reflexo"></span>
+                <img class="cf-logo-clinica" src="img/logo.svg" alt="" width="180" height="67">
+                <span class="cf-assoc"><small>Rede credenciada</small>cardfacil.com.br</span>
+              </div>
             </div>
-            <a class="btn btn-accent btn-lg" href="https://core.feegow.com/patient-interface/vy2m/login" target="_blank" rel="noopener noreferrer">
-              Acessar resultados<span class="sr-only"> (abre em nova aba)</span>
-            </a>
           </div>
+          <div class="cf-chao" aria-hidden="true"></div>
+          <p class="cf-dica">Arraste para girar</p>
         </div>
-      </section>
 
-      <section class="section section-soft" aria-labelledby="visite-titulo">
-        <div class="container split split-reverse">
-          <div class="split-content">
-            <p class="eyebrow">Venha nos visitar</p>
-            <h2 id="visite-titulo">Estamos no bairro Santa Maria, em Timóteo</h2>
-            <p>Rua Cento e Vinte e Oito, 14 - Santa Maria, Timóteo - MG, 35180-002</p>
-            <p>Segunda a sexta-feira, das 8h às 18h</p>
-            <div class="hero-actions">
-              <a class="btn btn-primary" href="localizacao.html">Ver no mapa</a>
-              <a class="btn btn-outline" href="contato.html">Fale conosco</a>
+        <div class="cf-corpo">
+          <p class="sobretitulo">Cartão de benefícios</p>
+          <h2 id="cf-titulo" class="cf-titulo">Tem <em>CardFácil</em>? A Clínica Dias é rede credenciada.</h2>
+          <ul class="cf-beneficios">
+            <li><span class="cf-num"><small>a partir de</small>R$&nbsp;40</span><span class="cf-rot">por consulta com médico especialista da rede</span></li>
+            <li><span class="cf-num"><small>até</small>70%</span><span class="cf-rot">de desconto em exames de laboratório e de imagem</span></li>
+            <li><span class="cf-num">Zero</span><span class="cf-rot">carência: dá para usar logo depois de aderir</span></li>
+            <li><span class="cf-num"><small>até</small>6</span><span class="cf-rot">dependentes na mesma carteirinha, conforme o plano</span></li>
+          </ul>
+          <div class="acoes">
+            <a class="botao botao-laranja" href="https://wa.me/553139091000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Cl%C3%ADnica%20Dias%20e%20quero%20saber%20mais%20sobre%20o%20CardF%C3%A1cil." target="_blank" rel="noopener noreferrer"><svg class="botao-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/><path d="M9 9.5c.4 2 1.6 3.6 3.6 4.8l1.3-1 2 1-.4 1.5c-3.8.2-7.6-3.4-7.5-7.2l1.5-.4 1 2z"/></svg>Quero o CardFácil<span class="so-leitor"> (abre o WhatsApp)</span></a>
+            <a class="botao botao-linha" href="https://cardfacil.com.br/" target="_blank" rel="noopener noreferrer">Conhecer o CardFácil<span class="so-leitor"> (abre o site em nova aba)</span></a>
+          </div>
+          <p class="cf-nota">Valores e condições informados pelo CardFácil e sujeitos ao plano escolhido. Ao agendar, avise que é CardFácil.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- convênios -->
+    <section class="secao" id="convenios" aria-labelledby="conv-titulo">
+      <header class="secao-cabeca">
+        <h2 id="conv-titulo" class="secao-titulo">Convênios</h2>
+        <p class="secao-nota">16 planos e cartões aceitos. Na hora de agendar, a equipe confirma a cobertura do seu plano.</p>
+      </header>
+      <ul class="convenios">
+        <li><img src="img/convenios/abertta.png" alt="" loading="lazy"><span>Abertta Saúde</span></li>
+        <li><img src="img/convenios/bradesco.svg" alt="" loading="lazy"><span>Bradesco Saúde</span></li>
+        <li><img src="img/convenios/cardfacil.svg" alt="" loading="lazy"><span>CardFácil</span></li>
+        <li><img src="img/convenios/cardfacil.svg" alt="" loading="lazy"><span>CardFácil Empresarial</span></li>
+        <li><img src="img/convenios/cassi.png" alt="" loading="lazy"><span>Cassi · Banco do Brasil</span></li>
+        <li><img src="img/convenios/cemig.svg" alt="" loading="lazy"><span>Cemig Saúde</span></li>
+        <li><img src="img/convenios/cenibra.svg" alt="" loading="lazy"><span>Cenibra</span></li>
+        <li><img src="img/convenios/copass.webp" alt="" loading="lazy"><span>Copass Saúde</span></li>
+        <li><img src="img/convenios/pasa.webp" alt="" loading="lazy"><span>PASA · Vale</span></li>
+        <li><img src="img/convenios/pmmg.svg" alt="" loading="lazy"><span>Polícia Militar</span></li>
+        <li><img src="img/convenios/saudecaixa.webp" alt="" loading="lazy"><span>Saúde Caixa</span></li>
+        <li><img src="img/convenios/sulamerica.svg" alt="" loading="lazy"><span>SulAmérica</span></li>
+        <li><img src="img/convenios/usisaude.svg" alt="" loading="lazy"><span>Usisaúde</span></li>
+        <li><img src="img/convenios/aapi-marca.png" alt="" loading="lazy"><span>AAPI</span></li>
+        <li><img src="img/convenios/aapt.webp" alt="" loading="lazy"><span>AAPT</span></li>
+        <li><b class="conv-sigla" aria-hidden="true">Unipass</b><span>Unipass</span></li>
+      </ul>
+    </section>
+
+    <!-- avaliações reais do Google: com a chave em data-chave, vêm direto da API do Google Places;
+         sem ela, aparecem as avaliações copiadas do Google (data-av-fixas). -->
+    <section class="av bloco-noite" id="avaliacoes" aria-labelledby="av-titulo" data-avaliacoes
+      data-chave="" data-busca="Clínica Dias, Rua Cento e Vinte e Oito, 14, Timóteo - MG">
+      <p class="av-fundo" aria-hidden="true">AVALIAÇÕES</p>
+      <div class="av-miolo">
+        <header class="av-cabeca">
+          <p class="sobretitulo">Quem é atendido aqui</p>
+          <h2 id="av-titulo" class="av-titulo">A opinião de quem <em>cuida da <span class="av-marca">saúde<svg class="av-risco" viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M3 14 C 50 5, 120 3, 197 9"/></svg></span> com a gente</em>.</h2>
+          <p class="av-nota" data-av-nota></p>
+          <p class="av-apoio">Atendimento, estrutura e cuidado contados por quem passou pela Clínica Dias.</p>
+          <div class="acoes av-acoes">
+            <a class="botao av-todas" data-av-link href="https://www.google.com/maps/place/Cl%C3%ADnica+Dias+-+Tim%C3%B3teo/data=!4m2!3m1!1s0x0:0x3a9d6b5a78d2d148" target="_blank" rel="noopener noreferrer"><svg class="botao-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.2l-5.9 3.3 1.4-6.6-5-4.5 6.6-.7z"/></svg>Ver todas no Google<span class="so-leitor"> (abre em nova aba)</span></a>
+            <!-- link de avaliação: troque pelo link curto "Pedir avaliações" do Perfil da Empresa no Google (g.page/r/.../review) -->
+            <a class="botao av-avaliar" data-av-avaliar href="https://www.google.com/maps/place/Cl%C3%ADnica+Dias+-+Tim%C3%B3teo/data=!4m2!3m1!1s0x0:0x3a9d6b5a78d2d148" target="_blank" rel="noopener noreferrer"><svg class="botao-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></svg>Avaliar a clínica<span class="so-leitor"> (abre o Google em nova aba)</span></a>
+          </div>
+        </header>
+        <div class="av-mural">
+          <span class="av-balao" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span>
+          <span class="av-bolha" aria-hidden="true"></span>
+          <ul class="av-lista" data-av-lista></ul>
+        </div>
+        <!-- avaliações do Google copiadas pelo Guilherme em 11/11/2026 (usadas enquanto a chave da API não estiver ligada) -->
+        <script type="application/json" data-av-fixas>
+[
+          {
+            "nome": "Wellington S.",
+            "nota": 5,
+            "texto": "Gostei muito do atendimento, desde a recepção até a saída pós-atendimento. Local bem limpo, climatizado e uma equipe muito competente. Não deixou em nada a desejar. Pessoal muito atencioso e cordial. Nota 10!"
+          },
+          {
+            "nome": "Fernanda M.",
+            "nota": 5,
+            "texto": "Clínica excelente, profissionais altamente qualificados e dedicados. O atendimento médico é impecável, passam muita segurança, empatia e clareza durante toda a consulta. Super recomendo!"
+          },
+          {
+            "nome": "Camila R.",
+            "nota": 5,
+            "texto": "Ótima estrutura física e um ambiente muito organizado. Fui muito bem acolhida pelas recepcionistas e o tempo de espera foi bem tranquilo. Ter várias especialidades e exames no mesmo lugar facilita demais a nossa vida."
+          },
+          {
+            "nome": "Sônia L.",
+            "nota": 5,
+            "texto": "Sempre levo meus pais idosos para consultar lá e o tratamento com eles é sempre muito humanizado, respeitoso e paciente. Ambiente limpo, confortável e profissionais nota 10. Recomendo de olhos fechados."
+          }
+        ]
+        </script>
+      </div>
+    </section>
+
+    <!-- como chegar: mapa de verdade (MapLibre + OpenFreeMap, dados do OpenStreetMap) visto inclinado, com ruas, bairros e prédios em 3D.
+         Escolher a unidade leva o mapa voando até ela. O MapLibre só carrega quando a seção chega perto da tela. -->
+    <section class="chegar" id="como-chegar" aria-labelledby="chegar-titulo">
+      <div class="secao chegar-miolo">
+        <header class="secao-cabeca">
+          <h2 id="chegar-titulo" class="secao-titulo">Como chegar</h2>
+          <p class="secao-nota">Três endereços no Vale do Aço. Escolha a unidade para ver onde ela fica e traçar a rota.</p>
+        </header>
+        <div class="chegar-corpo">
+          <div class="chegar-unidades" role="tablist" aria-label="Unidades" data-chegar>
+            <button type="button" role="tab" id="aba-timoteo" aria-selected="true" aria-controls="chegar-mapa" data-unidade="timoteo" data-lat="-19.54274" data-lon="-42.62974" data-foto="img/fachada-recepcao1.webp" data-tel="+553138496156" data-rota="Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG">
+              <span class="chegar-num" aria-hidden="true">01</span>
+              <span class="chegar-cidade">Timóteo</span>
+              <span class="chegar-linha">Rua Cento e Vinte e Oito, 14 · Santa Maria</span>
+              <span class="chegar-linha">Segunda a sexta, das 8h às 18h</span>
+              <span class="chegar-linha">(31) 3849-6156</span>
+            </button>
+            <button type="button" role="tab" id="aba-fabriciano" aria-selected="false" aria-controls="chegar-mapa" data-unidade="fabriciano" data-lat="-19.52960" data-lon="-42.62390" data-foto="img/fachada-fabriciano.webp" data-tel="+5531997600755" data-rota="Rua%20Pedro%20Nolasco%2C%20107%20-%20Centro%2C%20Coronel%20Fabriciano%20-%20MG">
+              <span class="chegar-num" aria-hidden="true">02</span>
+              <span class="chegar-cidade">Coronel Fabriciano</span>
+              <span class="chegar-linha">Rua Pedro Nolasco, 107 · Centro</span>
+              <span class="chegar-linha">Horário: ligue para confirmar</span>
+              <span class="chegar-linha">(31) 99760-0755</span>
+            </button>
+            <button type="button" role="tab" id="aba-ipatinga" aria-selected="false" aria-controls="chegar-mapa" data-unidade="ipatinga" data-lat="-19.47516" data-lon="-42.54862" data-foto="img/fachada-ipatinga.webp" data-tel="+5531997454281" data-rota="Avenida%20Brasil%2C%20700%20-%20Igua%C3%A7u%2C%20Ipatinga%20-%20MG">
+              <span class="chegar-num" aria-hidden="true">03</span>
+              <span class="chegar-cidade">Ipatinga</span>
+              <span class="chegar-linha">Avenida Brasil, 700 · Iguaçu</span>
+              <span class="chegar-linha">Das 8h às 18h</span>
+              <span class="chegar-linha">(31) 99745-4281</span>
+            </button>
+          </div>
+          <div class="chegar-mapa" id="chegar-mapa" role="tabpanel" aria-labelledby="aba-timoteo">
+            <div class="mapa3d" data-mapa3d data-sem-anima>
+              <div class="mapa3d-tela" data-mapa-tela role="region" aria-label="Mapa das unidades da Clínica Dias no Vale do Aço"></div>
+              <!-- enquanto o mapa não carrega (ou se o navegador não tiver WebGL): o desenho do Vale do Aço -->
+              <img class="mapa3d-reserva" src="img/mapa-vale-do-aco.webp" alt="" width="2400" height="2188" loading="lazy" data-mapa-reserva>
+              <button class="mapa3d-geral botao botao-linha" type="button" data-mapa-geral>Ver as três unidades</button>
+            </div>
+            <div class="chegar-acoes acoes">
+              <a class="botao" data-chegar-tel href="tel:+553138496156">Ligar para Timóteo</a>
+              <a class="botao botao-linha" data-chegar-rota target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG">Traçar a rota no Google Maps<span class="so-leitor"> (abre em nova aba)</span></a>
             </div>
           </div>
-          <figure class="split-media reveal">
-            <img src="assets/img/equipe-reuniao.webp" alt="Médicos analisando exames de imagem em computador" width="1200" height="800" loading="lazy">
-          </figure>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div class="footer-brand">
-        <img src="assets/img/logo.webp" alt="Clínica Dias - Medicina Especializada" width="480" height="180" loading="lazy">
-        <p>Cuidado médico especializado, com atenção e respeito a cada paciente.</p>
-      </div>
-
-      <div>
-        <h2 class="footer-title">Navegação</h2>
-        <ul class="footer-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="quem-somos.html">Quem Somos</a></li>
-          <li><a href="contato.html">Contato</a></li>
-          <li><a href="localizacao.html">Localização</a></li>
-          <li><a href="https://core.feegow.com/patient-interface/vy2m/login" target="_blank" rel="noopener noreferrer">Resultados de Exames<span class="sr-only"> (abre em nova aba)</span></a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h2 class="footer-title">Atendimento</h2>
-        <ul class="footer-contact">
-          <li><a href="tel:+553138496156">(31)&nbsp;3849&#8209;6156</a></li>
-          <li>Segunda a sexta-feira, das 8h às 18h</li>
-          <li>
-            <address>Rua Cento e Vinte e Oito, 14<br>Santa Maria, Timóteo - MG<br>CEP 35180-002</address>
-          </li>
-        </ul>
+  <aside class="painel" id="painel" role="dialog" aria-labelledby="painel-titulo" hidden>
+    <button class="painel-fechar" type="button" data-painel-fechar aria-label="Fechar">×</button>
+    <p class="sobretitulo">Especialidade</p>
+    <h2 id="painel-titulo"></h2>
+    <p id="painel-texto"></p>
+    <div class="painel-acoes">
+      <a class="botao botao-laranja" href="tel:+553138496156">Agendar pelo (31) 3849-6156</a>
+      <div class="painel-passos">
+        <button type="button" data-passo="-1" aria-label="Especialidade anterior">←</button>
+        <button type="button" data-passo="1" aria-label="Próxima especialidade">→</button>
       </div>
     </div>
+  </aside>
 
-    <div class="footer-bottom">
-      <div class="container footer-bottom-inner">
-        <p>&copy; 2026 Clínica Dias. Todos os direitos reservados.</p>
-        <p>Em caso de emergência, ligue <a href="tel:192">192&nbsp;(SAMU)</a>. Imagens meramente ilustrativas.</p>
+  <footer class="rodape bloco-noite">
+    <div class="rodape-colunas">
+      <div>
+        <a class="marca" href="#conteudo" aria-label="Clínica Dias, voltar ao início">
+          <img src="img/logo-laranja.svg" alt="" width="268" height="100">
+        </a>
       </div>
+      <div>
+        <h2 class="rodape-titulo">Timóteo</h2>
+        <p>Rua Cento e Vinte e Oito, 14 · Santa Maria</p>
+        <p><a href="tel:+553138496156">(31) 3849-6156</a></p>
+      </div>
+      <div>
+        <h2 class="rodape-titulo">Coronel Fabriciano</h2>
+        <p>Rua Pedro Nolasco, 107 · Centro</p>
+        <p><a href="tel:+5531997600755">(31) 99760-0755</a></p>
+      </div>
+      <div>
+        <h2 class="rodape-titulo">Ipatinga</h2>
+        <p>Avenida Brasil, 700 · Iguaçu</p>
+        <p><a href="tel:+5531997454281">(31) 99745-4281</a></p>
+      </div>
+    </div>
+    <nav class="rodape-paginas" aria-label="Páginas do site">
+      <a href="a-clinica.html">A clínica</a>
+      <a href="exames.html">Exames e resultados</a>
+      <a href="atendimento.html">Atendimento</a>
+      <a href="passeio/">Por dentro</a>
+      <a href="privacidade.html">Privacidade</a>
+    </nav>
+    <div class="rodape-base">
+      <p>Em caso de emergência, ligue <a href="tel:192">192 (SAMU)</a>. Nossos canais não atendem emergências.</p>
+      <p>© 2026 Clínica Dias · Medicina especializada</p>
     </div>
   </footer>
-
 </body>
 </html>

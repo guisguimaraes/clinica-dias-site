@@ -35,7 +35,6 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const COR_FUNDO = new THREE.Color('#E9E2D7'); // fundo bege das maquetes (como o ICG)
 const COR_BASE = new THREE.Color('#DDD3C5');  // base da maquete: argila um tom abaixo
 const COR_BARRO = new THREE.Color('#E8DCCB'); // tudo da maquete em argila; só logos e placas ficam com cor
-const TOM_QUENTE = new THREE.Color('#f4e6d6');
 // cores dos materiais do Blender trocadas pela paleta da marca (nome do material → cor)
 const PALETA = {
   teal: '#5C95A4', 'faixa-azul': '#5C95A4', laranja: '#F7922D', roxo: '#101E44',
@@ -214,11 +213,6 @@ const luzPronta = (q.has('semluz') ? Promise.resolve(null) : fetch('./modelos/lu
       .catch(() => console.warn('[passeio] sem mapa de luz para', g, '— usando luz em tempo real'))));
   });
 const PLASTICO = new Set(['plastico', 'tubo', 'preto-brilho', 'vidro-escuro']);
-let _ceuReflexo = null;
-function ceuReflexo() {
-  if (!_ceuReflexo) { _ceuReflexo = ceu.clone(); _ceuReflexo.mapping = THREE.EquirectangularReflectionMapping; _ceuReflexo.needsUpdate = true; }
-  return _ceuReflexo;
-}
 function folhaPorta(o) {
   for (let n = o; n; n = n.parent) if (n.userData?.abre != null && n.userData?.visita) return true;
   return false;
@@ -254,14 +248,6 @@ luzPronta.then(() => loader.load(
       } else if (o.material?.name === 'vidro' && luz && g && lightmaps[g]) {
         // vidro dentro dos móveis = espelho dos lavatórios: assado ele vira mancha preta, então reflete o ambiente
         real = new THREE.MeshStandardMaterial({ color: '#c9d3d6', metalness: 1, roughness: 0.04, envMap: ambiente, envMapIntensity: 1.1 });
-      } else if (luz && g && lightmaps[g]) {
-        // luz calculada no Blender: cor/textura × lightmap, sem luz em tempo real
-        real = new THREE.MeshBasicMaterial({
-          color: real.color, map: real.map,
-          lightMap: lightmaps[g], lightMapIntensity: luz.k * Math.PI,
-        });
-      } else if (vidro) {
-        real = new THREE.MeshBasicMaterial({ color: '#dfeef0', transparent: true, opacity: 0.16, depthWrite: false });
       } else if (real && real.name === 'vidro-fachada') {
         // pele de vidro da fachada: espelho azulado refletindo o céu de fim de tarde
         real = new THREE.MeshStandardMaterial({ color: '#5f7d9c', metalness: 0.6, roughness: 0.14, envMap: ambiente, envMapIntensity: 1.25, emissive: '#22344a', emissiveIntensity: 0.6 });
@@ -274,6 +260,14 @@ luzPronta.then(() => loader.load(
           lightMap: (luz && g && lightmaps[g]) || null, lightMapIntensity: luz ? luz.k * Math.PI * 0.6 : 1,
           envMap: ambiente, envMapIntensity: real.name === 'vidro-escuro' ? 1.8 : real.name === 'preto-brilho' ? 1.3 : 0.9,
         });
+      } else if (luz && g && lightmaps[g]) {
+        // luz calculada no Blender: cor/textura × lightmap, sem luz em tempo real
+        real = new THREE.MeshBasicMaterial({
+          color: real.color, map: real.map,
+          lightMap: lightmaps[g], lightMapIntensity: luz.k * Math.PI,
+        });
+      } else if (vidro) {
+        real = new THREE.MeshBasicMaterial({ color: '#dfeef0', transparent: true, opacity: 0.16, depthWrite: false });
       } else if (folhaPorta(o) && real) {
         // folha de porta que abre na visita: fica fora do mapa de luz; cor chapada no tom das portas assadas
         real = new THREE.MeshBasicMaterial({ color: real.color.clone().multiplyScalar(0.84), map: real.map });
@@ -522,7 +516,7 @@ function mostraArea(i, imediato = false) {
   gsap.to(uCorte.uAltura, { value: areas[i].corte ?? 99, duration: dur, ease: 'power3.inOut' });
   gsap.to(uCorte.uTopo, { value: areas[i].topo ?? 99, duration: dur, ease: 'power3.inOut' });
   gsap.fromTo('#area-titulo', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur ? 0.8 : 0, delay: dur ? 0.5 : 0, ease: 'power2.out' });
-  acorda(dur * 60 + 10);
+  acorda(Math.ceil(dur * 144) + 10); // quadros, não segundos: cobre telas de até 144 Hz
   // troca: 3D ao vivo durante o voo, imagem pronta da área nova ao chegar
   if (dur) escondeImagem();
   gsap.delayedCall(dur + 0.05, () => mostraImagem(i));
@@ -678,6 +672,7 @@ canvas.addEventListener('pointermove', (e) => {
   empurra((-dy - dx) * 3.2);
 });
 addEventListener('pointerup', () => { arrasto = null; });
+addEventListener('pointercancel', () => { arrasto = null; });
 addEventListener('keydown', (e) => {
   if (modo === 'dentro') {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') empurra(e.key === 'ArrowDown' ? 260 : -260);
@@ -685,7 +680,7 @@ addEventListener('keydown', (e) => {
   } else if (modo === 'maquetes') {
     if (e.key === 'ArrowRight' && areaAtual < areas.length - 1) mostraArea(areaAtual + 1);
     if (e.key === 'ArrowLeft' && areaAtual > 0) mostraArea(areaAtual - 1);
-    if (e.key === 'Enter') entrar();
+    if (e.key === 'Enter' && !e.target.closest?.('button, a')) { som.aoEntrar(); entrar(); }
   }
 });
 
@@ -816,7 +811,7 @@ function atualizaPontos() {
     if (ver) {
       proj.copy(pos).project(camera);
       ver = proj.z < 1 && Math.abs(proj.x) < 0.92 && Math.abs(proj.y) < 0.85;
-      if (ver) b.style.transform = `translate(${((proj.x + 1) / 2) * w}px, ${((1 - proj.y) / 2) * h}px)`;
+      if (ver) b.style.translate = `${((proj.x + 1) / 2) * w}px ${((1 - proj.y) / 2) * h}px`;
     }
     if (b.classList.contains('visivel') !== ver) {
       b.classList.toggle('visivel', ver);

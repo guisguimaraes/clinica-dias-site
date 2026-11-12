@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Clínica Dias | Links</title>
+  <meta name="description" content="Agendar consulta, resultados de exames e endereços da Clínica Dias em Timóteo, Coronel Fabriciano e Ipatinga.">
+  <link rel="icon" type="image/svg+xml" href="../img/simbolo.svg">
+  <link rel="stylesheet" href="../css/site.css">
+  <base target="_top">
+  <!-- página do link da bio do Instagram (prévia de 12/11/2026) -->
+  <style>
+    body { background: var(--pedra); }
+    .lk { max-width: 460px; margin: 0 auto; padding: 32px 18px 28px; display: grid; gap: 22px; }
+    .lk-cabeca { display: grid; justify-items: center; gap: 10px; text-align: center; }
+    .lk-cabeca img { height: 58px; width: auto; }
+    .lk-cabeca p { font-size: .9rem; color: var(--apagado); font-weight: 300; max-width: 30ch; }
+    .lk-foto { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 5px; }
+    .lk-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 30% 50%; }
+    .lk-lista { display: grid; gap: 10px; }
+    .lk-lista a {
+      display: grid; grid-template-columns: 1fr 18px; align-items: center; gap: 12px; min-height: 60px; padding: 12px 18px;
+      background: var(--branco); color: var(--noite); text-decoration: none; border: 1px solid var(--pedra-linha); border-radius: 5px;
+      transition: border-color .2s, transform .2s var(--saida);
+    }
+    .lk-lista a:hover { border-color: var(--laranja); transform: translateX(3px); }
+    .lk-lista b { display: block; font-weight: 500; font-size: 1.02rem; }
+    .lk-lista small { display: block; color: var(--apagado); font-weight: 300; font-size: .85rem; }
+    .lk-lista a::after { content: '→'; color: var(--laranja-texto); }
+    .lk-lista .lk-principal { background: var(--laranja); border-color: var(--laranja); }
+    .lk-lista .lk-principal small { color: var(--noite); }
+    .lk-lista .lk-principal::after { color: var(--noite); }
+    .lk-pe { text-align: center; font-size: .8rem; color: var(--apagado); }
+    .lk-pe a { color: var(--noite); }
+  </style>
+</head>
+<body>
+  <main class="lk">
+    <header class="lk-cabeca">
+      <img src="../img/logo.svg" alt="Clínica Dias, Medicina Especializada" width="268" height="100">
+      <p>29 especialidades em Timóteo, Coronel Fabriciano e Ipatinga, desde 2010.</p>
+    </header>
+    <figure class="lk-foto">
+      <img src="../img/fachada-recepcao1.webp" alt="Prédio de vidro da Clínica Dias em Timóteo ao pôr do sol" width="1920" height="1080">
+    </figure>
+    <nav class="lk-lista" aria-label="Links da Clínica Dias">
+      <a class="lk-principal" href="tel:+553138496156"><span><b>Agendar consulta</b><small>(31) 3849-6156 · segunda a sexta, das 8h às 18h</small></span></a>
+      <a href="../exames.html"><span><b>Resultados de exames</b><small>Pelo portal do paciente</small></span></a>
+      <a href="../index.html#unidades"><span><b>Endereços e como chegar</b><small>Timóteo, Coronel Fabriciano e Ipatinga</small></span></a>
+      <a href="../index.html#convenios"><span><b>Convênios aceitos</b><small>16 planos e cartões, incluindo CardFácil</small></span></a>
+      <a href="../passeio/"><span><b>A clínica por dentro, em 3D</b><small>Da portaria aos consultórios</small></span></a>
+      <a href="https://www.google.com/maps/place/Cl%C3%ADnica+Dias+-+Tim%C3%B3teo/data=!4m2!3m1!1s0x0:0x3a9d6b5a78d2d148" rel="noopener noreferrer"><span><b>Avaliações no Google</b><small>O que dizem os pacientes</small></span></a>
+      <a href="../index.html"><span><b>Site completo</b><small>Especialidades, equipe e história da clínica</small></span></a>
+    </nav>
+    <p class="lk-pe">Em caso de emergência, ligue <a href="tel:192">192 (SAMU)</a>.</p>
+  </main>
+</body>
+</html>

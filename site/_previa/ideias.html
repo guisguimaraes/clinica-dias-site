@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Prévia das ideias | Clínica Dias</title>
+  <link rel="icon" type="image/svg+xml" href="../img/simbolo.svg">
+  <link rel="preload" href="../fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../css/site.css">
+  <link rel="stylesheet" href="ideias.css">
+  <script src="../js/site.js" defer></script>
+  <script src="../js/vendor/gsap.min.js" defer></script>
+  <script src="../js/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="../js/vendor/SplitText.min.js" defer></script>
+  <script src="../js/anima.js" defer></script>
+  <script src="ideias.js" defer></script>
+  <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('anima');setTimeout(function(){if(!window.__anima)document.documentElement.classList.remove('anima')},3000)}</script>
+</head>
+<body>
+  <!-- Prévia só para o Guilherme aprovar (12/11/2026). Nada daqui está na home. Não publicar. -->
+  <header class="topo">
+    <a class="marca" href="../index.html" aria-label="Clínica Dias, voltar para a home">
+      <img src="../img/logo.svg" alt="" width="268" height="100">
+    </a>
+    <nav class="topo-links" id="menu" aria-label="Ideias desta prévia">
+      <a href="#ideia-1">Especialidades</a>
+      <a href="#ideia-2">Por dentro</a>
+      <a href="#ideia-3">CardFácil</a>
+      <a href="#ideia-4">Como chegar</a>
+      <a href="#ideia-5">Links da bio</a>
+    </nav>
+    <a class="botao botao-linha topo-agendar" href="../index.html">Voltar para a home</a>
+    <button class="topo-menu" type="button" aria-expanded="false" aria-controls="menu" data-menu>
+      <span aria-hidden="true"></span><span class="so-leitor">Abrir menu</span>
+    </button>
+  </header>
+
+  <main id="conteudo">
+    <div class="previa-aviso" data-sem-anima>
+      <p><b>Prévia para aprovação.</b> Cada bloco abaixo mostra uma ideia já no visual do site, com os textos e as fotos reais. Nada disso está na home ainda: o que você aprovar, eu coloco no lugar indicado.</p>
+    </div>
+
+    <!-- ── IDEIA 1 ───────────────────────────────────────────── -->
+    <p class="previa-rotulo" id="ideia-1" data-sem-anima><b>Ideia 1</b> Entra no lugar da seção Especialidades. Lista grande em grupos; ao passar o mouse (ou tocar), a explicação aparece ao lado com a sala da maquete 3D.</p>
+    <section class="secao esp2" aria-labelledby="esp2-titulo">
+      <header class="secao-cabeca">
+        <h2 id="esp2-titulo" class="secao-titulo">Especialidades</h2>
+        <p class="secao-nota">29 especialidades médicas e terapêuticas. Passe o mouse ou toque no nome para ler o que cada uma cuida.</p>
+      </header>
+
+      <div class="esp2-corpo">
+        <div class="esp2-listas" data-esp2>
+          <div class="esp2-grupo">
+            <h3 class="esp2-grupo-nome">Consultas médicas <span>22</span></h3>
+            <ol class="esp2-lista">
+              <li><button type="button">Anestesiologia</button></li>
+              <li><button type="button" data-sala="ergometria">Cardiologia</button></li>
+              <li><button type="button">Cirurgia Vascular</button></li>
+              <li><button type="button">Clínica Geral</button></li>
+              <li><button type="button">Coloproctologia</button></li>
+              <li><button type="button">Dermatologia</button></li>
+              <li><button type="button">Endocrinologia</button></li>
+              <li><button type="button">Gastroenterologia</button></li>
+              <li><button type="button">Geriatria</button></li>
+              <li><button type="button">Ginecologia e Obstetrícia</button></li>
+              <li><button type="button">Hematologia</button></li>
+              <li><button type="button">Infectologia</button></li>
+              <li><button type="button">Mastologia</button></li>
+              <li><button type="button">Nefrologia</button></li>
+              <li><button type="button">Neurologia</button></li>
+              <li><button type="button">Nutrologia</button></li>
+              <li><button type="button">Oftalmologia</button></li>
+              <li><button type="button">Ortopedia e Traumatologia</button></li>
+              <li><button type="button" data-sala="pediatria">Pediatria Geral</button></li>
+              <li><button type="button">Pneumologia</button></li>
+              <li><button type="button">Psiquiatria</button></li>
+              <li><button type="button">Reumatologia</button></li>
+            </ol>
+          </div>
+          <div class="esp2-grupo">
+            <h3 class="esp2-grupo-nome">Terapias e acompanhamento <span>5</span></h3>
+            <ol class="esp2-lista">
+              <li><button type="button">Fonoaudiologia</button></li>
+              <li><button type="button">Nutrição</button></li>
+              <li><button type="button">Psicanálise</button></li>
+              <li><button type="button">Psicologia</button></li>
+              <li><button type="button">Psicopedagogia</button></li>
+            </ol>
+          </div>
+          <div class="esp2-grupo">
+            <h3 class="esp2-grupo-nome">Exames e odontologia <span>2</span></h3>
+            <ol class="esp2-lista">
+              <li><button type="button">Endoscopia</button></li>
+              <li><button type="button" data-sala="odonto">Odontologia</button></li>
+            </ol>
+          </div>
+        </div>
+
+        <aside class="esp2-painel" data-esp2-painel aria-live="polite">
+          <figure class="esp2-sala">
+            <img src="../passeio/modelos/maquetes/maq_sala_ergometria.webp" alt="" width="1600" height="900" data-esp2-foto>
+            <figcaption data-esp2-legenda>Sala de ergometria · maquete do passeio 3D</figcaption>
+          </figure>
+          <div class="esp2-texto">
+            <p class="esp2-conta" data-esp2-conta>02 / 29</p>
+            <h3 class="esp2-nome" data-esp2-nome>Cardiologia</h3>
+            <p data-esp2-explica></p>
+            <div class="acoes">
+              <a class="botao botao-laranja" href="tel:+553138496156">Agendar pelo (31) 3849-6156</a>
+              <a class="botao botao-linha" href="../passeio/">Ver a clínica em 3D</a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ── IDEIA 2 ───────────────────────────────────────────── -->
+    <p class="previa-rotulo" id="ideia-2" data-sem-anima><b>Ideia 2</b> Entra no lugar do bloco "Por dentro". Faixa de fotos reais da clínica passando devagar (para quando o mouse passa por cima), com o botão do passeio 3D.</p>
+    <section class="dentro2 bloco-noite" aria-labelledby="dentro2-titulo">
+      <img class="contornos" src="../img/contornos.svg" alt="" aria-hidden="true">
+      <div class="dentro2-cabeca">
+        <div>
+          <p class="sobretitulo">Por dentro</p>
+          <h2 id="dentro2-titulo" class="declaracao">Conheça o caminho antes de chegar: da portaria à recepção, da sala de espera aos consultórios.</h2>
+        </div>
+        <div class="dentro2-lado">
+          <p>Fotos da unidade de Timóteo. No passeio em 3D, feito a partir da planta, dá para andar por cada lugar.</p>
+          <a class="botao botao-laranja" href="../passeio/">Entrar no passeio 3D</a>
+        </div>
+      </div>
+      <div class="faixa-fotos" data-faixa data-sem-anima tabindex="0" aria-label="Fotos da clínica. Passe o mouse para parar.">
+        <ul class="faixa-trilho" data-faixa-trilho>
+          <li><figure><img src="../img/dentro/f36.webp" alt="Balcão de mármore da Recepção 1 com o logo Clínica Dias na parede" width="1400" height="1050" loading="lazy"><figcaption>Recepção 1 · Rua 128</figcaption></figure></li>
+          <li><figure><img src="../img/sala-espera.webp" alt="Sala de espera da Recepção 1 com fileiras de cadeiras" width="1920" height="1080" loading="lazy"><figcaption>Sala de espera · Recepção 1</figcaption></figure></li>
+          <li><figure><img src="../img/dentro/f22.webp" alt="Rampa de acesso com corrimão de inox e vasos de planta, entrando pela Portaria 2" width="1400" height="1050" loading="lazy"><figcaption>Rampa de acesso · Portaria 2</figcaption></figure></li>
+          <li><figure><img src="../img/dentro/f27.webp" alt="Sala de espera da Recepção 2 com painel de madeira e televisão" width="1400" height="1050" loading="lazy"><figcaption>Sala de espera · Recepção 2</figcaption></figure></li>
+          <li><figure><img src="../img/dentro/f29.webp" alt="Corredor dos consultórios com faixas coloridas no chão indicando os caminhos" width="1400" height="1050" loading="lazy"><figcaption>Corredor dos consultórios</figcaption></figure></li>
+          <li><figure><img src="../img/dentro/f50.webp" alt="Sala com aparelhos de exame de vista" width="1400" height="1050" loading="lazy"><figcaption>Exames de vista · Recepção 1</figcaption></figure></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── IDEIA 3 ───────────────────────────────────────────── -->
+    <p class="previa-rotulo" id="ideia-3" data-sem-anima><b>Ideia 3</b> A seção CardFácil fica igual. Só muda a chegada: a carteirinha sai de um porta-cartão quando a seção aparece e depois segue girando como hoje.</p>
+    <section class="secao cf cf-com-capa" aria-labelledby="cf-titulo">
+      <div class="cf-painel">
+        <div class="cf-palco" data-cf-palco>
+          <div class="cf-luz" aria-hidden="true"></div>
+          <span class="cf-capa-fundo" data-cf-capa aria-hidden="true"></span>
+          <div class="cf-saida" data-cf-saida>
+            <div class="cf-cena" aria-hidden="true">
+              <div class="cf-giro" data-cf-giro>
+                <div class="cf-face cf-frente">
+                  <span class="cf-reflexo"></span>
+                  <img class="cf-logo" src="../img/convenios/cardfacil.svg" alt="" width="200" height="60">
+                  <span class="cf-saude">Saúde</span>
+                  <span class="cf-assoc"><small>Carteirinha do associado</small>Rede credenciada · Clínica Dias</span>
+                </div>
+                <div class="cf-borda" style="--z:-2.4px"></div><div class="cf-borda" style="--z:-1.2px"></div><div class="cf-borda" style="--z:0px"></div><div class="cf-borda" style="--z:1.2px"></div><div class="cf-borda" style="--z:2.4px"></div>
+                <div class="cf-face cf-verso">
+                  <span class="cf-reflexo"></span>
+                  <img class="cf-logo-clinica" src="../img/logo.svg" alt="" width="180" height="67">
+                  <span class="cf-assoc"><small>Rede credenciada</small>cardfacil.com.br</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="cf-capa-frente" data-cf-capa aria-hidden="true"><img src="../img/logo-branco.svg" alt="" width="268" height="100"></span>
+          <div class="cf-chao" aria-hidden="true"></div>
+          <p class="cf-dica">Arraste para girar</p>
+        </div>
+
+        <div class="cf-corpo">
+          <p class="sobretitulo">Cartão de benefícios</p>
+          <h2 id="cf-titulo" class="cf-titulo">Tem <em>CardFácil</em>? A Clínica Dias é rede credenciada.</h2>
+          <ul class="cf-beneficios">
+            <li><span class="cf-num"><small>a partir de</small>R$&nbsp;40</span><span class="cf-rot">por consulta com médico especialista da rede</span></li>
+            <li><span class="cf-num"><small>até</small>70%</span><span class="cf-rot">de desconto em exames de laboratório e de imagem</span></li>
+            <li><span class="cf-num">Zero</span><span class="cf-rot">carência: dá para usar logo depois de aderir</span></li>
+            <li><span class="cf-num"><small>até</small>6</span><span class="cf-rot">dependentes na mesma carteirinha, conforme o plano</span></li>
+          </ul>
+          <div class="acoes">
+            <a class="botao botao-laranja" href="https://wa.me/553139091000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Cl%C3%ADnica%20Dias%20e%20quero%20saber%20mais%20sobre%20o%20CardF%C3%A1cil." target="_blank" rel="noopener noreferrer">Quero o CardFácil<span class="so-leitor"> (abre o WhatsApp)</span></a>
+            <button class="botao botao-linha" type="button" data-cf-repete>Ver a carteirinha sair de novo</button>
+          </div>
+          <p class="cf-nota">O botão "Ver a carteirinha sair de novo" é só desta prévia.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── IDEIA 4 ───────────────────────────────────────────── -->
+    <p class="previa-rotulo" id="ideia-4" data-sem-anima><b>Ideia 4</b> Bloco novo antes do rodapé. As três unidades com endereço, horário e telefone, e o mapa da unidade escolhida.</p>
+    <section class="chegar" aria-labelledby="chegar-titulo">
+      <div class="secao chegar-miolo">
+        <header class="secao-cabeca">
+          <h2 id="chegar-titulo" class="secao-titulo">Como chegar</h2>
+          <p class="secao-nota">Escolha a unidade para ver no mapa. Na dúvida, ligue antes de sair de casa.</p>
+        </header>
+        <div class="chegar-corpo">
+          <div class="chegar-unidades" role="tablist" aria-label="Unidades" data-chegar>
+            <button type="button" role="tab" aria-selected="true" aria-controls="chegar-mapa" data-mapa="Rua Cento e Vinte e Oito, 14 - Santa Maria, Timóteo - MG">
+              <span class="chegar-cidade">Timóteo</span>
+              <span class="chegar-linha">Rua Cento e Vinte e Oito, 14 · Santa Maria</span>
+              <span class="chegar-linha">Segunda a sexta, das 8h às 18h</span>
+              <span class="chegar-linha">(31) 3849-6156</span>
+            </button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="chegar-mapa" data-mapa="Rua Pedro Nolasco, 107 - Centro, Coronel Fabriciano - MG">
+              <span class="chegar-cidade">Coronel Fabriciano</span>
+              <span class="chegar-linha">Rua Pedro Nolasco, 107 · Centro</span>
+              <span class="chegar-linha">Horário: ligue para confirmar</span>
+              <span class="chegar-linha">(31) 99760-0755</span>
+            </button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="chegar-mapa" data-mapa="Avenida Brasil, 700 - Iguaçu, Ipatinga - MG">
+              <span class="chegar-cidade">Ipatinga</span>
+              <span class="chegar-linha">Avenida Brasil, 700 · Iguaçu</span>
+              <span class="chegar-linha">Das 8h às 18h</span>
+              <span class="chegar-linha">(31) 99745-4281</span>
+            </button>
+          </div>
+          <div class="chegar-mapa" id="chegar-mapa" role="tabpanel">
+            <iframe data-chegar-mapa title="Mapa da unidade de Timóteo" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+              src="https://www.google.com/maps?q=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG&amp;z=16&amp;output=embed"></iframe>
+            <div class="chegar-acoes acoes">
+              <a class="botao" data-chegar-tel href="tel:+553138496156">Ligar para Timóteo</a>
+              <a class="botao botao-linha" data-chegar-rota target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG">Traçar a rota no Google Maps<span class="so-leitor"> (abre em nova aba)</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── IDEIA 5 ───────────────────────────────────────────── -->
+    <p class="previa-rotulo" id="ideia-5" data-sem-anima><b>Ideia 5</b> Página separada para o link da bio do Instagram (fica em /links). Abre direto no celular, com os botões que o paciente mais procura.</p>
+    <section class="secao bio" aria-labelledby="bio-titulo">
+      <div class="bio-corpo">
+        <div class="bio-texto">
+          <p class="sobretitulo">Link da bio</p>
+          <h2 id="bio-titulo" class="secao-titulo">Uma página só para o Instagram</h2>
+          <p>Quem chega pelo Instagram quer marcar consulta, ver resultado de exame ou saber o endereço. A página mostra só isso, em botões grandes, e leva para o site quando a pessoa quiser ver mais.</p>
+          <div class="acoes"><a class="botao botao-linha" href="links.html" target="_blank" rel="noopener">Abrir a página em outra aba</a></div>
+        </div>
+        <div class="bio-celular">
+          <iframe src="links.html" title="Prévia da página de links da bio" loading="lazy"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape bloco-noite">
+    <div class="rodape-base">
+      <p>Prévia interna da Clínica Dias · 12/11/2026</p>
+      <p><a href="../index.html">Voltar para a home</a></p>
+    </div>
+  </footer>
+</body>
+</html>
