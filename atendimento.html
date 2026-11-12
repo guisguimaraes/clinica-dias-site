@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atendimento | Clínica Dias</title>
+  <meta name="description" content="Como agendar, o que levar, como chegar e dúvidas frequentes sobre o atendimento na Clínica Dias.">
+  <link rel="icon" type="image/svg+xml" href="img/simbolo.svg">
+  <link rel="preload" href="fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/site.css">
+  <script src="js/site.js" defer></script>
+  <script src="js/vendor/gsap.min.js" defer></script>
+  <script src="js/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="js/vendor/SplitText.min.js" defer></script>
+  <script src="js/anima.js" defer></script>
+  <!-- animações: esconde os títulos só até o anima.js prepará-los (se ele não rodar, volta tudo em 3 s) -->
+  <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('anima');setTimeout(function(){if(!window.__anima)document.documentElement.classList.remove('anima')},3000)}</script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <a class="marca" href="index.html" aria-label="Clínica Dias, Medicina Especializada, página inicial">
+      <img src="img/logo.svg" alt="" width="268" height="100">
+    </a>
+    <nav class="topo-links" id="menu" aria-label="Menu principal">
+      <a href="a-clinica.html">A clínica</a>
+      <a href="index.html#especialidades">Especialidades</a>
+      <a href="index.html#unidades">Unidades</a>
+      <a href="atendimento.html" aria-current="page">Atendimento</a>
+      <a href="passeio/">Por dentro</a>
+      <a class="topo-resultados" href="exames.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z M14 3v5h5 M10 13h6 M10 17h6"/></svg>Resultados de exames
+      </a>
+    </nav>
+    <a class="botao botao-laranja topo-agendar" href="tel:+553138496156">Agendar <span>(31) 3849-6156</span></a>
+    <button class="topo-menu" type="button" aria-expanded="false" aria-controls="menu" data-menu>
+      <span aria-hidden="true"></span><span class="so-leitor">Abrir menu</span>
+    </button>
+  </header>
+
+    <main id="conteudo">
+    <section class="pagina-abertura">
+      <figure class="abertura-foto">
+        <img src="img/recepcao.webp" alt="Recepção da Clínica Dias com os guichês numerados e a parede de mármore com o logo" width="1920" height="1080" fetchpriority="high">
+      </figure>
+      <div class="abertura-corpo bloco-noite">
+        <img class="contornos" src="img/contornos.svg" alt="" aria-hidden="true">
+        <p class="migalha"><a href="index.html">Início</a> / Atendimento</p>
+        <p class="sobretitulo">Atendimento</p>
+        <h1 class="declaracao">Tudo o que você precisa saber <em>antes de vir</em> à clínica.</h1>
+        <p class="abertura-apoio">Como agendar, o que levar, como chegar e quem atende cada convênio.</p>
+        <div class="abertura-acoes">
+          <a class="botao botao-laranja" href="tel:+553138496156">Agendar pelo (31) 3849-6156</a>
+          <a class="botao botao-linha" href="#duvidas">Dúvidas frequentes</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="agendar-titulo">
+      <header class="secao-cabeca">
+        <h2 id="agendar-titulo" class="secao-titulo">Como agendar</h2>
+        <p class="secao-nota">O agendamento é feito por telefone, direto com a unidade.</p>
+      </header>
+      <ul class="cartoes">
+        <li class="cartao"><p class="rotulo-cartao">Timóteo</p><h3><a href="tel:+553138496156">(31) 3849-6156</a></h3><p>Rua Cento e Vinte e Oito, 14 · Santa Maria. Segunda a sexta, das 8h às 18h.</p></li>
+        <li class="cartao"><p class="rotulo-cartao">Coronel Fabriciano</p><h3><a href="tel:+5531997600755">(31) 99760-0755</a></h3><p>Rua Pedro Nolasco, 107 · Centro.</p></li>
+        <li class="cartao"><p class="rotulo-cartao">Ipatinga</p><h3><a href="tel:+5531997454281">(31) 99745-4281</a></h3><p>Avenida Brasil, 700 · Iguaçu. Das 8h às 18h.</p></li>
+      </ul>
+    </section>
+
+    <section class="dividida" aria-labelledby="levar-titulo">
+      <div class="dividida-corpo bloco-pessego">
+        <p class="sobretitulo">No dia da consulta</p>
+        <h2 id="levar-titulo" class="declaracao">O que levar</h2>
+        <dl class="dados dados-largo">
+          <div><dt>Documento</dt><dd>Documento oficial com foto</dd></div>
+          <div><dt>Convênio</dt><dd>Carteirinha do plano ou do cartão de benefícios, se for usar</dd></div>
+          <div><dt>Pedidos</dt><dd>Pedido médico, quando for fazer exame</dd></div>
+          <div><dt>Histórico</dt><dd>Exames anteriores e a lista dos remédios que você usa</dd></div>
+        </dl>
+        <a class="botao" href="index.html#convenios">Ver os convênios aceitos</a>
+      </div>
+      <figure class="dividida-foto">
+        <img src="img/sala-espera.webp" alt="Sala de espera da Recepção 1 com fileiras de cadeiras" width="1920" height="1080" loading="lazy">
+      </figure>
+    </section>
+
+    <section class="secao" aria-labelledby="acesso-titulo">
+      <header class="secao-cabeca">
+        <h2 id="acesso-titulo" class="secao-titulo">Como chegar e acessibilidade</h2>
+        <p class="secao-nota">A unidade de Timóteo tem duas entradas, e as duas recebem quem tem mobilidade reduzida.</p>
+      </header>
+      <ul class="cartoes cartoes-foto">
+        <li class="cartao">
+          <figure class="cartao-foto"><img src="img/fachada-recepcao1.webp" alt="Prédio de vidro da Recepção 1 com o estacionamento e a vaga para pessoa com deficiência" width="1920" height="1080" loading="lazy"><figcaption class="etiqueta">Recepção 1 · Rua 128</figcaption></figure>
+          <div class="cartao-texto"><h3>Estacionamento na porta</h3><p>Vagas em frente ao prédio de vidro, com vaga reservada para pessoa com deficiência.</p><a class="cartao-acao" href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Cento%20e%20Vinte%20e%20Oito%2C%2014%20-%20Santa%20Maria%2C%20Tim%C3%B3teo%20-%20MG" target="_blank" rel="noopener noreferrer">Como chegar<span class="so-leitor"> (abre o Google Maps)</span></a></div>
+        </li>
+        <li class="cartao">
+          <figure class="cartao-foto"><img src="img/fachada-portaria2.webp" alt="Portaria 2 pela Avenida Treze, com escada, corrimão e jardineira" width="1920" height="1080" loading="lazy"><figcaption class="etiqueta">Portaria 2 · Av. Treze</figcaption></figure>
+          <div class="cartao-texto"><h3>Escada e rampa</h3><p>Entrada com escada e rampa de acesso. Lá dentro, uma rampa com corrimão leva até a sala de espera e os consultórios.</p><a class="cartao-acao" href="passeio/">Ver o caminho em 3D</a></div>
+        </li>
+        <li class="cartao cartao-destaque">
+          <img class="contornos" src="img/contornos.svg" alt="" aria-hidden="true">
+          <p class="rotulo-cartao">Antes de vir</p>
+          <h3>Conheça a clínica por dentro</h3>
+          <p>Ande da portaria até os consultórios em 3D, feito a partir da planta da clínica.</p>
+          <a class="botao botao-laranja" href="passeio/">Fazer o passeio</a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="secao" id="duvidas" aria-labelledby="duvidas-titulo">
+      <div class="faq">
+        <div class="faq-lado">
+          <h2 id="duvidas-titulo" class="secao-titulo">Dúvidas frequentes</h2>
+          <p>As perguntas que a recepção mais ouve. Se a sua não estiver aqui, ligue.</p>
+          <div class="faq-contato bloco-noite">
+            <img class="contornos" src="img/contornos.svg" alt="" aria-hidden="true">
+            <b>Ainda com dúvida?</b>
+            <a class="faq-fone" href="tel:+553138496156">(31) 3849-6156</a>
+            <span>Segunda a sexta, das 8h às 18h</span>
+            <a class="botao botao-laranja" href="tel:+553138496156">Ligar para a clínica</a>
+          </div>
+        </div>
+        <div class="perguntas">
+          <details>
+            <summary>Como faço para agendar uma consulta?</summary>
+            <div class="resposta"><p>Ligue para a unidade mais perto de você: Timóteo <a href="tel:+553138496156">(31) 3849-6156</a>, Coronel Fabriciano <a href="tel:+5531997600755">(31) 99760-0755</a> ou Ipatinga <a href="tel:+5531997454281">(31) 99745-4281</a>.</p></div>
+          </details>
+          <details>
+            <summary>A clínica atende o meu convênio?</summary>
+            <div class="resposta"><p>São 16 planos e cartões aceitos, como Bradesco Saúde, Cassi, Cemig Saúde, SulAmérica, Usisaúde e CardFácil. <a href="index.html#convenios">Veja a lista completa</a>. Na hora de agendar, a equipe confirma a cobertura do seu plano.</p></div>
+          </details>
+          <details>
+            <summary>Como vejo o resultado dos meus exames?</summary>
+            <div class="resposta"><p>Pelo portal do paciente, no celular ou no computador. <a href="exames.html">Veja o passo a passo</a>.</p></div>
+          </details>
+          <details>
+            <summary>Quais especialidades a clínica tem?</summary>
+            <div class="resposta"><p>São 29, entre elas clínica geral, cardiologia, pediatria, ginecologia e obstetrícia, ortopedia, dermatologia e odontologia. <a href="index.html#especialidades">Ver todas e o que cada uma cuida</a>.</p></div>
+          </details>
+          <details>
+            <summary>É uma emergência. Posso ir até a clínica?</summary>
+            <div class="resposta"><p>Em caso de emergência, ligue <a href="tel:192">192 (SAMU)</a> ou procure o pronto-socorro mais próximo. Os canais da clínica não atendem emergências.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape bloco-noite">
+    <div class="rodape-colunas">
+      <div>
+        <a class="marca" href="index.html" aria-label="Clínica Dias, página inicial">
+          <img src="img/logo-laranja.svg" alt="" width="268" height="100">
+        </a>
+      </div>
+      <div>
+        <h2 class="rodape-titulo">Timóteo</h2>
+        <p>Rua Cento e Vinte e Oito, 14 · Santa Maria</p>
+        <p><a href="tel:+553138496156">(31) 3849-6156</a></p>
+      </div>
+      <div>
+        <h2 class="rodape-titulo">Coronel Fabriciano</h2>
+        <p>Rua Pedro Nolasco, 107 · Centro</p>
+        <p><a href="tel:+5531997600755">(31) 99760-0755</a></p>
+      </div>
+      <div>
+        <h2 class="rodape-titulo">Ipatinga</h2>
+        <p>Avenida Brasil, 700 · Iguaçu</p>
+        <p><a href="tel:+5531997454281">(31) 99745-4281</a></p>
+      </div>
+    </div>
+    <nav class="rodape-paginas" aria-label="Páginas do site">
+      <a href="a-clinica.html">A clínica</a>
+      <a href="exames.html">Exames e resultados</a>
+      <a href="atendimento.html">Atendimento</a>
+      <a href="passeio/">Por dentro</a>
+      <a href="privacidade.html">Privacidade</a>
+    </nav>
+    <div class="rodape-base">
+      <p>Em caso de emergência, ligue <a href="tel:192">192 (SAMU)</a>. Nossos canais não atendem emergências.</p>
+      <p>© 2026 Clínica Dias · Medicina especializada</p>
+    </div>
+  </footer>
+</body>
+</html>

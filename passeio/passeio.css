@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Jost';
-  src: url('../assets/fonts/jost-latin-wght-normal.woff2') format('woff2');
+  src: url('../fonts/jost-latin-wght-normal.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }
@@ -35,10 +35,9 @@ body {
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 a { color: inherit; }
 
-#cena { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+#cena { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; outline: none; }
 /* maquete pré-renderizada: mesma câmera do 3D. Paisagem: encaixa pela altura; retrato: pela largura */
 .maq-img { position: fixed; z-index: 0; max-width: none; opacity: 0; pointer-events: none; user-select: none; } /* posição calculada em passeio.js (posicionaImagem) */
-#cena { z-index: 1; }
 
 /* ── moldura ───────────────────────────── */
 .moldura i { position: fixed; pointer-events: none; z-index: 5; background: var(--linha); transition: background .6s; }
@@ -62,7 +61,7 @@ body.modo-dentro .topo { color: #fff; text-shadow: 0 1px 10px rgba(0, 0, 0, .25)
 .topo-centro { font-size: 13px; }
 .topo-links { display: flex; justify-content: flex-end; align-items: center; gap: 22px; }
 .topo-links a { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.som { display: grid; place-items: center; width: 26px; height: 26px; border-left: 1px solid currentColor; padding-left: 14px; width: auto; opacity: .85; }
+.som { display: grid; place-items: center; width: auto; height: 26px; border-left: 1px solid currentColor; padding-left: 14px; opacity: .85; }
 .som .onda { opacity: .25; transition: opacity .3s; }
 .som[aria-pressed="true"] .onda { opacity: 1; }
 
@@ -91,7 +90,6 @@ body:not(.carregando) .entrada { opacity: 0; visibility: hidden; }
 .folhas svg { position: absolute; right: -6%; bottom: -8%; width: min(70vw, 900px); height: auto; aspect-ratio: 1; opacity: .13; transform-origin: 20% 90%; animation: balanca 14s ease-in-out infinite alternate; }
 body.modo-maquetes .folhas { opacity: 1; }
 @keyframes balanca { from { transform: rotate(-2deg) translate(0, 0); } to { transform: rotate(2.5deg) translate(-14px, 6px); } }
-@media (prefers-reduced-motion: reduce) { .folhas svg { animation: none; } }
 
 .maquete-rodape {
   position: absolute; left: 0; right: 0; bottom: clamp(26px, 5.5vh, 60px);
@@ -122,16 +120,15 @@ body.modo-maquetes .folhas { opacity: 1; }
 /* setas nas bordas: nome da parte vizinha na vertical */
 .nav-lado {
   position: absolute; top: 50%; transform: translateY(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
-  padding: 16px 0; width: 44px; pointer-events: auto; color: var(--noite);
-  z-index: 2; /* no celular as setas descem para o lado do Entrar: ficam por cima da faixa do rodapé, que ocupa a largura toda */
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  padding: 16px 0; width: 58px; pointer-events: auto; color: var(--noite);
+  z-index: 2; /* por cima da faixa do rodapé, que ocupa a largura toda */
   font-size: 13px; letter-spacing: .03em;
 }
 .nav-ant { left: calc(var(--gutter) + 6px); }
 .nav-prox { right: calc(var(--gutter) + 6px); }
 .nav-lado .nav-nome { writing-mode: vertical-rl; white-space: nowrap; }
 .nav-ant .nav-nome { transform: rotate(180deg); }
-.nav-lado { width: 58px; gap: 16px; }
 /* seta em círculo (bordas e ao lado do Entrar): maior e fácil de achar */
 .nav-bola, .seta-redonda {
   display: grid; place-items: center; flex: none; width: 54px; height: 54px; border-radius: 50%;
@@ -150,7 +147,7 @@ body.modo-maquetes .folhas { opacity: 1; }
 .nav-lado:hover .nav-nome { text-decoration: underline; text-underline-offset: 4px; }
 .nav-lado:focus-visible { outline: 2px solid var(--laranja); outline-offset: 2px; }
 .nav-lado[disabled] { visibility: hidden; }
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   /* no celular as setas das bordas saem: ficam só as redondas ao lado do Entrar */
   .nav-lado { display: none; }
   .entrar-linha { gap: 12px; }
@@ -231,7 +228,6 @@ body.modo-maquetes .folhas { opacity: 1; }
 
 @media (max-width: 720px) {
   /* celular: alvos de toque de 44 px, painel no rodapé, setas maiores */
-  .nav-areas { gap: 12px; }
   .nav-nome { display: none; }           /* no celular só a seta; o nome vai no title e no aria-label */
   .btn-entrar { min-height: 44px; padding: 12px 34px; font-size: 15px; }
   .btn-areas { min-height: 44px; }
@@ -247,5 +243,5 @@ body.modo-maquetes .folhas { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ponto::after, .dica-desenho i { animation: none; }
+  .ponto::after, .dica-desenho i, .folhas svg { animation: none; }
 }

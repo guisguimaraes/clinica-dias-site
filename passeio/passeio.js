@@ -30,15 +30,13 @@ renderer.localClippingEnabled = true;
 renderer.shadowMap.enabled = !LEVE;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// Paleta oficial (Manual da Marca): laranja #F7922D, petróleo #5C95A4, azul noite #101E44,
+// Paleta oficial (Manual da Marca): laranja #F7922D, petróleo #5C95A4, azul do logo #2B4161 (no lugar do azul-noite #101E44, que parece roxo),
 // pêssego #FDE0C9, cinzas #A8A9AC / #828386. Fundo claro #F5F4F2.
 const COR_FUNDO = new THREE.Color('#E9E2D7'); // fundo bege das maquetes (como o ICG)
-const COR_BASE = new THREE.Color('#DDD3C5');  // base da maquete: argila um tom abaixo
 const COR_BARRO = new THREE.Color('#E8DCCB'); // tudo da maquete em argila; só logos e placas ficam com cor
-const TOM_QUENTE = new THREE.Color('#f4e6d6');
 // cores dos materiais do Blender trocadas pela paleta da marca (nome do material → cor)
 const PALETA = {
-  teal: '#5C95A4', 'faixa-azul': '#5C95A4', laranja: '#F7922D', roxo: '#101E44',
+  teal: '#5C95A4', 'faixa-azul': '#5C95A4', laranja: '#F7922D', roxo: '#2B4161', // 'roxo' é o nome do material no Blender (letras e faixas azuis)
   'faixa-branca': '#F5F4F2', banner: '#FDE0C9', quadro: '#828386',
 };
 const scene = new THREE.Scene();
@@ -152,24 +150,11 @@ function materialMaquete(src, aoMap = null, decal = false) {
 }
 const sombraBarro = comCorte(new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, clippingPlanes: planos }));
 
-// base e linhas finas em volta da maquete
-const base = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: COR_BASE, roughness: 0.95 }));
-base.receiveShadow = true;
-const linhas = new THREE.LineSegments(
-  new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)),
-  new THREE.LineBasicMaterial({ color: '#A8A9AC', transparent: true, opacity: 0.75 }),
-);
-scene.add(base, linhas);
-
+// sol e sombra acompanham a área da maquete
 function posicionaBase() {
   const sx = corte.max.x - corte.min.x, sz = corte.max.z - corte.min.z;
   const cx = (corte.min.x + corte.max.x) / 2, cz = (corte.min.z + corte.max.z) / 2;
   const fundo = corte.min.y + 0.15;
-  base.scale.set(sx + 0.02, 0.18, sz + 0.02);
-  base.position.set(cx, fundo - 0.09, cz);
-  const altura = Math.max(3.2, corte.max.y - fundo);
-  linhas.scale.set(sx + 0.6, altura, sz + 0.6);
-  linhas.position.set(cx, fundo + altura / 2, cz);
   // sombra cobre só a área da maquete
   const r = Math.max(sx, sz) / 2 + 2;
   const sc = sol.shadow.camera;
@@ -201,24 +186,18 @@ const luzPronta = (q.has('semluz') ? Promise.resolve(null) : fetch('./modelos/lu
   .then(async (j) => {
     if (!j || !j.k || !Array.isArray(j.grupos)) return;
     luz = j;
-    await Promise.all((j.ao || []).map((g) => texLoader.loadAsync(`./modelos/ao_${g}.${j.ext || 'png'}`)
+    await Promise.all([...(j.ao || []).map((g) => texLoader.loadAsync(`./modelos/ao_${g}.${j.ext || 'png'}`)
       .then((t) => { t.flipY = false; t.channel = 1; aomaps[g] = t; temAO = true; })
-      .catch(() => console.warn('[passeio] sem oclusão para', g))));
-    await Promise.all(j.grupos.map((g) => texLoader.loadAsync(`./modelos/luz_${g}.${j.ext || 'png'}`)
+      .catch(() => console.warn('[passeio] sem oclusão para', g))), ...j.grupos.map((g) => texLoader.loadAsync(`./modelos/luz_${g}.${j.ext || 'png'}`)
       .then((t) => {
         t.flipY = false;
         t.channel = 1;
         t.colorSpace = THREE.SRGBColorSpace;
         lightmaps[g] = t;
       })
-      .catch(() => console.warn('[passeio] sem mapa de luz para', g, '— usando luz em tempo real'))));
+      .catch(() => console.warn('[passeio] sem mapa de luz para', g, '— usando luz em tempo real')))]);
   });
 const PLASTICO = new Set(['plastico', 'tubo', 'preto-brilho', 'vidro-escuro']);
-let _ceuReflexo = null;
-function ceuReflexo() {
-  if (!_ceuReflexo) { _ceuReflexo = ceu.clone(); _ceuReflexo.mapping = THREE.EquirectangularReflectionMapping; _ceuReflexo.needsUpdate = true; }
-  return _ceuReflexo;
-}
 function folhaPorta(o) {
   for (let n = o; n; n = n.parent) if (n.userData?.abre != null && n.userData?.visita) return true;
   return false;
@@ -231,9 +210,8 @@ function grupoDe(o) {
   return null;
 }
 
-luzPronta.then(() => loader.load(
-  './modelos/clinica.glb',
-  (gltf) => {
+const modeloPronto = loader.loadAsync('./modelos/clinica.glb', (ev) => { if (ev.total) $('#barra').style.transform = `scaleX(${(ev.loaded / ev.total) * 0.95})`; });
+Promise.all([modeloPronto, luzPronta]).then(([gltf]) => {
     gltf.scene.traverse((o) => {
       if (!o.isMesh) return;
       let nomes = '';
@@ -254,14 +232,6 @@ luzPronta.then(() => loader.load(
       } else if (o.material?.name === 'vidro' && luz && g && lightmaps[g]) {
         // vidro dentro dos móveis = espelho dos lavatórios: assado ele vira mancha preta, então reflete o ambiente
         real = new THREE.MeshStandardMaterial({ color: '#c9d3d6', metalness: 1, roughness: 0.04, envMap: ambiente, envMapIntensity: 1.1 });
-      } else if (luz && g && lightmaps[g]) {
-        // luz calculada no Blender: cor/textura × lightmap, sem luz em tempo real
-        real = new THREE.MeshBasicMaterial({
-          color: real.color, map: real.map,
-          lightMap: lightmaps[g], lightMapIntensity: luz.k * Math.PI,
-        });
-      } else if (vidro) {
-        real = new THREE.MeshBasicMaterial({ color: '#dfeef0', transparent: true, opacity: 0.16, depthWrite: false });
       } else if (real && real.name === 'vidro-fachada') {
         // pele de vidro da fachada: espelho azulado refletindo o céu de fim de tarde
         real = new THREE.MeshStandardMaterial({ color: '#5f7d9c', metalness: 0.6, roughness: 0.14, envMap: ambiente, envMapIntensity: 1.25, emissive: '#22344a', emissiveIntensity: 0.6 });
@@ -274,6 +244,14 @@ luzPronta.then(() => loader.load(
           lightMap: (luz && g && lightmaps[g]) || null, lightMapIntensity: luz ? luz.k * Math.PI * 0.6 : 1,
           envMap: ambiente, envMapIntensity: real.name === 'vidro-escuro' ? 1.8 : real.name === 'preto-brilho' ? 1.3 : 0.9,
         });
+      } else if (luz && g && lightmaps[g]) {
+        // luz calculada no Blender: cor/textura × lightmap, sem luz em tempo real
+        real = new THREE.MeshBasicMaterial({
+          color: real.color, map: real.map,
+          lightMap: lightmaps[g], lightMapIntensity: luz.k * Math.PI,
+        });
+      } else if (vidro) {
+        real = new THREE.MeshBasicMaterial({ color: '#dfeef0', transparent: true, opacity: 0.16, depthWrite: false });
       } else if (folhaPorta(o) && real) {
         // folha de porta que abre na visita: fica fora do mapa de luz; cor chapada no tom das portas assadas
         real = new THREE.MeshBasicMaterial({ color: real.color.clone().multiplyScalar(0.84), map: real.map });
@@ -313,13 +291,10 @@ luzPronta.then(() => loader.load(
     };
     carregado = true;
     pronto();
-  },
-  (ev) => { if (ev.total) $('#barra').style.transform = `scaleX(${(ev.loaded / ev.total) * 0.95})`; },
-  (err) => {
-    console.error('[passeio] modelo não carregou', err);
-    $('.entrada-marca p').innerHTML = 'Modelo 3D ainda<br>não gerado';
-  },
-));
+}).catch((err) => {
+  console.error('[passeio] modelo não carregou', err);
+  $('.entrada-marca p').innerHTML = 'Modelo 3D ainda<br>não gerado';
+});
 
 // céu de fim de tarde atrás das fachadas (só no passeio)
 const ceu = (() => {
@@ -343,8 +318,6 @@ function modoBarro(sim) {
     m.mesh.customDepthMaterial = sim ? sombraBarro : undefined;
     m.mesh.visible = sim ? !m.teto : true;
   }
-  base.visible = false; // sem base: a maquete fica solta no fundo, como no ICG
-  linhas.visible = false; // sem a caixa de linhas: a maquete fica solta no fundo, como no ICG
   hemi.intensity = sim ? (temAO ? 1.75 : 1.45) : 0.9;
   sol.intensity = sim ? 1.15 : 0.0;
   // sombra de contato vem do mapa de oclusão (AO); sem AO, sombra macia de raio grande
@@ -451,7 +424,6 @@ function preCarrega(i) {
 }
 function malhasVisiveis(sim) {
   for (const m of malhas) m.mesh.visible = sim && !m.teto;
-  base.visible = false; // sem base: a maquete fica solta no fundo, como no ICG
   acorda(3);
 }
 // a render (blender/render_maquetes.py) sai com o conteúdo 10% da altura ABAIXO do centro;
@@ -522,7 +494,7 @@ function mostraArea(i, imediato = false) {
   gsap.to(uCorte.uAltura, { value: areas[i].corte ?? 99, duration: dur, ease: 'power3.inOut' });
   gsap.to(uCorte.uTopo, { value: areas[i].topo ?? 99, duration: dur, ease: 'power3.inOut' });
   gsap.fromTo('#area-titulo', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur ? 0.8 : 0, delay: dur ? 0.5 : 0, ease: 'power2.out' });
-  acorda(dur * 60 + 10);
+  acorda(Math.ceil(dur * 144) + 10); // quadros, não segundos: cobre telas de até 144 Hz
   // troca: 3D ao vivo durante o voo, imagem pronta da área nova ao chegar
   if (dur) escondeImagem();
   gsap.delayedCall(dur + 0.05, () => mostraImagem(i));
@@ -678,6 +650,7 @@ canvas.addEventListener('pointermove', (e) => {
   empurra((-dy - dx) * 3.2);
 });
 addEventListener('pointerup', () => { arrasto = null; });
+addEventListener('pointercancel', () => { arrasto = null; });
 addEventListener('keydown', (e) => {
   if (modo === 'dentro') {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') empurra(e.key === 'ArrowDown' ? 260 : -260);
@@ -685,7 +658,7 @@ addEventListener('keydown', (e) => {
   } else if (modo === 'maquetes') {
     if (e.key === 'ArrowRight' && areaAtual < areas.length - 1) mostraArea(areaAtual + 1);
     if (e.key === 'ArrowLeft' && areaAtual > 0) mostraArea(areaAtual - 1);
-    if (e.key === 'Enter') entrar();
+    if (e.key === 'Enter' && !e.target.closest?.('button, a')) { som.aoEntrar(); entrar(); }
   }
 });
 
@@ -816,7 +789,7 @@ function atualizaPontos() {
     if (ver) {
       proj.copy(pos).project(camera);
       ver = proj.z < 1 && Math.abs(proj.x) < 0.92 && Math.abs(proj.y) < 0.85;
-      if (ver) b.style.transform = `translate(${((proj.x + 1) / 2) * w}px, ${((1 - proj.y) / 2) * h}px)`;
+      if (ver) b.style.translate = `${((proj.x + 1) / 2) * w}px ${((1 - proj.y) / 2) * h}px`;
     }
     if (b.classList.contains('visivel') !== ver) {
       b.classList.toggle('visivel', ver);

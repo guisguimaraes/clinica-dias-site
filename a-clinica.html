@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A clínica | Clínica Dias</title>
+  <meta name="description" content="A história da Clínica Dias: fundada em 2010 pelo cardiologista Douglas Lourenço Dias em Timóteo, hoje com três unidades no Vale do Aço.">
+  <link rel="icon" type="image/svg+xml" href="img/simbolo.svg">
+  <link rel="preload" href="fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/site.css">
+  <script src="js/site.js" defer></script>
+  <script src="js/vendor/gsap.min.js" defer></script>
+  <script src="js/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="js/vendor/SplitText.min.js" defer></script>
+  <script src="js/a-clinica.js" defer></script>
+  <script src="js/anima.js" defer></script>
+  <!-- animações: esconde os títulos só até o anima.js prepará-los (se ele não rodar, volta tudo em 3 s) -->
+  <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('anima');setTimeout(function(){if(!window.__anima)document.documentElement.classList.remove('anima')},3000)}</script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <a class="marca" href="index.html" aria-label="Clínica Dias, Medicina Especializada, página inicial">
+      <img src="img/logo.svg" alt="" width="268" height="100">
+    </a>
+    <nav class="topo-links" id="menu" aria-label="Menu principal">
+      <a href="a-clinica.html" aria-current="page">A clínica</a>
+      <a href="index.html#especialidades">Especialidades</a>
+      <a href="index.html#unidades">Unidades</a>
+      <a href="atendimento.html">Atendimento</a>
+      <a href="passeio/">Por dentro</a>
+      <a class="topo-resultados" href="exames.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z M14 3v5h5 M10 13h6 M10 17h6"/></svg>Resultados de exames
+      </a>
+    </nav>
+    <a class="botao botao-laranja topo-agendar" href="tel:+553138496156">Agendar <span>(31) 3849-6156</span></a>
+    <button class="topo-menu" type="button" aria-expanded="false" aria-controls="menu" data-menu>
+      <span aria-hidden="true"></span><span class="so-leitor">Abrir menu</span>
+    </button>
+  </header>
+
+  <main id="conteudo">
+    <section class="pagina-abertura">
+      <figure class="abertura-foto">
+        <img src="img/equipe-socios.webp" alt="Os três irmãos sócios da Clínica Dias de camisa preta" width="1132" height="1389" fetchpriority="high" style="object-position: 50% 25%">
+      </figure>
+      <div class="abertura-corpo bloco-noite">
+        <img class="contornos" src="img/contornos.svg" alt="" aria-hidden="true">
+        <p class="migalha"><a href="index.html">Início</a> / A clínica</p>
+        <p class="sobretitulo">Nossa história</p>
+        <h1 class="declaracao">Desde 2010 levando a medicina especializada para <em>perto das famílias</em> do Vale do Aço.</h1>
+        <p class="abertura-apoio">A Clínica Dias nasceu em Timóteo pelas mãos de um cardiologista formado na região. Hoje são três unidades e 29 especialidades.</p>
+      </div>
+    </section>
+
+    <!-- linha do tempo: a linha se desenha conforme a rolagem e o ano grande à esquerda acompanha o marco da vez -->
+    <section class="secao ac-historia" aria-labelledby="historia-titulo">
+      <header class="secao-cabeca">
+        <h2 id="historia-titulo" class="secao-titulo">Como tudo começou</h2>
+        <p class="secao-nota">Do diploma de medicina no Vale do Aço às três unidades de hoje.</p>
+      </header>
+      <div class="ac-tempo" data-ac-tempo>
+        <div class="ac-ano-fixo" aria-hidden="true"><span data-ac-ano>2008</span></div>
+        <ol class="ac-marcos">
+          <li class="ac-marco" data-ano="2008">
+            <span class="ac-ponto" aria-hidden="true"></span>
+            <p class="ac-ano">2008</p>
+            <div class="ac-marco-corpo">
+              <span class="ac-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 9v6"/></svg></span>
+              <h3>A formatura</h3>
+              <p>Douglas Lourenço Dias se forma em Medicina pela Faculdade de Medicina do Vale do Aço (FAMEVAÇO) e segue para a cardiologia, com título de especialista pela Sociedade Brasileira de Cardiologia.</p>
+            </div>
+          </li>
+          <li class="ac-marco" data-ano="2010">
+            <span class="ac-ponto" aria-hidden="true"></span>
+            <p class="ac-ano">2010</p>
+            <div class="ac-marco-corpo">
+              <figure class="ac-foto"><img src="img/fachada-recepcao1.webp" alt="Fachada da Recepção 1 da Clínica Dias, na Rua Cento e Vinte e Oito, em Timóteo" width="1920" height="1080" loading="lazy"></figure>
+              <h3>Nasce a Clínica Dias</h3>
+              <p>Em Timóteo, o Dr. Douglas funda a clínica para que as famílias da cidade tivessem especialistas por perto, sem precisar viajar para consultar.</p>
+            </div>
+          </li>
+          <li class="ac-marco" data-ano="Hoje">
+            <span class="ac-ponto" aria-hidden="true"></span>
+            <p class="ac-ano">Hoje</p>
+            <div class="ac-marco-corpo">
+              <ul class="ac-unidades">
+                <li><img src="img/fachada.webp" alt="" width="1899" height="828" loading="lazy"><span>Timóteo</span></li>
+                <li><img src="img/fachada-fabriciano.webp" alt="" width="1400" height="788" loading="lazy"><span>Coronel Fabriciano</span></li>
+                <li><img src="img/fachada-ipatinga.webp" alt="" width="1400" height="788" loading="lazy"><span>Ipatinga</span></li>
+              </ul>
+              <h3>Três unidades e 29 especialidades</h3>
+              <p>Timóteo, Coronel Fabriciano e Ipatinga. Em Timóteo, a unidade principal tem duas entradas, exames de imagem, endoscopia, sala cirúrgica e consultórios em dois prédios.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- missão: foto real da sala de espera ao fundo, frase entrando palavra por palavra -->
+    <section class="ac-missao" aria-label="Nossa missão">
+      <div class="ac-missao-foto" aria-hidden="true"><img src="img/sala-espera.webp" alt="" width="1920" height="1080" loading="lazy" data-ac-paralaxe></div>
+      <img class="contornos" src="img/contornos.svg" alt="" aria-hidden="true">
+      <blockquote class="ac-missao-frase">
+        <p class="sobretitulo">Nossa missão · fazer história</p>
+        <p class="ac-frase" data-ac-frase>Nossa missão é <em>acolher e cuidar</em> das pessoas.</p>
+        <cite>Do painel “Nossa missão: Fazer história”, na sala de espera da Recepção 1, e do quadro de Missão, Visão e Valores do 2º piso, em Timóteo</cite>
+      </blockquote>
+    </section>
+
+    <!-- sócio-fundador: foto larga com a ficha do Dr. Douglas sobreposta -->
+    <section class="ac-fundador" aria-labelledby="fundador-titulo">
+      <figure class="ac-fundador-foto"><img src="img/equipe-jaleco.webp" alt="Os seis sócios da Clínica Dias de jaleco branco" width="1353" height="1162" loading="lazy" data-ac-zoom></figure>
+      <div class="ac-ficha" data-ac-sobe>
+        <p class="sobretitulo">Sócio-fundador</p>
+        <h2 id="fundador-titulo" class="ac-ficha-nome">Dr. Douglas Lourenço Dias</h2>
+        <p class="ac-ficha-cargo">Cardiologista · fundador da Clínica Dias em 2010</p>
+        <dl class="ac-ficha-dados">
+          <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>Formação</dt><dd>Medicina pela FAMEVAÇO, 2008</dd></div>
+          <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8.5 14l-1.5 8 5-3 5 3-1.5-8"/></svg>Especialista</dt><dd>Título em Cardiologia pela SBC</dd></div>
+          <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5h11l5 5v9z"/><path d="M8 13h8M8 16h5"/></svg>Pós-graduação</dt><dd>Emergências Clínicas e Nutrologia</dd></div>
+          <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>Atende</dt><dd>Cardiologia clínica e ecocardiografia</dd></div>
+        </dl>
+        <a class="botao botao-laranja" href="tel:+553138496156">Agende sua consulta</a>
+      </div>
+    </section>
+
+    <!-- símbolo: a marca grande entre anéis que giram devagar, e as três cores explicadas -->
+    <section class="ac-simbolo" aria-labelledby="marca-titulo">
+      <div class="ac-simbolo-palco" aria-hidden="true">
+        <span class="ac-anel ac-anel-a"></span><span class="ac-anel ac-anel-b"></span><span class="ac-anel ac-anel-c"></span>
+        <img src="img/simbolo.svg" alt="" width="288" height="268" data-ac-simbolo>
+      </div>
+      <div class="ac-simbolo-corpo">
+        <p class="sobretitulo">O nosso símbolo</p>
+        <h2 id="marca-titulo" class="ac-simbolo-titulo">Uma cruz médica com folhas: cuidar da saúde com o <em>zelo de quem cultiva</em>.</h2>
+        <p>O logo junta a cruz da medicina às folhas que crescem em volta dela. A clínica não só trata: acompanha e cultiva a saúde dos pacientes ao longo do tempo, com dedicação e cuidado.</p>
+        <ul class="ac-cores">
+          <li><span class="ac-cor" style="--c:#F7922D"></span><b>Laranja</b><span>as folhas: o cuidado que faz crescer</span></li>
+          <li><span class="ac-cor" style="--c:#5C95A4"></span><b>Petróleo</b><span>o começo da cruz: confiança</span></li>
+          <li><span class="ac-cor" style="--c:#2B4161"></span><b>Azul</b><span>a cruz: a medicina especializada</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- números que contam do zero quando aparecem -->
+    <section class="ac-hoje bloco-noite" aria-labelledby="numeros-titulo">
+      <img class="contornos" src="img/contornos.svg" alt="" aria-hidden="true">
+      <div class="ac-hoje-miolo">
+        <header class="ac-hoje-cabeca">
+          <p class="sobretitulo">A clínica hoje</p>
+          <h2 id="numeros-titulo" class="ac-hoje-titulo">Os números de quem atende o Vale do Aço todos os dias.</h2>
+        </header>
+        <ul class="ac-numeros">
+          <li><span class="ac-num"><span data-desde="2010" data-ac-conta>16</span></span><b>anos de clínica</b><span>Fundada em Timóteo em 2010 e crescendo com a região.</span></li>
+          <li><span class="ac-num"><span data-ac-conta>29</span></span><b>especialidades</b><span>Da clínica geral à cardiologia, pediatria e odontologia. <a href="index.html#especialidades">Ver todas</a></span></li>
+          <li><span class="ac-num"><span data-ac-conta>3</span></span><b>cidades</b><span>Timóteo, Coronel Fabriciano e Ipatinga. <a href="index.html#unidades">Ver endereços</a></span></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape bloco-noite">
+    <div class="rodape-colunas">
+      <div>
+        <a class="marca" href="index.html" aria-label="Clínica Dias, página inicial">
+          <img src="img/logo-laranja.svg" alt="" width="268" height="100">
+        </a>
+      </div>
+      <div>
+        <h2 class="rodape-titulo">Timóteo</h2>
+        <p>Rua Cento e Vinte e Oito, 14 · Santa Maria</p>
+        <p><a href="tel:+553138496156">(31) 3849-6156</a></p>
+      </div>
+      <div>
+        <h2 class="rodape-titulo">Coronel Fabriciano</h2>
+        <p>Rua Pedro Nolasco, 107 · Centro</p>
+        <p><a href="tel:+5531997600755">(31) 99760-0755</a></p>
+      </div>
+      <div>
+        <h2 class="rodape-titulo">Ipatinga</h2>
+        <p>Avenida Brasil, 700 · Iguaçu</p>
+        <p><a href="tel:+5531997454281">(31) 99745-4281</a></p>
+      </div>
+    </div>
+    <nav class="rodape-paginas" aria-label="Páginas do site">
+      <a href="a-clinica.html">A clínica</a>
+      <a href="exames.html">Exames e resultados</a>
+      <a href="atendimento.html">Atendimento</a>
+      <a href="passeio/">Por dentro</a>
+      <a href="privacidade.html">Privacidade</a>
+    </nav>
+    <div class="rodape-base">
+      <p>Em caso de emergência, ligue <a href="tel:192">192 (SAMU)</a>. Nossos canais não atendem emergências.</p>
+      <p>© 2026 Clínica Dias · Medicina especializada</p>
+    </div>
+  </footer>
+</body>
+</html>

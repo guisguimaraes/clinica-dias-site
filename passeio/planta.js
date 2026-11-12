@@ -219,11 +219,11 @@ rP1.feitas.push([3.9, 6.85, 4.16, 8.08]);
 rP1.feitas.push([1.55, 6.38, 2.56, 6.56]);
 // a porta do antigo banheiro da esquerda vira parede (a sala agora é um consultório só)
 rP1.feitas.push([0.1, 7.7, 1.1, 7.95]);
+rP1.feitas.push([19.15, 4.3, 20.95, 4.5]); // sem verga automática atravessando as portas 14 e 15 (as vergas delas já cobrem)
 const tapasP1 = [
   tapa('tapa-1415-a', [19.19, N_REC - 0.12, 4.35], [19.3, N_REC + PE, 4.45]),
   tapa('tapa-1415-b', [20.0, N_REC - 0.12, 4.35], [20.14, N_REC + PE, 4.45]),
   tapa('tapa-1415-c', [20.88, N_REC - 0.12, 4.35], [20.94, N_REC + PE, 4.45]),
-  tapa('tapa-1415-meio', [20.02, N_REC - 0.12, 3.6], [20.12, N_REC + PE, 4.36]),
   tapa('tapa-odonto-09', [29.81, N_REC - 0.12, 4.35], [30.08, N_REC + PE, 4.45]),
   tapa('tapa-odonto-10', [33.2, N_REC - 0.12, 4.35], [33.52, N_REC + PE, 4.45]),
   // banheiro PNE da Recepção 2: a planta não tinha a parede do lado leste e o vaso aparecia do corredor
@@ -540,7 +540,7 @@ export const pontos = [
     sala: { olhos: [[16.4, o1, 6.35], [16.3, o1, 5.78], [15.35, o1, 5.75]], alvos: [[15.4, o1 - 0.1, 5.78], [13.6, o1 - 0.3, 5.2], [12.9, o1 - 0.5, 4.3]] } },
   { caminho: 'r1', pos: [17.45, T + 2.2, 7.2], ate: 0.95, titulo: 'Bloco Cirúrgico', sub: 'Sala cirúrgica e recuperação',
     texto: 'Cirurgias oftalmológicas de baixa complexidade e procedimentos cirúrgicos ambulatoriais.',
-    link: { texto: 'Conhecer o site', href: '../v2/' } },
+    link: { texto: 'Conhecer o site', href: '../' } },
   // Recepção 2
   { caminho: 'r2', pos: [36.15, N_REC + 1.9, 7.4], titulo: 'Clínica Dias', sub: 'Portaria 2 · Avenida Treze',
     texto: 'Entrada com escada e rampa de acesso. Atendimento de segunda a sexta, das 8h às 18h.' },
@@ -557,7 +557,7 @@ export const pontos = [
   { caminho: 'r3', pos: [10.2, N_ANT + 1.92, 5.46], titulo: 'Sala de espera', sub: 'Chamada pelo painel',
     texto: 'Os pacientes são chamados pela TV do painel de madeira.' },
   { caminho: 'r3', pos: [5.3, N_ANT + 2.3, 12.6], ate: 0.97, video: './videos/corredor.mp4', titulo: 'Consultórios', sub: 'Siga a cor da sua especialidade',
-    texto: 'As faixas coloridas no piso levam até cada consultório.', link: { texto: 'Conhecer o site', href: '../v2/' } },
+    texto: 'As faixas coloridas no piso levam até cada consultório.', link: { texto: 'Conhecer o site', href: '../' } },
   // fim da rampa: leva direto para a parte dos consultórios (pedido de 11/11)
   { caminho: 'r2', pos: [12.4, N_ANT + 1.75, 7.3], ate: 0.97, titulo: 'Consultórios', rotulo: 'Conhecer os consultórios', vaiPara: 'r3' },
   ...salasExtras,
