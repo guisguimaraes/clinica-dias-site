@@ -176,21 +176,25 @@ const tapasT = [
 // 1º pav.: a rampa entra no prédio antigo; a espera é aberta para a coluna de cadeiras (fotos f22–f27);
 // as portas da passagem das faixas coloridas ficam abertas no passeio
 // a última é a entrada do Laboratório (sala 16), no canto da espera do 2º piso, com batente preto (f24, f26)
-const PASSAGENS_P1 = [[16.1, 6.42, 16.5, 7.97], [14.15, 4.7, 14.45, 8.9], [9.8, 7.92, 10.1, 9.03], [6.0, 7.92, 6.35, 9.03], [13.0, 4.3, 14.12, 4.65]];
+const PASSAGENS_P1 = [[16.1, 6.42, 16.5, 7.97], [14.15, 4.7, 14.45, 8.9], [9.8, 7.92, 10.1, 9.03], [6.0, 7.92, 6.35, 9.03], [13.0, 4.3, 14.12, 4.65],
+  // corredor dos banheiros (planta do 1º pav.): saem os dois tocos de parede soltos que fechavam a passagem
+  [3.88, 7.91, 4.2, 8.75], [1.93, 7.91, 2.15, 8.75]];
 let pPav1 = paredesPav1.paredes;
 for (const r of PASSAGENS_P1) pPav1 = abre(pPav1, r);
 // salas 14 e 15 abrem direto no corredor da rampa (fotos f14–f16): sai o recuo entre as duas
 const recuo1415 = (d) => d.o === 'v' && d.a > 3.6 && d.a < 3.7 && d.c > 19.9 && d.c < 20.1;
-// fim do corredor das faixas (f31): duas portas lado a lado com um filete de parede no meio;
-// a da direita é o banheiro (porta de almofada com a placa na folha), a da esquerda não tem bandeira
+// banheiros masculino e feminino do 2º piso (planta do 1º pav. e f31): portas de almofada sem bandeira;
+// a "porta" em x 4,11 era a folha aberta do banheiro desenhada na planta: virava uma porta solta na circulação
 const cantoBanheiro = (d) => {
   if (d.o !== 'h' || Math.abs(d.c - 7.83) > 0.1) return d;
-  if (Math.abs(d.a - 3.152) < 0.05) return { ...d, placa: false };
-  if (Math.abs(d.a - 4.111) < 0.05) return { ...d, placa: false, almofada: true, texto: 'Banheiro' };
+  if (Math.abs(d.a - 4.111) < 0.05) return null;
+  if (d.a < 4) return { ...d, placa: false, almofada: true };
   return d;
 };
 const portasP1 = [
-  ...paredesPav1.portas.filter((d) => !recuo1415(d)).map(abreSala).map(cantoBanheiro),
+  ...paredesPav1.portas.filter((d) => !recuo1415(d)).map(abreSala).map(cantoBanheiro).filter(Boolean),
+  // porta do banheiro virada para a circulação (a da placa "Banheiro" em f31)
+  { o: 'v', c: 4.03, a: 6.92, b: 7.72, almofada: true, texto: 'Banheiro', placa: false },
   { o: 'h', c: 4.4, a: 19.3, b: 20.0, placa: 15, abre: 'n', visita: true },
   { o: 'h', c: 4.4, a: 20.14, b: 20.88, placa: 14, abre: 'n', visita: true },
   // odontologia (salas 09 e 10, fotos f08–f09 e vídeo 1:08): a 09 abre no "Ver por dentro"
@@ -209,6 +213,8 @@ const rP1 = comPortas(pPav1, portasP1, (x) => (x < X_DIVISA ? N_ANT : N_REC), 'p
 rP1.feitas.push(...PASSAGENS_P1); // passagens abertas de propósito: sem porta nem parede de fresta
 // vão da planta entre as duas portas do fim do corredor das faixas: virava uma porta atravessada por cima delas
 rP1.feitas.push([3.9, 6.85, 4.16, 8.08]);
+// fundo dos dois banheiros: o vão entre os tocos da parede virava uma porta atravessando a divisória (é parede cheia)
+rP1.feitas.push([1.55, 6.38, 2.56, 6.56]);
 const tapasP1 = [
   tapa('tapa-1415-a', [19.19, N_REC - 0.12, 4.35], [19.3, N_REC + PE, 4.45]),
   tapa('tapa-1415-b', [20.0, N_REC - 0.12, 4.35], [20.14, N_REC + PE, 4.45]),
@@ -218,7 +224,13 @@ const tapasP1 = [
   tapa('tapa-odonto-10', [33.2, N_REC - 0.12, 4.35], [33.52, N_REC + PE, 4.45]),
   // banheiro PNE da Recepção 2: a planta não tinha a parede do lado leste e o vaso aparecia do corredor
   tapa('tapa-banheiro-pne-leste', [26.52, N_REC - 0.12, 6.42], [26.67, N_REC + PE, 8.03]),
-  tapa('tapa-canto-banheiro', [3.95, N_ANT - 0.12, 6.902], [4.11, N_ANT + PE, 8.03]),
+  // filete de parede entre a porta do banheiro e o corredor dos banheiros
+  tapa('tapa-canto-banheiro', [3.95, N_ANT - 0.12, 7.72], [4.11, N_ANT + PE, 7.905]),
+  // consultório de 14,1 m² (planta do 1º pav.): parede e porta para o corredor dos banheiros (estava aberto)
+  tapa('parede-cons-oeste-a', [0.12, N_ANT - 0.12, 8.71], [2.4, N_ANT + PE, 8.81]),
+  tapa('parede-cons-oeste-b', [3.2, N_ANT - 0.12, 8.71], [4.108, N_ANT + PE, 8.81]),
+  tapa('verga-cons-oeste', [2.4, N_ANT + 2.1, 8.71], [3.2, N_ANT + PE, 8.81]),
+  { tipo: 'porta', nome: 'porta-cons-oeste', centro: [2.8, N_ANT, 8.76], vira: 0, largura: 0.8, almofada: true, placa: false },
   tapa('verga-laboratorio', [13.0, N_ANT + 2.2, 4.4], [14.12, N_ANT + PE, 4.55]),
   { tipo: 'caixa', nome: 'batente-lab-a', min: [12.94, N_ANT, 4.36], max: [13.0, N_ANT + 2.26, 4.6], mat: 'preto' },
   { tipo: 'caixa', nome: 'batente-lab-b', min: [14.12, N_ANT, 4.36], max: [14.18, N_ANT + 2.26, 4.6], mat: 'preto' },
@@ -326,7 +338,8 @@ export const pecas = [
   // três cadeiras na parede das salas 14 e 15, entre o extintor e a porta 14 (f14–f15)
   { tipo: 'cadeiras', nome: 'cadeiras-corr-r2', de: [21.2, N_REC, 4.72], n: 3, passo: [0.55, 0, 0], vira: 0 },
   // máquina de café preta no alto do corredor, ao lado da planta (f20–f21, confirmado em 11/11)
-  { tipo: 'cafeteira', nome: 'cafe-r2', pos: [16.82, N_REC, 5.05], vira: 90 },
+  // colada na planta, como em f19–f21
+  { tipo: 'cafeteira', nome: 'cafe-r2', pos: [16.82, N_REC, 5.48], vira: 90 },
   // mesinha de madeira com computador no começo da rampa (f17)
   { tipo: 'mesa', nome: 'mesa-rampa', pos: [24.08, N_REC, 7.1], vira: 90, larg: 1.0, prof: 0.55, pacientes: 0 },
   { tipo: 'lixeira', nome: 'lix-rampa', pos: [24.05, N_REC, 7.78], vira: 0, pedal: true },
