@@ -14,6 +14,9 @@
   <script src="vendor/ScrollTrigger.min.js" defer></script>
   <script src="vendor/SplitText.min.js" defer></script>
   <script src="a-clinica.js" defer></script>
+  <script src="anima.js" defer></script>
+  <!-- animações: esconde os títulos só até o anima.js prepará-los (se ele não rodar, volta tudo em 3 s) -->
+  <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('anima');setTimeout(function(){if(!window.__anima)document.documentElement.classList.remove('anima')},3000)}</script>
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>

@@ -293,6 +293,7 @@
     }
     if (url) link.href = url;
     av.hidden = false;
+    document.dispatchEvent(new CustomEvent('avaliacoes:prontas')); // anima.js monta a seção com os cartões novos
   };
 
   // sem chave: as avaliações copiadas do Google que estão no HTML
