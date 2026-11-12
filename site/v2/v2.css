@@ -726,3 +726,34 @@ ul, ol { padding: 0; list-style: none; }
   .ac-unidades { grid-template-columns: 1fr 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .ac-anel { animation: none; } }
+
+/* ─────────────── animações do site (anima.js): títulos escondidos só até serem preparados ─────────────── */
+html.anima main :is(h1, h2, h3, .sobretitulo) { visibility: hidden; }
+
+/* ─────────────── avaliações mais vivas (12/11) ─────────────── */
+.av {
+  isolation: isolate;
+  background:
+    radial-gradient(rgba(255, 255, 255, .07) 1px, transparent 1.6px) 0 0 / 24px 24px,
+    radial-gradient(70% 80% at 78% 40%, #44678F 0%, var(--noite) 64%);
+}
+/* luzes laranja e azul passeando atrás dos cartões */
+.av::before, .av::after { content: ''; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; filter: blur(30px); }
+.av::before { width: min(46vw, 640px); aspect-ratio: 1; right: -6vw; top: -10%; background: radial-gradient(circle, rgba(247, 146, 45, .34), transparent 64%); animation: av-deriva 16s ease-in-out infinite alternate; }
+.av::after { width: min(40vw, 560px); aspect-ratio: 1; left: 30%; bottom: -30%; background: radial-gradient(circle, rgba(92, 149, 164, .42), transparent 64%); animation: av-deriva 20s ease-in-out infinite alternate-reverse; }
+@keyframes av-deriva { from { transform: translate(0, 0) scale(1); } to { transform: translate(-8vw, 6vh) scale(1.15); } }
+.av-fundo { color: rgba(255, 255, 255, .055); }
+.av-miolo { z-index: 1; }
+.av-titulo { font-size: clamp(2.3rem, 1.4rem + 2.8vw, 3.9rem); font-weight: 500; }
+.av-titulo em { color: #FF9A3C; text-shadow: 0 0 34px rgba(247, 146, 45, .35); }
+.av-marca { position: relative; display: inline-block; }
+.av-risco { position: absolute; left: -2%; bottom: -.16em; width: 104%; height: .32em; overflow: visible; pointer-events: none; }
+.av-risco path { fill: none; stroke: #FFC27A; stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; vector-effect: non-scaling-stroke; }
+/* nota em selo */
+.av-nota { padding: 10px 18px 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.av-nota .av-estrelas svg { filter: drop-shadow(0 0 6px rgba(247, 146, 45, .55)); }
+.av-apoio { color: rgba(255, 255, 255, .78); }
+/* cartão: faixa colorida no topo e sombra mais funda */
+.av-card { overflow: hidden; box-shadow: 0 40px 70px -32px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .6) inset; }
+.av-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--faixa); }
+@media (prefers-reduced-motion: reduce) { .av::before, .av::after { animation: none; } }

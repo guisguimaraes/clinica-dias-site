@@ -123,10 +123,8 @@ export const mobilia = [
   { tipo: 'cadeira-oftalmo', nome: 'm-oftalmo-1p-cad', pos: a(11.6, 1.3), vira: -90 },
   { tipo: 'sofa', nome: 'm-pediatria-sofa', pos: a(8.9, 4.85), vira: 0, lugares: 3, mat: 'estofado-azul' },
   { tipo: 'mesa', nome: 'm-pediatria', pos: a(8.5, 6.85), vira: -90, larg: 1.4, prof: 0.6 },
-  { tipo: 'vaso', nome: 'm-is24a', pos: a(1.3, 7.05), vira: 0 },
-  { tipo: 'vaso', nome: 'm-is24b', pos: a(3.0, 7.05), vira: 0 },
-  { tipo: 'lavatorio', nome: 'm-is24a-l', pos: a(0.4, 7.2), vira: 90 },
-  { tipo: 'lavatorio', nome: 'm-is24b-l', pos: a(3.75, 7.2), vira: -90 },
+  // as duas salinhas de banheiro da planta viraram um consultório (f31: janela e ar-condicionado)
+  { tipo: 'mesa', nome: 'm-cons-pav1-oeste', pos: a(1.3, 6.85), vira: 0, larg: 1.3, prof: 0.6 },
   { tipo: 'mesa', nome: 'm-c141', pos: a(1.05, 9.95), vira: 180, larg: 1.6, prof: 0.6 },
   { tipo: 'sofa', nome: 'm-c141-sofa', pos: a(3.65, 10.95), vira: 180, lugares: 3, mat: 'estofado-claro' },
   { tipo: 'mesa', nome: 'm-gineco', pos: a(1.45, 12.4), vira: 90, larg: 1.2, prof: 0.6 },
