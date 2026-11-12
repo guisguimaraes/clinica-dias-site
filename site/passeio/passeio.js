@@ -268,9 +268,11 @@ luzPronta.then(() => loader.load(
       } else if (real && PLASTICO.has(real.name)) {
         // plástico e tubo pretos (cadeiras, longarina): mapa de luz + reflexo do ambiente, senão viram borrões marrons
         real = new THREE.MeshStandardMaterial({
-          color: real.color, roughness: { tubo: 0.32, 'preto-brilho': 0.18, 'vidro-escuro': 0.05 }[real.name] ?? 0.5, metalness: 0,
+          color: real.color, roughness: { tubo: 0.32, 'preto-brilho': 0.18, 'vidro-escuro': 0.05 }[real.name] ?? 0.5,
+          // tela de vidro da máquina de café: cinza que reflete o corredor (f19), não um bloco preto
+          metalness: real.name === 'vidro-escuro' ? 0.45 : 0,
           lightMap: (luz && g && lightmaps[g]) || null, lightMapIntensity: luz ? luz.k * Math.PI * 0.6 : 1,
-          envMap: ambiente, envMapIntensity: 0.9,
+          envMap: ambiente, envMapIntensity: real.name === 'vidro-escuro' ? 1.8 : real.name === 'preto-brilho' ? 1.3 : 0.9,
         });
       } else if (folhaPorta(o) && real) {
         // folha de porta que abre na visita: fica fora do mapa de luz; cor chapada no tom das portas assadas
@@ -537,7 +539,7 @@ function pronto() {
 }
 
 function irParaMaquetes(primeira = false) {
-  if (visita) { ultimaSala = botoes[visita.i].pt.id; gsap.killTweensOf(visita); visita = null; }
+  if (visita) { ultimaSala = botoes[visita.i].pt.id; visita.tl?.kill(); gsap.killTweensOf(visita); visita = null; }
   modo = 'maquetes';
   document.body.classList.add('modo-maquetes');
   fechaPainel();
@@ -666,7 +668,10 @@ canvas.addEventListener('pointermove', (e) => {
   arrasto = { x: e.clientX, y: e.clientY };
   if (visita) {
     // dentro da sala: arrastar olha para os lados
-    if (visita.k > 0.98) { visita.giro = THREE.MathUtils.clamp(visita.giro + dx * 0.004, -0.75, 0.75); acorda(3); }
+    if (visita.k > 0.98) {
+      if (visita.tl) { visita.tl.kill(); visita.tl = null; visita.k = 1; } // a pessoa assumiu: para o giro automático
+      visita.giro = THREE.MathUtils.clamp(visita.giro + dx * 0.004, -1.0, 1.0); acorda(3);
+    }
     return;
   }
   // arrastar para cima ou para a esquerda anda para frente
@@ -773,12 +778,25 @@ function entraSala(i) {
   };
   $('#painel-sala').textContent = 'Voltar ao corredor';
   escondeDica();
-  gsap.to(visita, { k: 1, duration: reduzido ? 0 : 3.2, ease: 'power2.inOut', onUpdate: () => acorda(2) });
+  // devagar: chega na porta (ela abre), para um instante olhando a sala, entra e gira de um lado ao outro
+  // para mostrar a sala inteira; arrastar a tela interrompe o giro e a pessoa olha por conta própria
+  const anda = { onUpdate: () => acorda(2) };
+  if (reduzido) visita.k = 1;
+  else {
+    visita.tl = gsap.timeline()
+      .to(visita, { k: 0.34, duration: 2.6, ease: 'power2.inOut', ...anda })
+      .to(visita, { k: 1, duration: 3.8, ease: 'sine.inOut', ...anda }, '+=0.9')
+      .to(visita, { giro: -0.95, duration: 3.4, ease: 'sine.inOut', ...anda })
+      .to(visita, { giro: 0.95, duration: 6.0, ease: 'sine.inOut', ...anda })
+      .to(visita, { giro: 0, duration: 3.4, ease: 'sine.inOut', ...anda });
+  }
+  acorda(2);
   som.clique();
 }
 function saiSala(depois) {
   const v = visita;
   if (!v) { depois?.(); return; }
+  v.tl?.kill();
   gsap.killTweensOf(v);
   gsap.to(v, {
     k: 0, giro: 0, duration: reduzido ? 0 : 2.4, ease: 'power2.inOut', onUpdate: () => acorda(2),

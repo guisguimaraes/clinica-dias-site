@@ -537,27 +537,30 @@ def totem_senha(n, pos, vira, objs_luz):
 
 
 def cafeteira(n, pos, vira, objs_luz):
-    """máquina preta "iVision" no alto da rampa (f19–f21): painel preto brilhante e fino, tela de vidro escuro
-    em cima, caixa mais funda atrás da tela, nicho aberto embaixo com luz azul e base com pés."""
+    """máquina "iVision" no alto da rampa (f19–f21): cabeça preta alta com a tela de vidro cinza que reflete o
+    corredor, pedestal estreito e vazado com a luz azul por dentro, e base baixa. Fica colada na planta."""
     em = _em(pos, vira)
     if 'preto-brilho' not in MATS:
-        material('preto-brilho', cor='#141416', rug=0.2)
-        material('vidro-escuro', cor='#1d2126', rug=0.06)
+        material('preto-brilho', cor='#1a1b1e', rug=0.2)
+    if 'vidro-escuro' not in MATS:
+        material('vidro-escuro', cor='#59636d', rug=0.06)
     if 'led-azul' not in MATS:
         material('led-azul', cor='#3a52ff', emissao=3.0)
-    p = [bx(n + '_base', em, (0, 0.02, -0.02), (0.66, 0.04, 0.44), 'preto', vira),
-         bx(n + '_painel', em, (0, 0.92, 0.0), (0.58, 1.76, 0.06), 'preto-brilho', vira),
-         bx(n + '_caixa', em, (0, 1.3, -0.17), (0.54, 0.84, 0.3), 'equip-escuro', vira),
-         bx(n + '_moldura_tela', em, (0, 1.28, 0.032), (0.5, 0.74, 0.006), 'equip-escuro', vira),
-         bx(n + '_tela', em, (0, 1.28, 0.036), (0.46, 0.7, 0.006), 'vidro-escuro', vira),
-         bx(n + '_nicho_fundo', em, (0.0, 0.6, -0.02), (0.22, 0.38, 0.02), 'equip-escuro', vira),
-         bx(n + '_nicho_l', em, (-0.115, 0.6, 0.012), (0.01, 0.38, 0.05), 'preto', vira),
-         bx(n + '_nicho_r', em, (0.115, 0.6, 0.012), (0.01, 0.38, 0.05), 'preto', vira),
-         bx(n + '_nicho_t', em, (0.0, 0.795, 0.012), (0.24, 0.01, 0.05), 'preto', vira)]
+    p = [bx(n + '_base', em, (0, 0.02, -0.04), (0.56, 0.04, 0.42), 'preto-brilho', vira),
+         # pedestal: duas laterais, fundo e travessas; o miolo fica aberto com a luz azul
+         bx(n + '_ped_l', em, (-0.15, 0.47, -0.04), (0.05, 0.86, 0.26), 'preto-brilho', vira),
+         bx(n + '_ped_r', em, (0.15, 0.47, -0.04), (0.05, 0.86, 0.26), 'preto-brilho', vira),
+         bx(n + '_ped_fundo', em, (0, 0.47, -0.16), (0.26, 0.86, 0.02), 'equip-escuro', vira),
+         bx(n + '_ped_baixo', em, (0, 0.07, -0.04), (0.26, 0.06, 0.26), 'preto-brilho', vira),
+         bx(n + '_ped_meio', em, (0, 0.62, -0.04), (0.26, 0.04, 0.26), 'preto-brilho', vira),
+         # cabeça: moldura preta brilhante, caixa funda atrás, tela de vidro na frente
+         bx(n + '_cabeca', em, (0, 1.4, -0.08), (0.62, 1.1, 0.3), 'preto-brilho', vira),
+         bx(n + '_tela', em, (0, 1.42, 0.072), (0.5, 0.94, 0.006), 'vidro-escuro', vira)]
     ob = chanfra(grupo(p, n), 0.006)
-    letras(n + '_marca', 'iVISION', em((-0.12, 1.69, 0.032)), 0.03, 'inox', vira, 0.001)
-    objs_luz.append(grupo([bx(n + '_led_b', em, (0.0, 0.415, 0.0), (0.2, 0.012, 0.03), 'led-azul', vira),
-                           bx(n + '_led_r', em, (0.104, 0.6, 0.0), (0.012, 0.36, 0.03), 'led-azul', vira)], n + '_led'))
+    letras(n + '_marca', 'iVISION', em((-0.1, 1.9, 0.072)), 0.028, 'inox', vira, 0.001)
+    objs_luz.append(grupo([bx(n + '_led_b', em, (0.0, 0.11, 0.0), (0.24, 0.012, 0.03), 'led-azul', vira),
+                           bx(n + '_led_l', em, (-0.12, 0.34, 0.0), (0.012, 0.5, 0.03), 'led-azul', vira),
+                           bx(n + '_led_r', em, (0.12, 0.34, 0.0), (0.012, 0.5, 0.03), 'led-azul', vira)], n + '_led'))
     return ob
 
 
