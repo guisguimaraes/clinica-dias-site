@@ -147,7 +147,7 @@ body.modo-maquetes .folhas { opacity: 1; }
 .nav-lado:hover .nav-nome { text-decoration: underline; text-underline-offset: 4px; }
 .nav-lado:focus-visible { outline: 2px solid var(--laranja); outline-offset: 2px; }
 .nav-lado[disabled] { visibility: hidden; }
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   /* no celular as setas das bordas saem: ficam só as redondas ao lado do Entrar */
   .nav-lado { display: none; }
   .entrar-linha { gap: 12px; }

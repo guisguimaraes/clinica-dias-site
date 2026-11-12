@@ -5,7 +5,7 @@
 - regrava os mapas de oclusão (ao_*.webp) e de luz (luz_*.webp): móveis com metade da resolução
   (aparecem pequenos na tela) e todos com qualidade menor.
 
-Não muda a geometria nem os nomes, só o peso das imagens. Pode rodar mais de uma vez.
+Não muda a geometria nem os nomes, só o peso das imagens. Mexe só nos mapas listados no luz.json (os desta rodada).
 uso: python blender/scripts/enxuga_pesos.py site/passeio/modelos
 """
 import io
@@ -16,9 +16,20 @@ import sys
 
 from PIL import Image
 
-pasta = sys.argv[1] if len(sys.argv) > 1 else 'site/passeio/modelos'
+pasta = next((a for a in sys.argv[1:] if not a.startswith('--')), 'site/passeio/modelos')
 Q_JPEG = 74       # texturas de piso, fachada e madeira
 Q_MAPA = 80       # mapas de luz e oclusão (são suaves, aguentam bem)
+
+
+def mapas_desta_rodada(pasta):
+    """Só os mapas que o Blender acabou de gravar (listados no luz.json). Os outros já foram limpos numa rodada
+    anterior; regravar de novo só perde qualidade."""
+    try:
+        with open(os.path.join(pasta, 'luz.json'), encoding='utf-8') as f:
+            j = json.load(f)
+    except (OSError, ValueError):
+        return set()
+    return {f'luz_{g}.webp' for g in j.get('grupos', [])} | {f'ao_{g}.webp' for g in j.get('ao', [])}
 
 
 def enxuga_glb(caminho):
@@ -69,8 +80,9 @@ def enxuga_glb(caminho):
 
 def enxuga_mapas(pasta):
     antes = depois = 0
+    feitos = mapas_desta_rodada(pasta)
     for nome in sorted(os.listdir(pasta)):
-        if not (nome.startswith(('ao_', 'luz_')) and nome.endswith('.webp')):
+        if nome not in feitos:
             continue
         c = os.path.join(pasta, nome)
         antes += os.path.getsize(c)
@@ -85,4 +97,6 @@ def enxuga_mapas(pasta):
 
 
 enxuga_glb(os.path.join(pasta, 'clinica.glb'))
-enxuga_mapas(pasta)
+# no rascunho o Blender não grava mapas: os que estão na pasta já foram enxugados antes
+if '--sem-mapas' not in sys.argv:
+    enxuga_mapas(pasta)

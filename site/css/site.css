@@ -27,9 +27,9 @@
   --laranja-texto: #A8560B;
   --sobre-noite: #C4C9D6;            /* texto secundário em fundo azul noite */
   --pedra: #F1ECE6;                  /* fundo da abertura: tom das paredes e do mármore da recepção (fotos) */
-  --pedra-linha: rgba(16, 30, 68, .12);
-  --linha: rgba(16, 30, 68, .14);
-  --linha-forte: rgba(16, 30, 68, .34);
+  --pedra-linha: rgba(43, 65, 97, .12);
+  --linha: rgba(43, 65, 97, .14);
+  --linha-forte: rgba(43, 65, 97, .34);
   --linha-noite: rgba(255, 255, 255, .16);
   --faixa: linear-gradient(90deg, #F7922D 0%, #C8935F 22%, #5C95A4 52%, #2B4161 100%);
 
@@ -110,7 +110,7 @@ ul, ol { padding: 0; list-style: none; }
 .abertura-corpo > :not(.contornos) { position: relative; }
 .abertura-apoio { color: var(--sobre-noite); font-weight: 300; font-size: 1.08rem; max-width: 44ch; }
 .declaracao em { font-style: normal; color: var(--laranja); }
-.abertura-foto::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(16, 30, 68, 0) 78%, rgba(16, 30, 68, .18)); pointer-events: none; }
+.abertura-foto::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(43, 65, 97, 0) 78%, rgba(43, 65, 97, .18)); pointer-events: none; }
 
 /* atalhos: faixa da marca em cima, linhas finas entre eles */
 .atalhos { margin-top: auto; position: relative; }
@@ -191,7 +191,7 @@ ul, ol { padding: 0; list-style: none; }
 .dados a { text-decoration: none; border-bottom: 1px solid var(--laranja); }
 .dados a:hover { color: var(--laranja-texto); }
 .dados-largo div { grid-template-columns: 150px 1fr; }
-.bloco-pessego .dados, .bloco-pessego .dados div { border-color: rgba(16, 30, 68, .18); }
+.bloco-pessego .dados, .bloco-pessego .dados div { border-color: rgba(43, 65, 97, .18); }
 .bloco-pessego .dados dt { color: #6B5446; }
 
 /* blocos divididos */
@@ -243,7 +243,7 @@ ul, ol { padding: 0; list-style: none; }
   position: fixed; z-index: 40; right: var(--gutter); bottom: 24px;
   width: min(430px, calc(100vw - 2 * var(--gutter)));
   background: var(--branco); padding: 24px 24px 22px; border-top: 4px solid transparent;
-  border-image: var(--faixa) 1; box-shadow: 0 24px 60px rgba(16, 30, 68, .22);
+  border-image: var(--faixa) 1; box-shadow: 0 24px 60px rgba(43, 65, 97, .22);
   opacity: 0; transform: translateY(14px); transition: opacity .4s var(--saida), transform .4s var(--saida);
 }
 .painel.aberto { opacity: 1; transform: none; }

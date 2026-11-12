@@ -11,10 +11,23 @@ import os
 import sys
 
 import cv2
+import json
+
 import numpy as np
 
 pasta = sys.argv[1] if len(sys.argv) > 1 else 'site/passeio/modelos'
 origem = sys.argv[2] if len(sys.argv) > 2 else pasta
+
+
+def mapas_desta_rodada(pasta):
+    """Só os mapas que o Blender acabou de gravar (listados no luz.json). Os outros já foram limpos numa rodada
+    anterior; regravar de novo só perde qualidade."""
+    try:
+        with open(os.path.join(pasta, 'luz.json'), encoding='utf-8') as f:
+            j = json.load(f)
+    except (OSError, ValueError):
+        return set()
+    return {f'luz_{g}.webp' for g in j.get('grupos', [])} | {f'ao_{g}.webp' for g in j.get('ao', [])}
 
 
 def limpa(im, forca, sigma):
@@ -29,8 +42,9 @@ def limpa(im, forca, sigma):
 
 
 n = 0
+feitos = mapas_desta_rodada(pasta)
 for nome in sorted(os.listdir(origem)):
-    if not nome.endswith('.webp'):
+    if not nome.endswith('.webp') or nome not in feitos:
         continue
     if nome.startswith('luz_'):
         forca, sigma = 24, 1.6

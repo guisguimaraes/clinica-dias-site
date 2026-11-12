@@ -10,4 +10,6 @@ if ($LASTEXITCODE -ne 0) { "falhou na luz"; exit 1 }
 if ($LASTEXITCODE -ne 0) { "falhou nas maquetes do computador"; exit 1 }
 & powershell -ExecutionPolicy Bypass -File "$raiz\blender\roda_render.ps1" 720 1560 32 '0,1,2'
 if ($LASTEXITCODE -ne 0) { "falhou nas maquetes do celular"; exit 1 }
+# sem as manchas de sombra soltas acima das maquetes
+python blender/scripts/limpa_fumaca.py (Get-ChildItem site/passeio/modelos/maquetes/maq_recepcao1*.webp, site/passeio/modelos/maquetes/maq_recepcao2*.webp, site/passeio/modelos/maquetes/maq_consultorios*.webp | ForEach-Object { $_.FullName })
 "tudo pronto em $([int]((Get-Date) - $t0).TotalMinutes) min"

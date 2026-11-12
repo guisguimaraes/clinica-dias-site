@@ -14,5 +14,6 @@ $p.WaitForExit()
 Select-String -Path $log -Pattern '\[clinica\]|Error|Traceback' | ForEach-Object { $_.Line }
 # o bake não tem denoiser: tira o chiado dos mapas de luz/oclusão e depois deixa o primeiro carregamento leve
 if ($p.ExitCode -eq 0 -and $modo -ne 'rascunho') { python blender/scripts/limpa_luz.py site/passeio/modelos }
-if ($p.ExitCode -eq 0) { python blender/scripts/enxuga_pesos.py site/passeio/modelos }
+if ($p.ExitCode -eq 0 -and $modo -eq 'rascunho') { python blender/scripts/enxuga_pesos.py site/passeio/modelos --sem-mapas }
+elseif ($p.ExitCode -eq 0) { python blender/scripts/enxuga_pesos.py site/passeio/modelos }
 exit $p.ExitCode

@@ -23,3 +23,13 @@
 ## Rodar no PC
 
 `npm run dev` e abrir http://localhost:4321/. No celular, na mesma rede, use o IP do PC na porta 4321.
+
+## Subir na VPS
+
+1. Copie o **conteúdo** de `site/` para a pasta do domínio, **sem** a `_previa/`.
+2. No nginx:
+   - no `server { }` do site, ponha `error_page 404 /404.html;`
+   - em `/etc/nginx/mime.types`, na linha do JavaScript, acrescente `mjs` (fica `application/javascript js mjs;`). O mapa do "Como chegar" usa arquivos `.mjs`; sem isso o navegador recusa e o mapa não abre.
+   - depois `nginx -t` e `systemctl reload nginx`.
+3. Quando o domínio estiver certo, volte a pôr no `robots.txt` a linha `Sitemap: https://<domínio>/sitemap.xml` e crie o `sitemap.xml` com as 5 páginas e o `/passeio/`.
+4. Confira: a página inicial abre, o mapa voa até Timóteo, o passeio 3D carrega e um endereço que não existe mostra a página 404.

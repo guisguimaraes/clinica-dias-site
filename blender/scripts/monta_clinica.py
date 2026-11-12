@@ -366,7 +366,7 @@ def prepara_materiais():
     material('grama', tex='grama', rug=0.95)
     material('plastico-cinza', cor='#55575c', rug=0.5)
     material('banner', cor='#FDE0C9', rug=0.6)
-    material('roxo', cor='#101E44', rug=0.5)
+    material('roxo', cor='#2B4161', rug=0.5)  # azul do logo (o nome 'roxo' ficou do começo; o passeio.js usa esse nome)
     material('acrilico', cor='#e9eff0', rug=0.1)
     material('faixa-branca', cor='#f2f2ee', rug=0.7)
 

@@ -219,11 +219,11 @@ rP1.feitas.push([3.9, 6.85, 4.16, 8.08]);
 rP1.feitas.push([1.55, 6.38, 2.56, 6.56]);
 // a porta do antigo banheiro da esquerda vira parede (a sala agora é um consultório só)
 rP1.feitas.push([0.1, 7.7, 1.1, 7.95]);
+rP1.feitas.push([19.15, 4.3, 20.95, 4.5]); // sem verga automática atravessando as portas 14 e 15 (as vergas delas já cobrem)
 const tapasP1 = [
   tapa('tapa-1415-a', [19.19, N_REC - 0.12, 4.35], [19.3, N_REC + PE, 4.45]),
   tapa('tapa-1415-b', [20.0, N_REC - 0.12, 4.35], [20.14, N_REC + PE, 4.45]),
   tapa('tapa-1415-c', [20.88, N_REC - 0.12, 4.35], [20.94, N_REC + PE, 4.45]),
-  tapa('tapa-1415-meio', [20.02, N_REC - 0.12, 3.6], [20.12, N_REC + PE, 4.36]),
   tapa('tapa-odonto-09', [29.81, N_REC - 0.12, 4.35], [30.08, N_REC + PE, 4.45]),
   tapa('tapa-odonto-10', [33.2, N_REC - 0.12, 4.35], [33.52, N_REC + PE, 4.45]),
   // banheiro PNE da Recepção 2: a planta não tinha a parede do lado leste e o vaso aparecia do corredor

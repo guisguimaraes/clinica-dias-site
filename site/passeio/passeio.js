@@ -30,14 +30,13 @@ renderer.localClippingEnabled = true;
 renderer.shadowMap.enabled = !LEVE;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// Paleta oficial (Manual da Marca): laranja #F7922D, petróleo #5C95A4, azul noite #101E44,
+// Paleta oficial (Manual da Marca): laranja #F7922D, petróleo #5C95A4, azul do logo #2B4161 (no lugar do azul-noite #101E44, que parece roxo),
 // pêssego #FDE0C9, cinzas #A8A9AC / #828386. Fundo claro #F5F4F2.
 const COR_FUNDO = new THREE.Color('#E9E2D7'); // fundo bege das maquetes (como o ICG)
-const COR_BASE = new THREE.Color('#DDD3C5');  // base da maquete: argila um tom abaixo
 const COR_BARRO = new THREE.Color('#E8DCCB'); // tudo da maquete em argila; só logos e placas ficam com cor
 // cores dos materiais do Blender trocadas pela paleta da marca (nome do material → cor)
 const PALETA = {
-  teal: '#5C95A4', 'faixa-azul': '#5C95A4', laranja: '#F7922D', roxo: '#101E44',
+  teal: '#5C95A4', 'faixa-azul': '#5C95A4', laranja: '#F7922D', roxo: '#2B4161', // 'roxo' é o nome do material no Blender (letras e faixas azuis)
   'faixa-branca': '#F5F4F2', banner: '#FDE0C9', quadro: '#828386',
 };
 const scene = new THREE.Scene();
@@ -151,24 +150,11 @@ function materialMaquete(src, aoMap = null, decal = false) {
 }
 const sombraBarro = comCorte(new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, clippingPlanes: planos }));
 
-// base e linhas finas em volta da maquete
-const base = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: COR_BASE, roughness: 0.95 }));
-base.receiveShadow = true;
-const linhas = new THREE.LineSegments(
-  new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)),
-  new THREE.LineBasicMaterial({ color: '#A8A9AC', transparent: true, opacity: 0.75 }),
-);
-scene.add(base, linhas);
-
+// sol e sombra acompanham a área da maquete
 function posicionaBase() {
   const sx = corte.max.x - corte.min.x, sz = corte.max.z - corte.min.z;
   const cx = (corte.min.x + corte.max.x) / 2, cz = (corte.min.z + corte.max.z) / 2;
   const fundo = corte.min.y + 0.15;
-  base.scale.set(sx + 0.02, 0.18, sz + 0.02);
-  base.position.set(cx, fundo - 0.09, cz);
-  const altura = Math.max(3.2, corte.max.y - fundo);
-  linhas.scale.set(sx + 0.6, altura, sz + 0.6);
-  linhas.position.set(cx, fundo + altura / 2, cz);
   // sombra cobre só a área da maquete
   const r = Math.max(sx, sz) / 2 + 2;
   const sc = sol.shadow.camera;
@@ -200,17 +186,16 @@ const luzPronta = (q.has('semluz') ? Promise.resolve(null) : fetch('./modelos/lu
   .then(async (j) => {
     if (!j || !j.k || !Array.isArray(j.grupos)) return;
     luz = j;
-    await Promise.all((j.ao || []).map((g) => texLoader.loadAsync(`./modelos/ao_${g}.${j.ext || 'png'}`)
+    await Promise.all([...(j.ao || []).map((g) => texLoader.loadAsync(`./modelos/ao_${g}.${j.ext || 'png'}`)
       .then((t) => { t.flipY = false; t.channel = 1; aomaps[g] = t; temAO = true; })
-      .catch(() => console.warn('[passeio] sem oclusão para', g))));
-    await Promise.all(j.grupos.map((g) => texLoader.loadAsync(`./modelos/luz_${g}.${j.ext || 'png'}`)
+      .catch(() => console.warn('[passeio] sem oclusão para', g))), ...j.grupos.map((g) => texLoader.loadAsync(`./modelos/luz_${g}.${j.ext || 'png'}`)
       .then((t) => {
         t.flipY = false;
         t.channel = 1;
         t.colorSpace = THREE.SRGBColorSpace;
         lightmaps[g] = t;
       })
-      .catch(() => console.warn('[passeio] sem mapa de luz para', g, '— usando luz em tempo real'))));
+      .catch(() => console.warn('[passeio] sem mapa de luz para', g, '— usando luz em tempo real')))]);
   });
 const PLASTICO = new Set(['plastico', 'tubo', 'preto-brilho', 'vidro-escuro']);
 function folhaPorta(o) {
@@ -225,9 +210,8 @@ function grupoDe(o) {
   return null;
 }
 
-luzPronta.then(() => loader.load(
-  './modelos/clinica.glb',
-  (gltf) => {
+const modeloPronto = loader.loadAsync('./modelos/clinica.glb', (ev) => { if (ev.total) $('#barra').style.transform = `scaleX(${(ev.loaded / ev.total) * 0.95})`; });
+Promise.all([modeloPronto, luzPronta]).then(([gltf]) => {
     gltf.scene.traverse((o) => {
       if (!o.isMesh) return;
       let nomes = '';
@@ -307,13 +291,10 @@ luzPronta.then(() => loader.load(
     };
     carregado = true;
     pronto();
-  },
-  (ev) => { if (ev.total) $('#barra').style.transform = `scaleX(${(ev.loaded / ev.total) * 0.95})`; },
-  (err) => {
-    console.error('[passeio] modelo não carregou', err);
-    $('.entrada-marca p').innerHTML = 'Modelo 3D ainda<br>não gerado';
-  },
-));
+}).catch((err) => {
+  console.error('[passeio] modelo não carregou', err);
+  $('.entrada-marca p').innerHTML = 'Modelo 3D ainda<br>não gerado';
+});
 
 // céu de fim de tarde atrás das fachadas (só no passeio)
 const ceu = (() => {
@@ -337,8 +318,6 @@ function modoBarro(sim) {
     m.mesh.customDepthMaterial = sim ? sombraBarro : undefined;
     m.mesh.visible = sim ? !m.teto : true;
   }
-  base.visible = false; // sem base: a maquete fica solta no fundo, como no ICG
-  linhas.visible = false; // sem a caixa de linhas: a maquete fica solta no fundo, como no ICG
   hemi.intensity = sim ? (temAO ? 1.75 : 1.45) : 0.9;
   sol.intensity = sim ? 1.15 : 0.0;
   // sombra de contato vem do mapa de oclusão (AO); sem AO, sombra macia de raio grande
@@ -445,7 +424,6 @@ function preCarrega(i) {
 }
 function malhasVisiveis(sim) {
   for (const m of malhas) m.mesh.visible = sim && !m.teto;
-  base.visible = false; // sem base: a maquete fica solta no fundo, como no ICG
   acorda(3);
 }
 // a render (blender/render_maquetes.py) sai com o conteúdo 10% da altura ABAIXO do centro;
