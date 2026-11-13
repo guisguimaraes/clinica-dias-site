@@ -26,6 +26,10 @@
 
 ## Subir na VPS
 
+**A VPS da clinicadias.com usa aaPanel com Apache.** Nela, o `site/.htaccess` já faz o que o nginx abaixo faria: o tipo do `.mjs`/`.wasm`/`.glb`, a página 404, o https sem www e os redirecionamentos das páginas do site antigo. Basta subir o conteúdo de `site/` (com o `.htaccess` e sem a `_previa/`) e manter na pasta do domínio o `.user.ini` e o `.well-known/` do aaPanel. O `sitemap.xml` e o `robots.txt` já estão prontos.
+
+Passos para um servidor com nginx:
+
 1. Copie o **conteúdo** de `site/` para a pasta do domínio, **sem** a `_previa/`.
 2. No nginx:
    - no `server { }` do site, ponha `error_page 404 /404.html;`

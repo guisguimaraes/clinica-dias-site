@@ -18,3 +18,6 @@ blender/logs/
 blender/temp/
 blender/teste-luz/
 __pycache__/
+
+# backups baixados da VPS
+arquivo/backup-vps/
