@@ -2,4 +2,3 @@ User-agent: *
 Allow: /
 
 Sitemap: https://clinicadias.com/sitemap.xml
-# teste de publicação automática
