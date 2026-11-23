@@ -21,3 +21,8 @@ __pycache__/
 
 # backups baixados da VPS
 arquivo/backup-vps/
+
+# segredos (token do Feegow etc.): nunca no GitHub
+.env
+.env.*
+!.env.example
