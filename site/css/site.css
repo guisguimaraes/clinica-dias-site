@@ -74,6 +74,7 @@ ul, ol { padding: 0; list-style: none; }
 .botao-linha { background: transparent; color: var(--noite); border-color: var(--linha-forte); }
 .botao-linha:hover { background: var(--noite); color: #fff; border-color: var(--noite); }
 .acoes { display: flex; flex-wrap: wrap; gap: 10px; }
+.acoes-agendar { margin: 24px 0 28px; }
 
 .etiqueta { position: absolute; left: 0; bottom: 0; padding: 7px 12px; background: var(--noite); color: #fff; font-size: .78rem; letter-spacing: .02em; }
 
@@ -253,6 +254,8 @@ ul, ol { padding: 0; list-style: none; }
 .painel-fechar { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; font-size: 26px; line-height: 1; }
 .painel-acoes { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .painel-passos { display: flex; }
+.painel-agendar { display: grid; gap: 6px; justify-items: start; }
+.painel-fone { font-size: .85rem; color: var(--apagado); text-underline-offset: 3px; }
 .painel-passos button { width: 46px; height: 46px; border: 1px solid var(--linha-forte); font-size: 1.1rem; }
 .painel-passos button + button { border-left: 0; }
 .painel-passos button:hover { background: var(--noite); color: #fff; }

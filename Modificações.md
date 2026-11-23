@@ -2,6 +2,45 @@
 
 Registro do que foi feito no site e na VPS. Os dados de acesso (servidor, porta SSH, usuário e senhas) ficam só no `.env` local, **fora deste repositório**, que é público.
 
+## 23/11/2026: agendamento on-line pelo Feegow (em modo teste)
+
+O paciente marca consulta pelo próprio site, em qualquer especialidade, no mesmo modelo do site do COD (cod.clinicadias.com).
+
+### Como funciona
+
+```
+clinicadias.com (VPS da clínica, publicado pelo GitHub)
+   │  janela de agendamento e página Meus agendamentos
+   ▼
+agenda.clinicadias.com (app agenda-clinica-dias no Coolify, 194.195.86.146)
+   │  guarda o token do Feegow e só usa as ferramentas de agenda
+   ▼
+Feegow (MCP em mcpfeegow.clinicadias.com)
+```
+
+- **Ponte (servidor):** pasta `agenda/` deste repositório, publicada no Coolify como um app separado do COD. Contrato da API e variáveis em `agenda/README.md`. O token fica só nas variáveis do Coolify, nunca no GitHub. A pasta `agenda/` não vai para a VPS (o deploy copia só `site/`).
+- **DNS:** registro A `agenda` → `194.195.86.146` na HostGator. O certificado é do Let's Encrypt, emitido pelo Coolify.
+- **Site:**
+  - `site/js/agenda.js` + `site/css/agenda.css`: a janela, em 6 passos (especialidade → médico → unidade → dia e hora → dados → confirmação). Abre em todo elemento com `data-agenda`; `data-especialidade="Cardiologia"` já abre na especialidade.
+  - `site/agendamentos.html` + `site/js/meus-agendamentos.js`: o paciente entra com CPF e data de nascimento e vê, remarca ou cancela as consultas.
+  - O endereço da ponte fica em `<html data-agenda-api="https://agenda.clinicadias.com/api/">`. No computador (127.0.0.1), o site usa a ponte local em `http://127.0.0.1:3100/api/`.
+  - `.htaccess`: `https://agenda.clinicadias.com` entrou no `connect-src` do CSP.
+  - A política de privacidade foi atualizada: o site agora pede dados para marcar a consulta.
+- **Especialidades:** a lista vem do Feegow (só as que têm médico com horário livre nos próximos 30 dias). O site junta as repetidas (Ginecologia, as 5 de Odontologia, Oftalmologia Infantil).
+- **Fotos dos médicos:** o Feegow não tem foto. Ficam em `site/img/medicos/<nome-sem-acento>.jpg` (200 px de largura) e o nome entra na lista `FOTOS` do `agenda.js`. Sem foto, aparecem as iniciais.
+
+### Modo teste
+
+Enquanto `PERMITIR_AGENDAR=0` no Coolify, o site faz tudo com horários reais, mas **não grava nada**: no fim aparece "Teste concluído. Nada foi marcado na agenda". Para ligar a marcação de verdade, a clínica aprova, alguém muda `PERMITIR_AGENDAR=1` no app agenda-clinica-dias e faz o redeploy.
+
+### Pendências
+
+- [ ] Clínica testar e aprovar; depois ligar `PERMITIR_AGENDAR=1`.
+- [ ] Fotos dos outros médicos.
+- [ ] Endereço da unidade Timóteo · Portaria I: o Feegow diz "Rua Doutor Tadeu Damásio dos Reis, 450", e o site usa "Rua Cento e Vinte e Oito, 14".
+- [ ] No Feegow, Infectologia, Obstetrícia, Nutrologia, Psicanálise e Psicopedagogia usam a "CONSULTA UROLOGISTA" (3229) como consulta padrão. Por isso ficaram fora do agendamento on-line até a clínica corrigir.
+- [ ] Cinco profissionais sem tratamento (Dr./Dra.) no Feegow.
+
 ## 13/11/2026: site novo no ar e publicação automática
 
 ### 1. Troca do site antigo pelo novo
