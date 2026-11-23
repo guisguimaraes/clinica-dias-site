@@ -105,7 +105,7 @@
 
   function reset() {
     S = { step: ESP, esp: null, medico: null, unidade: null, slots: null, dia: null, slot: null, pag: null, convenio: null,
-      dados: {}, cad: null, cpfBuscado: null, enviando: false, feito: null, busca: "", convErro: "" };
+      dados: {}, cad: null, cpfBuscado: null, nascBuscado: null, erroIdent: "", enviando: false, semResposta: false, feito: null, busca: "", convErro: "" };
   }
 
   /* ------------------------------------------------------------ utilidades */
@@ -131,7 +131,7 @@
     return SEMANA[d.getDay()] + ", " + d.getDate() + " " + MESES[d.getMonth()];
   }
   function hora(h) {
-    return h.slice(0, 5).replace(":", "h");
+    return esc(String(h || "").slice(0, 5).replace(":", "h"));
   }
   function slug(nome) {
     return normal(String(nome || "").replace(/^(Dra?|Sra?)\.\s*/i, "")).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -172,11 +172,16 @@
     if (d.getMonth() + 1 < +m[2] || (d.getMonth() + 1 === +m[2] && d.getDate() < +m[1])) idade--;
     return idade;
   }
+  /* especialidade usada nas chamadas à ponte: a do próprio médico (quando duas especialidades
+     são juntadas na tela, cada médico continua com a dele) */
+  function eid() {
+    return S.medico && S.medico.eid ? S.medico.eid : S.esp.id;
+  }
   function chavePreco() {
-    return S.medico.id + ":" + S.unidade + ":" + S.esp.id;
+    return S.medico.id + ":" + S.unidade + ":" + eid();
   }
   function chaveConv() {
-    return S.medico.id + ":" + S.esp.id;
+    return S.medico.id + ":" + eid();
   }
   function getJSON(path) {
     return fetch(API + path, { headers: { Accept: "application/json" } }).then(function (r) {
@@ -192,8 +197,14 @@
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(data),
     }).then(function (r) {
-      return r.json().then(function (j) {
-        if (!r.ok || j.erro) throw new Error(j.erro || "Não conseguimos marcar agora. Ligue para " + TEL + ".");
+      return r.json().catch(function () {
+        return {};
+      }).then(function (j) {
+        if (!r.ok || j.erro) {
+          var e = new Error(j.erro || "Não conseguimos concluir agora. Ligue para " + TEL + ".");
+          e.status = r.status;
+          throw e;
+        }
         return j;
       });
     });
@@ -209,11 +220,18 @@
     lista.forEach(function (e) {
       porId[e.id] = e;
       e.busca = e.nome;
+      e.medicos.forEach(function (m) {
+        m.eid = e.id;
+      });
     });
     return lista.filter(function (e) {
       var destino = porId[JUNTAR[e.id]];
       if (destino) {
         destino.busca += " " + e.nome;
+        // médico que só está na especialidade juntada entra na lista, com a especialidade dele
+        e.medicos.forEach(function (m) {
+          if (!destino.medicos.some(function (x) { return x.id === m.id; })) destino.medicos.push(m);
+        });
         return false;
       }
       if (NOMES[e.id]) e.nome = NOMES[e.id];
@@ -222,7 +240,9 @@
   }
 
   var carregandoCat = null;
+  var novaTentativa = null;
   function carregarMedicos() {
+    if (DATA && DATA.falhou && !carregandoCat) DATA = null;
     if (DATA || carregandoCat) return;
     if (DEMO) {
       DATA = dadosDemo();
@@ -244,6 +264,14 @@
       })
       .catch(function () {
         DATA = { falhou: true, especialidades: [], unidades: {} };
+        // a ponte leva uns 2 minutos para montar a lista depois de reiniciar: tenta de novo sozinha
+        clearTimeout(novaTentativa);
+        novaTentativa = setTimeout(function () {
+          if (!modal.hidden && DATA && DATA.falhou) {
+            carregarMedicos();
+            render();
+          }
+        }, 20000);
       })
       .then(function () {
         carregandoCat = null;
@@ -259,7 +287,7 @@
       return;
     }
     PRECOS[k] = "carregando";
-    getJSON("precos?profissional_id=" + S.medico.id + "&unidade_id=" + S.unidade + "&especialidade_id=" + S.esp.id)
+    getJSON("precos?profissional_id=" + S.medico.id + "&unidade_id=" + S.unidade + "&especialidade_id=" + eid())
       .then(function (j) {
         PRECOS[k] = j;
       })
@@ -280,7 +308,7 @@
       return;
     }
     CONV[k] = "carregando";
-    getJSON("convenios?profissional_id=" + S.medico.id + "&especialidade_id=" + S.esp.id)
+    getJSON("convenios?profissional_id=" + S.medico.id + "&especialidade_id=" + eid())
       .then(function (j) {
         CONV[k] = j.convenios || [];
       })
@@ -510,8 +538,8 @@
     }
     if (DATA.falhou) {
       corpo.innerHTML =
-        '<div class="ag-vazio"><strong>O agendamento on-line está fora do ar agora.</strong><p>Ligue para ' + TEL_LINK +
-        ", de segunda a sexta, das 8h às 18h. A recepção marca a sua consulta.</p></div>";
+        '<div class="ag-vazio"><strong>Não conseguimos abrir a agenda agora.</strong><p>Tentamos de novo sozinhos em alguns segundos. Se preferir, ligue para ' + TEL_LINK +
+        ", de segunda a sexta, das 8h às 18h, e a recepção marca a sua consulta.</p></div>";
       return;
     }
     corpo.innerHTML =
@@ -708,7 +736,7 @@
       S.slots = horariosDemo();
       return render();
     }
-    getJSON("horarios?profissional_id=" + S.medico.id + "&unidade_id=" + S.unidade + "&especialidade_id=" + S.esp.id)
+    getJSON("horarios?profissional_id=" + S.medico.id + "&unidade_id=" + S.unidade + "&especialidade_id=" + eid())
       .then(function (j) {
         if (S._pedido !== pedido) return;
         S.slots = j.horarios || [];
@@ -805,38 +833,50 @@
     return true;
   }
 
-  /* Dados: primeiro o CPF; a ponte diz se já existe cadastro no Feegow e preenche o resto.
-     A data de nascimento nunca volta do servidor (ela confirma a identidade em Meus agendamentos). */
+  /* Paciente: CPF + data de nascimento juntos. Só com os dois batendo com o cadastro a ponte confirma que é a
+     pessoa (o mesmo que em Meus agendamentos); assim ninguém puxa dados nem marca em nome de outro só com o CPF.
+     Paciente já cadastrado: só confirma o celular (opcional). Primeira vez: nome, celular, sexo e e-mail. */
   function renderDados() {
     var d = S.dados, c = S.cad;
     function f(name, label, attrs, dica) {
       return '<label class="ag-campo"><span>' + label + '</span><input name="' + name + '" value="' + esc(d[name] || "") + '" ' + attrs + ">" +
         (dica ? "<small>" + dica + "</small>" : "") + '<em class="ag-erro-campo"></em></label>';
     }
-    var html = '<form class="ag-form" novalidate><div class="ag-cpf">' +
-      f("cpf", "CPF de quem vai ser atendido", 'inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required', c ? "" : "Com o CPF a gente procura o cadastro na Clínica Dias.") +
-      '<button type="button" class="botao botao-linha ag-cpf__btn"' + (c === "buscando" ? " disabled" : "") + ">" + (c === "buscando" ? "Procurando…" : c ? "Trocar CPF" : "Procurar") + "</button></div>";
+    var html = '<form class="ag-form" novalidate><div class="ag-ident">' +
+      f("cpf", "CPF de quem vai ser atendido", 'inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required') +
+      f("nascimento", "Data de nascimento", 'inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" required') +
+      '<button type="button" class="botao botao-linha ag-ident__btn"' + (c === "buscando" ? " disabled" : "") + ">" +
+      (c === "buscando" ? "Procurando…" : c ? "Trocar" : "Procurar cadastro") + "</button></div>" +
+      (c ? "" : '<p class="ag-nota ag-nota--ident">Com o CPF e a data de nascimento a gente procura o seu cadastro na Clínica Dias. Os dois precisam bater com o cadastro.</p>') +
+      '<p class="ag-erro ag-erro--ident" role="alert" hidden></p>';
     if (c === "buscando") html += carregando("Procurando o cadastro…");
-    else if (c) {
-      html += c.encontrado
-        ? '<p class="ag-cad ag-cad--ok"><strong>' + (c.primeiro_nome ? "Olá, " + esc(c.primeiro_nome) + "." : "Cadastro encontrado.") + "</strong> Puxamos os dados do seu cadastro. Confira e corrija se algo mudou.</p>"
-        : '<p class="ag-cad"><strong>Primeira vez na Clínica Dias?</strong> Preencha os dados abaixo e o cadastro é feito junto com a consulta.</p>';
+    else if (c && c.encontrado) {
+      var masc = c.dados && c.dados.celular_mascarado;
       html +=
+        '<p class="ag-cad ag-cad--ok"><strong>' + (c.primeiro_nome ? "Olá, " + esc(c.primeiro_nome) + "." : "Achamos o seu cadastro.") + "</strong> A consulta vai ser marcada no seu cadastro da Clínica Dias.</p>" +
+        f("celular", "Celular para contato (opcional)", 'type="tel" inputmode="tel" autocomplete="tel-national" placeholder="(31) 90000-0000" maxlength="15"',
+          masc ? "Deixe em branco para usar o do cadastro: " + esc(masc) + "." : "Deixe em branco para usar o do cadastro.") +
+        aceite();
+    } else if (c) {
+      html +=
+        '<p class="ag-cad"><strong>Não achamos cadastro com esse CPF e essa data.</strong> Se é a primeira vez na Clínica Dias, preencha abaixo e o cadastro é feito junto com a consulta. Se você já é paciente, confira a data de nascimento.</p>' +
         f("nome", "Nome completo", 'autocomplete="name" required') +
         '<div class="ag-dupla">' +
-        f("nascimento", "Data de nascimento", 'inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" required') +
         f("celular", "Celular com DDD", 'type="tel" inputmode="tel" autocomplete="tel-national" placeholder="(31) 90000-0000" maxlength="15" required') +
-        "</div><div class=\"ag-dupla\">" +
-        '<fieldset class="ag-campo ag-campo--radio"><legend>Sexo</legend><div>' +
+        f("email", "E-mail (opcional)", 'type="email" autocomplete="email"') +
+        "</div>" +
+        '<fieldset class="ag-campo ag-campo--radio ag-campo--sexo"><legend>Sexo</legend><div>' +
         ["F", "M"].map(function (v) {
           return '<label><input type="radio" name="sexo" value="' + v + '"' + (d.sexo === v ? " checked" : "") + "> " + (v === "F" ? "Feminino" : "Masculino") + "</label>";
         }).join("") + '</div><em class="ag-erro-campo"></em></fieldset>' +
-        f("email", "E-mail (opcional)", 'type="email" autocomplete="email"') +
-        "</div>" +
-        '<label class="ag-aceite"><input type="checkbox" name="lgpd"' + (d.lgpd ? " checked" : "") + '> <span>Autorizo a Clínica Dias a usar estes dados para marcar a consulta, conforme a <a href="/privacidade.html" target="_blank" rel="noopener">política de privacidade</a>.</span></label>' +
-        '<em class="ag-erro-campo ag-erro-campo--lgpd"></em>';
+        aceite();
     }
     corpo.innerHTML = html + "</form>";
+    if (S.erroIdent) {
+      var ei = corpo.querySelector(".ag-erro--ident");
+      ei.hidden = false;
+      ei.textContent = S.erroIdent;
+    }
 
     var form = corpo.querySelector("form");
     form.addEventListener("submit", function (e) {
@@ -847,7 +887,7 @@
       v = v.replace(/\D/g, "").slice(0, 11);
       return v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
     });
-    if (form.nascimento) mask(form.nascimento, function (v) {
+    mask(form.nascimento, function (v) {
       v = v.replace(/\D/g, "").slice(0, 8);
       return v.replace(/(\d{2})(\d)/, "$1/$2").replace(/(\d{2})(\d)/, "$1/$2");
     });
@@ -856,26 +896,20 @@
       if (v.length > 10) return v.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
       return v.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3").replace(/^\((\d{0,2})\) ?-?$/, "$1");
     });
-    form.querySelector(".ag-cpf__btn").addEventListener("click", function () {
-      if (S.cad && S.cad !== "buscando") {
-        S.cad = null;
-        S.dados = { cpf: S.dados.cpf };
-        render();
-        corpo.querySelector("[name=cpf]").focus();
-        return;
-      }
+    form.querySelector(".ag-ident__btn").addEventListener("click", function () {
+      if (S.cad && S.cad !== "buscando") return trocarIdent(form.cpf);
       buscarCadastro();
     });
+    // mudou o CPF ou a data depois de buscar: volta para a busca
+    function mudouIdent(campo) {
+      if (S.cad && S.cad !== "buscando" && (form.cpf.value.replace(/\D/g, "") !== S.cpfBuscado || form.nascimento.value !== S.nascBuscado)) trocarIdent(campo);
+      else if (!S.cad && cpfValido(form.cpf.value) && nascimentoValido(form.nascimento.value)) buscarCadastro();
+    }
     form.cpf.addEventListener("input", function () {
-      if (!S.cad && cpfValido(form.cpf.value)) buscarCadastro();
-      else if (S.cad && S.cad !== "buscando" && form.cpf.value.replace(/\D/g, "") !== S.cpfBuscado) {
-        S.cad = null;
-        S.dados = { cpf: form.cpf.value };
-        render();
-        var el = corpo.querySelector("[name=cpf]");
-        el.focus();
-        el.setSelectionRange(el.value.length, el.value.length);
-      }
+      mudouIdent(form.cpf);
+    });
+    form.nascimento.addEventListener("input", function () {
+      mudouIdent(form.nascimento);
     });
     function limpar(e) {
       lerDados();
@@ -885,41 +919,88 @@
         var er = box.querySelector(".ag-erro-campo");
         if (er) er.textContent = "";
       }
-      if (e.target.name === "lgpd") form.querySelector(".ag-erro-campo--lgpd").textContent = "";
+      if (e.target.name === "lgpd") {
+        var lg = form.querySelector(".ag-erro-campo--lgpd");
+        if (lg) lg.textContent = "";
+      }
     }
     form.addEventListener("input", limpar);
     form.addEventListener("change", limpar);
     if (c && c !== "buscando") {
-      var first = form.querySelector(c.encontrado ? "[name=lgpd]" : "[name=nome]");
-      if (first && (c.encontrado || !first.value)) first.focus({ preventScroll: true });
+      var first = form.querySelector(c.encontrado ? "[name=celular]" : "[name=nome]");
+      if (first && !first.value) first.focus({ preventScroll: true });
     }
+  }
+
+  function aceite() {
+    return '<label class="ag-aceite"><input type="checkbox" name="lgpd"' + (S.dados.lgpd ? " checked" : "") + '> <span>Autorizo a Clínica Dias a usar estes dados para marcar a consulta, conforme a <a href="/privacidade.html" target="_blank" rel="noopener">política de privacidade</a>.</span></label>' +
+      '<em class="ag-erro-campo ag-erro-campo--lgpd"></em>';
+  }
+
+  function trocarIdent(campo) {
+    var nome = campo && campo.name;
+    var pos = campo ? campo.selectionStart : null;
+    lerDados();
+    S.cad = null;
+    S.erroIdent = "";
+    S.dados = { cpf: S.dados.cpf, nascimento: S.dados.nascimento };
+    render();
+    if (nome) {
+      var el = corpo.querySelector("[name=" + nome + "]");
+      el.focus();
+      if (pos != null) el.setSelectionRange(pos, pos);
+    }
+  }
+
+  function erroCampo(form, nome, texto) {
+    var el = form[nome];
+    var box = el.closest(".ag-campo");
+    box.classList.toggle("tem-erro", !!texto);
+    box.querySelector(".ag-erro-campo").textContent = texto;
+    return el;
   }
 
   function buscarCadastro() {
     var form = corpo.querySelector("form");
-    var cpf = form.cpf.value;
-    var box = form.cpf.closest(".ag-campo");
-    if (!cpfValido(cpf)) {
-      box.classList.add("tem-erro");
-      box.querySelector(".ag-erro-campo").textContent = "Confira o CPF: os números não batem.";
-      form.cpf.focus();
+    var cpf = form.cpf.value, nasc = form.nascimento.value;
+    var errCpf = cpfValido(cpf) ? "" : "Confira o CPF: os números não batem.";
+    var errNasc = nascimentoValido(nasc) ? "" : "Use dia/mês/ano, por exemplo 05/03/1958.";
+    if (!errNasc) {
+      var idade = idadeEm(nasc, S.slot.data);
+      var mi = S.medico.idade_minima, ma = S.medico.idade_maxima;
+      if (idade != null && ((mi != null && idade < mi) || (ma != null && idade > ma))) {
+        errNasc = S.medico.nome + " atende pacientes " + (ma != null && idade > ma ? "até " + ma : "a partir de " + mi) + " anos. Volte e escolha outro médico.";
+      }
+    }
+    erroCampo(form, "cpf", errCpf);
+    erroCampo(form, "nascimento", errNasc);
+    if (errCpf || errNasc) {
+      form[errCpf ? "cpf" : "nascimento"].focus();
       return;
     }
-    S.dados = { cpf: cpf };
+    S.dados = { cpf: cpf, nascimento: nasc, lgpd: S.dados.lgpd };
     S.cpfBuscado = cpf.replace(/\D/g, "");
+    S.nascBuscado = nasc;
+    S.erroIdent = "";
     S.cad = "buscando";
     render();
-    var pedido = S.cpfBuscado;
+    var pedido = S.cpfBuscado + nasc;
     function pronto(res) {
-      if (S.cpfBuscado !== pedido || S.step !== DAD) return;
+      if (S.cpfBuscado + S.nascBuscado !== pedido || S.step !== DAD) return;
       S.cad = res;
-      if (res && res.encontrado && res.dados) S.dados = Object.assign({ cpf: S.dados.cpf }, res.dados);
+      if (res && res.encontrado && res.dados) S.dados.nome = res.dados.nome || "";
       render();
     }
     if (DEMO) return pronto({ encontrado: false });
-    post("paciente", { cpf: cpf }).then(pronto).catch(function () {
-      pronto({ encontrado: false, falhou: true });
-    });
+    post("paciente", { cpf: cpf, nascimento: nasc })
+      .then(pronto)
+      .catch(function (err) {
+        if (S.cpfBuscado + S.nascBuscado !== pedido || S.step !== DAD) return;
+        // limite de tentativas ou ponte fora: mostra o aviso e deixa tentar de novo
+        S.cad = null;
+        S.erroIdent = (err && err.message) || "Não conseguimos procurar o cadastro agora. Tente de novo ou ligue para " + TEL + ".";
+        render();
+      });
   }
 
   function mask(input, fn) {
@@ -934,7 +1015,8 @@
       return form[n] && form[n].value != null ? form[n].value.trim() : "";
     }
     var sexo = form.querySelector("[name=sexo]:checked");
-    S.dados = { cpf: form.cpf.value, nome: v("nome"), nascimento: v("nascimento"), celular: v("celular"), sexo: sexo ? sexo.value : "", email: v("email"), lgpd: form.lgpd ? form.lgpd.checked : false };
+    var nomeCad = S.cad && S.cad.encontrado ? S.dados.nome : "";
+    S.dados = { cpf: form.cpf.value, nascimento: v("nascimento"), nome: nomeCad || v("nome"), celular: v("celular"), sexo: sexo ? sexo.value : "", email: v("email"), lgpd: form.lgpd ? form.lgpd.checked : false };
   }
   function cpfValido(c) {
     c = c.replace(/\D/g, "");
@@ -947,7 +1029,7 @@
     return true;
   }
   function nascimentoValido(v) {
-    var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v);
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v || "");
     if (!m) return false;
     var d = new Date(+m[3], +m[2] - 1, +m[1]);
     return d.getDate() === +m[1] && d < new Date() && +m[3] > 1900;
@@ -958,25 +1040,25 @@
       buscarCadastro();
       return false;
     }
-    lerDados();
     var form = corpo.querySelector("form");
+    if (form.cpf.value.replace(/\D/g, "") !== S.cpfBuscado || form.nascimento.value !== S.nascBuscado) {
+      trocarIdent(null);
+      buscarCadastro();
+      return false;
+    }
+    lerDados();
     var d = S.dados;
     var cel = d.celular.replace(/\D/g, "");
-    var erros = {
-      nome: d.nome.split(/\s+/).length < 2 ? "Escreva nome e sobrenome." : "",
-      nascimento: !nascimentoValido(d.nascimento) ? "Use dia/mês/ano, por exemplo 05/03/1958." : "",
-      celular: cel.length < 10 ? "Informe o celular com DDD." : "",
-      sexo: !d.sexo ? "Escolha uma opção." : "",
-    };
-    var idade = nascimentoValido(d.nascimento) ? idadeEm(d.nascimento, S.slot.data) : null;
-    var mi = S.medico.idade_minima, ma = S.medico.idade_maxima;
-    if (idade != null && ((mi != null && idade < mi) || (ma != null && idade > ma))) {
-      erros.nascimento = S.medico.nome + " atende pacientes " + (ma != null && idade > ma ? "até " + ma : "a partir de " + mi) + " anos. Volte e escolha outro médico.";
+    var novo = !S.cad.encontrado;
+    var erros = { celular: (novo || cel) && cel.length < 10 ? "Informe o celular com DDD." : "" };
+    if (novo) {
+      erros.nome = d.nome.split(/\s+/).length < 2 ? "Escreva nome e sobrenome." : "";
+      erros.sexo = !d.sexo ? "Escolha uma opção." : "";
     }
     var primeiro = null;
-    Object.keys(erros).forEach(function (k) {
+    ["nome", "celular", "sexo"].forEach(function (k) {
+      if (!(k in erros) || !form.querySelector("[name=" + k + "]")) return;
       var el = form.querySelector("[name=" + k + "]");
-      if (!el) return;
       var box = el.closest(".ag-campo");
       box.classList.toggle("tem-erro", !!erros[k]);
       box.querySelector(".ag-erro-campo").textContent = erros[k];
@@ -1007,7 +1089,7 @@
       '<div class="ag-comp__med">' + avatar(S.medico) + "<p><strong>" + esc(S.medico.nome) + "</strong><small>Consulta de " + esc(S.esp.nome.toLowerCase()) + "</small></p></div>" +
       "<dl>" +
       "<div><dt>Onde</dt><dd>" + esc(u.nome) + "<small>" + esc(u.endereco) + "</small></dd></div>" +
-      "<div><dt>Paciente</dt><dd>" + esc(S.dados.nome) + "<small>CPF " + esc(S.dados.cpf) + (S.dados.celular ? " · " + esc(S.dados.celular) : "") + "</small></dd></div>" +
+      "<div><dt>Paciente</dt><dd>" + esc(S.dados.nome) + "<small>CPF " + esc(S.dados.cpf) + celularComp() + "</small></dd></div>" +
       "</dl>" +
       "</div>" +
       "</div>" +
@@ -1020,6 +1102,11 @@
     );
   }
 
+  function celularComp() {
+    var cel = S.dados.celular || (S.cad && S.cad.encontrado && S.cad.dados ? S.cad.dados.celular_mascarado : "");
+    return cel ? " · " + esc(cel) : "";
+  }
+
   function renderRevisao() {
     corpo.innerHTML = comprovante() +
       '<p class="ag-nota">Precisa remarcar ou cancelar depois? Use <a href="/agendamentos.html">Meus agendamentos</a> ou ligue para ' + TEL_LINK + ".</p>" +
@@ -1027,7 +1114,7 @@
       '<p class="ag-erro" role="alert" hidden></p>';
     if (S.pag === "convenio" && !DEMO) {
       var el = corpo.querySelector(".ag-conv-status");
-      post("valor", { profissional_id: S.medico.id, unidade_id: S.unidade, especialidade_id: S.esp.id, pagamento: "convenio", convenio_id: S.convenio.id })
+      post("valor", { profissional_id: S.medico.id, unidade_id: S.unidade, especialidade_id: eid(), pagamento: "convenio", convenio_id: S.convenio.id })
         .then(function () {
           if (el) el.textContent = "O convênio cobre esta consulta. Leve a carteirinha.";
         })
@@ -1060,7 +1147,7 @@
       marcando.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
     }
     post("agendar", {
-      profissional_id: S.medico.id, unidade_id: S.unidade, especialidade_id: S.esp.id,
+      profissional_id: S.medico.id, unidade_id: S.unidade, especialidade_id: eid(),
       data: S.slot.data, horario: S.slot.horario,
       nome: S.dados.nome, cpf: S.dados.cpf, nascimento: S.dados.nascimento, celular: S.dados.celular, sexo: S.dados.sexo, email: S.dados.email,
       pagamento: S.pag, convenio_id: S.pag === "convenio" && S.convenio ? S.convenio.id : "",
@@ -1080,7 +1167,16 @@
         seguirBtn.textContent = "Tentar de novo";
         seguirBtn.disabled = false;
         errEl.hidden = false;
-        errEl.textContent = (err && err.message) || "Não conseguimos marcar agora. Tente de novo ou ligue para " + TEL + ".";
+        var msg = (err && err.message) || "";
+        if (!err || !err.status) {
+          // sem resposta (internet caiu ou demorou demais): a consulta pode ter sido gravada mesmo assim
+          S.semResposta = true;
+          msg = "A conexão caiu antes da resposta. A consulta pode ter sido marcada: confira em Meus agendamentos antes de tentar de novo, ou ligue para " + TEL + ".";
+        } else if (err.status === 409 && S.semResposta) {
+          msg = "Pode ser que a sua consulta já tenha sido marcada na tentativa anterior. Confira em Meus agendamentos antes de escolher outro horário.";
+        }
+        errEl.innerHTML = esc(msg || "Não conseguimos marcar agora. Tente de novo ou ligue para " + TEL + ".") +
+          (S.semResposta ? ' <a href="/agendamentos.html" target="_blank" rel="noopener">Abrir Meus agendamentos</a>' : "");
       });
   }
 
@@ -1106,12 +1202,14 @@
   /* Arquivo .ics para o celular ou o computador guardar a consulta na agenda */
   function baixarCalendario() {
     var u = unidade(S.unidade);
-    var p = S.slot.data.replace(/-/g, "");
-    var h = S.slot.horario.slice(0, 5).replace(":", "");
-    var ini = new Date(+p.slice(0, 4), +p.slice(4, 6) - 1, +p.slice(6, 8), +h.slice(0, 2), +h.slice(2, 4));
+    var p = S.slot.data.split("-");
+    var h = S.slot.horario.slice(0, 5).split(":");
+    // horário de Brasília (UTC-3, sem horário de verão) gravado em UTC, que todo calendário entende
+    var ini = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2], +h[0] + 3, +h[1]));
     var fim = new Date(ini.getTime() + 30 * 60000);
     function fmt(d) {
-      return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0") + "T" + String(d.getHours()).padStart(2, "0") + String(d.getMinutes()).padStart(2, "0") + "00";
+      return d.getUTCFullYear() + String(d.getUTCMonth() + 1).padStart(2, "0") + String(d.getUTCDate()).padStart(2, "0") + "T" +
+        String(d.getUTCHours()).padStart(2, "0") + String(d.getUTCMinutes()).padStart(2, "0") + "00Z";
     }
     function txt(s) {
       return String(s || "").replace(/[\\,;]/g, function (c) { return "\\" + c; }).replace(/\n/g, "\\n");
@@ -1120,7 +1218,7 @@
     var ics = [
       "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Clinica Dias//Agendamento//PT-BR", "BEGIN:VEVENT",
       "UID:" + Date.now() + "@clinicadias.com", "DTSTAMP:" + fmt(new Date()),
-      "DTSTART;TZID=America/Sao_Paulo:" + fmt(ini), "DTEND;TZID=America/Sao_Paulo:" + fmt(fim),
+      "DTSTART:" + fmt(ini), "DTEND:" + fmt(fim),
       "SUMMARY:" + txt("Consulta de " + S.esp.nome.toLowerCase() + " · " + S.medico.nome),
       "LOCATION:" + txt("Clínica Dias " + u.nome + ", " + u.endereco),
       "DESCRIPTION:" + txt("Pagamento na clínica, no dia: " + pg.titulo + (pg.valor ? " " + pg.valor : "") + ". Leve documento com foto. Dúvidas: " + TEL),
@@ -1128,7 +1226,7 @@
       "END:VEVENT", "END:VCALENDAR",
     ].join("\r\n");
     var a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+    a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
     a.download = "consulta-clinica-dias.ics";
     document.body.appendChild(a);
     a.click();

@@ -1861,3 +1861,14 @@ button.ag-dia.is-sel small { color: var(--pessego); }
   .ag-comp__sem { display: inline; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--sobre-noite); }
   .ag-comp__sem::before { content: '· '; }
 }
+/* passo Paciente: CPF + data de nascimento lado a lado */
+.ag-ident { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.ag-ident__btn { margin-top: 27px; min-height: 50px; white-space: nowrap; }
+.ag-nota--ident { margin-top: 0; }
+.ag-erro--ident { margin-top: 0; }
+.ag-campo--sexo { max-width: 340px; }
+@media (max-width: 760px) {
+  .ag-ident { grid-template-columns: 1fr 1fr; }
+  .ag-ident .ag-campo:first-child { grid-column: 1 / -1; }
+  .ag-ident__btn { grid-column: 1 / -1; margin-top: 0; }
+}

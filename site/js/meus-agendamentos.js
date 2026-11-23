@@ -72,7 +72,7 @@
     return SEMANA_LONGA[d.getDay()] + ", " + d.getDate() + " de " + MESES_LONGOS[d.getMonth()];
   }
   function hora(h) {
-    return String(h || "").slice(0, 5);
+    return esc(String(h || "").slice(0, 5));
   }
   function medico(a) {
     return a.medico;
@@ -459,7 +459,7 @@
         .map(function (d) {
           var x = parseData(d);
           return (
-            '<button type="button" class="mday' + (d === A.dia ? " is-selected" : "") + '" data-dia="' + d + '" aria-pressed="' + (d === A.dia) + '">' +
+            '<button type="button" class="mday' + (d === A.dia ? " is-selected" : "") + '" data-dia="' + esc(d) + '" aria-pressed="' + (d === A.dia) + '">' +
             "<small>" + SEMANA[x.getDay()] + "</small><strong>" + x.getDate() + "</strong><small>" + MESES[x.getMonth()] + "</small></button>"
           );
         })

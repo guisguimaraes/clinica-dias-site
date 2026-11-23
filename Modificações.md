@@ -39,6 +39,13 @@ Feegow (MCP em mcpfeegow.clinicadias.com)
 - **Tela final:** botões "Salvar no calendário" (arquivo .ics com lembrete 2 h antes) e "Meus agendamentos".
 - **Marcação real ligada** (`PERMITIR_AGENDAR=1`) desde 23/11, com o ok do Guilherme.
 
+### Revisão cruzada das duas sessões (23/11, fim da tarde)
+
+- **Privacidade (LGPD):** o passo Paciente pede **CPF e data de nascimento juntos**. A ponte só devolve o cadastro (primeiro nome, nome e celular mascarado) e só deixa marcar se a data bater com o cadastro. Antes, só o CPF devolvia nome, celular e e-mail. Paciente já cadastrado só confirma o celular, que é opcional.
+- **Erros do Feegow** não aparecem mais para o paciente. A ponte troca por "Não conseguimos concluir agora. Ligue…".
+- **Janela:** tenta carregar a lista de novo sozinha se a ponte estiver reiniciando. Juntar especialidades não perde médico. Se a conexão cair na hora de marcar, a janela avisa para conferir em Meus agendamentos. O arquivo do calendário (.ics) é gravado em UTC, para abrir certo no Outlook e no Android.
+- **Cache:** os arquivos da janela levam `?v=N` no HTML. Ao mudar `agenda.js`, `agenda.css` ou `meus-agendamentos.js`, aumente o número em todas as páginas.
+
 ### Modo teste
 
 Para testar sem gravar, use `PERMITIR_AGENDAR=0` (por exemplo, rodando a ponte no computador com `python3 agenda/servidor.py` e um `agenda/.env` com `PORT=3100` e `CORS_ORIGINS=http://127.0.0.1:8080`): o site faz tudo com horários reais, mas **não grava nada**: no fim aparece "Teste concluído. Nada foi marcado na agenda". Para ligar a marcação de verdade, a clínica aprova, alguém muda `PERMITIR_AGENDAR=1` no app agenda-clinica-dias e faz o redeploy.
