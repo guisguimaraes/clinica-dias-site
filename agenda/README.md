@@ -52,7 +52,7 @@ Endpoints que recebem dados (POST, corpo em JSON):
 
 | Rota | Corpo | Resposta |
 |---|---|---|
-| `/api/paciente` | `{cpf}` | `{encontrado, primeiro_nome, dados: {nome, nascimento: "", celular, sexo, email}}` |
+| `/api/paciente` | `{cpf, nascimento: "DD/MM/AAAA"}` | Se o CPF e a data conferem: `{encontrado: true, primeiro_nome, dados: {nome, nascimento, celular: "", celular_mascarado, sexo, email: ""}}`. Se não acha ou não confere: `{encontrado: false}` |
 | `/api/valor` | `{profissional_id, unidade_id, especialidade_id, pagamento: "pix"\|"cartao"\|"convenio", convenio_id?}` | `{valor, tabela_id}` ou `{convenio}` |
 | `/api/agendar` | `{profissional_id, unidade_id, especialidade_id, data, horario, cpf, nome, nascimento, celular, sexo, email?, pagamento, convenio_id?}` | `{agendamento_id}` ou `{simulado: true}` |
 | `/api/meus/entrar` | `{cpf, nascimento: "DD/MM/AAAA"}` | `{token, primeiro_nome}` |
@@ -77,11 +77,12 @@ Os erros chegam como `{erro: "texto pronto para mostrar"}`, com um destes códig
 - **Limites de tentativa:**
   - 8 buscas de CPF a cada 10 minutos por IP;
   - 8 entradas em "Meus agendamentos" a cada 10 minutos por IP;
-  - 5 datas de nascimento erradas por CPF travam aquele CPF por 1 hora;
-  - 10 marcações por hora por IP.
+  - 20 marcações por hora por IP.
 - **IP real:** vem só de `X-Real-Ip`, que o Traefik escreve.
 - **Sessões e limites:** ficam na memória. Por isso use uma réplica só. Cada novo deploy desloga quem estiver em "Meus agendamentos".
-- **Data de nascimento:** a busca por CPF nunca devolve a data. Ela é a prova de identidade em "Meus agendamentos".
+- **Identidade:** só o CPF não abre nada. A busca do cadastro e a marcação de quem já é paciente exigem a data de nascimento do cadastro. A busca nunca devolve o celular nem o e-mail completos.
+- **Bloqueio por erro de data:** 5 datas erradas para um CPF a partir do mesmo IP, ou 15 no total, pausam esse CPF por 1 hora. A pausa vale para a busca, a marcação e "Meus agendamentos".
+- **Mensagens de erro:** o texto que vem do Feegow nunca vai para o navegador. Só as mensagens escritas pela ponte chegam ao paciente.
 
 ## Deploy (Coolify)
 

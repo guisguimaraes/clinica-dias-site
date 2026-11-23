@@ -79,7 +79,16 @@ TRAVA = threading.Lock()
 
 
 class FeegowErro(Exception):
-    pass
+    """Erro vindo do MCP do Feegow. O texto pode ter dado interno ou de outra pessoa:
+    vai só para o log (o nome da ferramenta), nunca para o navegador."""
+
+    def __init__(self, texto, ferramenta=""):
+        super().__init__(texto)
+        self.ferramenta = ferramenta
+
+
+class PonteErro(Exception):
+    """Erro com texto escrito pela própria ponte, pronto para mostrar ao paciente."""
 
 
 def feegow(tool, args):
@@ -99,7 +108,7 @@ def feegow(tool, args):
     lines = [l[6:] for l in raw.splitlines() if l.startswith("data: ")]
     msg = json.loads(lines[-1] if lines else raw)
     if "error" in msg:
-        raise FeegowErro(msg["error"].get("message", "erro no Feegow"))
+        raise FeegowErro(msg["error"].get("message", "erro no Feegow"), tool)
     res = msg.get("result", {})
     text = "".join(c.get("text", "") for c in res.get("content", []))
     try:
@@ -107,7 +116,7 @@ def feegow(tool, args):
     except ValueError:
         data = {"texto": text}
     if res.get("isError"):
-        raise FeegowErro(data.get("erro") or data.get("mensagem") or text[:300])
+        raise FeegowErro(data.get("erro") or data.get("mensagem") or text[:300], tool)
     return data
 
 
@@ -507,7 +516,7 @@ def preparar_convenio(pid, uid, eid, cid):
     })
     pronto = d.get("pedido_pronto") or {}
     if not pronto.get("convenio_id"):
-        raise FeegowErro("Este médico não atende por esse convênio nesta unidade. Ligue para " + TELEFONE + ".")
+        raise PonteErro("Este médico não atende por esse convênio nesta unidade. Ligue para " + TELEFONE + ".")
     return pronto
 
 
@@ -599,15 +608,50 @@ def _contar(nome, chave, janela):
         return len([t for t in LIMITES.get((nome, chave), []) if agora - t < janela])
 
 
+def mascarar_tel(t):
+    d = so_digitos(t)
+    if len(d) < 8:
+        return ""
+    return f"({d[:2]}) •••••-{d[-4:]}" if len(d) >= 10 else f"••••-{d[-4:]}"
+
+
+# Erros de data de nascimento: 5 por CPF a partir do mesmo endereço, ou 15 por CPF no total,
+# pausam aquele CPF por 1 hora (busca, marcação e "Meus agendamentos").
+def _cpf_pausado(cpf, ip):
+    return _contar("erro_cpf_ip", cpf + "|" + ip, 3600) >= 5 or _contar("erro_cpf", cpf, 3600) >= 15
+
+
+def _errou_cpf(cpf, ip):
+    _limite("erro_cpf_ip", cpf + "|" + ip, 99, 3600)
+    _limite("erro_cpf", cpf, 99, 3600)
+
+
+def _confere_nascimento(pac, nasc):
+    n = data_ddmmaaaa(pac.get("nascimento"))
+    return bool(re.fullmatch(r"\d{2}/\d{2}/\d{4}", n)) and n == nasc
+
+
+TEXTO_PAUSADO = "Por segurança, o acesso com este CPF foi pausado por uma hora. Ligue para " + TELEFONE + "."
+
+
 def paciente(b, ip):
-    """Busca o CPF no Feegow e devolve os dados do cadastro para preencher o formulário."""
+    """Com CPF + data de nascimento, devolve o cadastro para preencher o formulário.
+    Só com o CPF não devolve nada: senão bastaria chutar CPFs para colher nomes e telefones."""
     cpf = so_digitos(b.get("cpf"))
+    nasc = data_ddmmaaaa(b.get("nascimento"))
     if len(cpf) != 11:
         return 400, {"erro": "Confira o CPF."}
+    if not re.fullmatch(r"\d{2}/\d{2}/\d{4}", nasc):
+        return 400, {"erro": "Informe a data de nascimento."}
     if not _limite("busca", ip, 8, 600):  # evita testar CPFs em sequência
         return 429, {"erro": "Muitas buscas seguidas. Espere alguns minutos ou ligue para " + TELEFONE + "."}
+    if _cpf_pausado(cpf, ip):
+        return 429, {"erro": TEXTO_PAUSADO}
     pid, pac = buscar_cadastro(cpf)
-    if not pid:
+    if not pid or not _confere_nascimento(pac, nasc):
+        if pid:
+            _errou_cpf(cpf, ip)
+        # mesma resposta para CPF sem cadastro e data que não confere: não revela se o CPF existe
         return 200, {"encontrado": False}
     nome = " ".join(str(pac.get("nome_social") or pac.get("nome") or "").split())
     sexo = str(pac.get("sexo") or "").strip().upper()[:1]
@@ -616,11 +660,12 @@ def paciente(b, ip):
         "primeiro_nome": nome.split(" ")[0].title() if nome else "",
         "dados": {
             "nome": nome.title(),
-            # a data de nascimento NÃO volta: ela é a confirmação de identidade em "Meus agendamentos"
-            "nascimento": "",
-            "celular": fmt_tel(celular_do_cadastro(pac)),
+            "nascimento": nasc,
+            # o contato completo não sai do servidor: celular vazio na marcação = o do cadastro
+            "celular": "",
+            "celular_mascarado": mascarar_tel(celular_do_cadastro(pac)),
             "sexo": sexo if sexo in ("F", "M") else "",
-            "email": primeiro(pac.get("email")).lower(),
+            "email": "",
         },
     }
 
@@ -653,16 +698,26 @@ def agendar(b, ip):
     cpf = so_digitos(b.get("cpf"))
     if len(cpf) != 11:
         return 400, {"erro": "Confira o CPF."}
-    if not _limite("agendar", ip, 10, 3600):
+    # 20 por hora: a recepção e o Wi-Fi da clínica saem pelo mesmo endereço
+    if not _limite("agendar", ip, 20, 3600):
         return 429, {"erro": "Muitas marcações seguidas. Ligue para " + TELEFONE + "."}
+    if _cpf_pausado(cpf, ip):
+        return 429, {"erro": TEXTO_PAUSADO}
 
     data, hora = str(b.get("data") or ""), str(b.get("horario") or "")[:5]
-    slot = next((h for h in livres(pid, uid, eid, fresco=True) if h["data"] == data and h["horario"] == hora), None)
+    with ThreadPoolExecutor(2) as ex:  # o Feegow é lento: horário e cadastro ao mesmo tempo
+        f_livres = ex.submit(livres, pid, uid, eid, True)
+        f_cad = ex.submit(buscar_cadastro, cpf)
+        livres_agora, (paciente_id, pac) = f_livres.result(), f_cad.result()
+    slot = next((h for h in livres_agora if h["data"] == data and h["horario"] == hora), None)
     if not slot:
         return 409, {"erro": "Esse horário acabou de ser ocupado. Escolha outro."}
 
-    paciente_id, pac = buscar_cadastro(cpf)
     if paciente_id:
+        # quem já tem cadastro confirma a data de nascimento: só o CPF não basta para marcar em nome de alguém
+        if not _confere_nascimento(pac, data_ddmmaaaa(b.get("nascimento"))):
+            _errou_cpf(cpf, ip)
+            return 422, {"erro": "A data de nascimento não confere com o cadastro da Clínica Dias. Confira a data ou ligue para " + TELEFONE + "."}
         if not so_digitos(b.get("celular")):
             b["celular"] = celular_do_cadastro(pac)
         nascimento = pac.get("nascimento")
@@ -694,7 +749,7 @@ def agendar(b, ip):
             return {"convenio_id": conv["id"], "convenio_plano_id": pronto.get("plano", 1), "valor": 0}
         tabela_id, _ = preparar(pid, uid, eid, b.get("pagamento"))
         if not tabela_id:
-            raise FeegowErro("Não conseguimos confirmar o valor da consulta. Ligue para " + TELEFONE + ".")
+            raise PonteErro("Não conseguimos confirmar o valor da consulta. Ligue para " + TELEFONE + ".")
         return {"tabela_id": tabela_id}
 
     if not PERMITIR_AGENDAR:
@@ -749,12 +804,12 @@ def entrar(b, ip):
         return 400, {"erro": "Confira o CPF e a data de nascimento."}
     if not _limite("entrar", ip, 8, 600):
         return 429, {"erro": "Muitas tentativas seguidas. Espere alguns minutos ou ligue para " + TELEFONE + "."}
-    if _contar("erro_cpf", cpf, 3600) >= 5:
-        return 429, {"erro": "Por segurança, o acesso com este CPF foi pausado por uma hora. Ligue para " + TELEFONE + "."}
+    if _cpf_pausado(cpf, ip):
+        return 429, {"erro": TEXTO_PAUSADO}
     pid, pac = buscar_cadastro(cpf)
-    if not pid or data_ddmmaaaa(pac.get("nascimento")) != nasc:
+    if not pid or not _confere_nascimento(pac, nasc):
         # mesma resposta para CPF sem cadastro e data errada: não revela se o CPF existe
-        _limite("erro_cpf", cpf, 99, 3600)
+        _errou_cpf(cpf, ip)
         return 401, {"erro": "CPF ou data de nascimento não conferem com o cadastro da Clínica Dias."}
     nome = " ".join(str(pac.get("nome_social") or pac.get("nome") or "").split())
     token = secrets.token_urlsafe(32)
@@ -847,6 +902,7 @@ def _item(x, agora, det=None):
     pid = int(x.get("profissional_id") or 0)
     with TRAVA:
         eid = CATALOGO["por_procedimento"].get((pid, int_ou(x.get("procedimento_id"))))
+        nome_esp = (CATALOGO["especialidades"].get(eid) or {}).get("nome", "") if eid else ""
     # pelo site só se mexe em CONSULTA; exame e cirurgia têm preparo e reserva de sala: pelo telefone
     pode_cancelar = st in STATUS_ATIVOS and futura and "CONSULTA" in proc.upper()
     return {
@@ -856,7 +912,7 @@ def _item(x, agora, det=None):
         "medico_id": pid,
         "medico": nome_proprio(x.get("profissional")),
         "especialidade_id": eid,
-        "especialidade": (CATALOGO["especialidades"].get(eid) or {}).get("nome", "") if eid else "",
+        "especialidade": nome_esp,
         "procedimento": proc[:1].upper() + proc[1:].lower(),
         "status_id": st,
         "status": STATUS_TEXTO.get(st) or str(x.get("status") or ""),
@@ -986,8 +1042,12 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def erro(self, e, texto):
+        if isinstance(e, PonteErro):
+            return self.send_json(422, {"erro": str(e)})
         if isinstance(e, FeegowErro):
-            return self.send_json(422, {"erro": str(e)[:300]})
+            # o texto do Feegow não sai daqui (pode ter dado interno ou de outra pessoa)
+            sys.stderr.write("feegow recusou: %s\n" % (e.ferramenta or "?"))
+            return self.send_json(422, {"erro": "Não conseguimos concluir agora. Ligue para " + TELEFONE + "."})
         sys.stderr.write("erro: %s\n" % type(e).__name__)
         return self.send_json(502, {"erro": texto})
 
