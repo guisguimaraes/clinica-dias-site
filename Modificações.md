@@ -29,13 +29,24 @@ Feegow (MCP em mcpfeegow.clinicadias.com)
 - **Especialidades:** a lista vem do Feegow (só as que têm médico com horário livre nos próximos 30 dias). O site junta as repetidas (Ginecologia, as 5 de Odontologia, Oftalmologia Infantil).
 - **Fotos dos médicos:** o Feegow não tem foto. Ficam em `site/img/medicos/<nome-sem-acento>.jpg` (200 px de largura) e o nome entra na lista `FOTOS` do `agenda.js`. Sem foto, aparecem as iniciais.
 
+### Janela nova e preços (23/11, à tarde)
+
+- **Passos:** especialidade → médico → unidade → dia e hora → **pagamento** → paciente → confirmar.
+- **Ficha da consulta:** no computador, uma coluna azul à esquerda vai mostrando cada escolha. Tocar numa linha volta àquele passo. No celular, ela vira uma linha de resumo embaixo do título.
+- **Preços:** a ponte ganhou `GET /api/precos?profissional_id&unidade_id&especialidade_id`, que devolve o valor Particular no dinheiro/PIX e no cartão, além dos cartões de desconto (CardFácil, AAPI, Associação dos Aposentados, TomoCard), direto do Feegow. O resultado fica guardado por 1 hora. A tabela "Parceria" é interna e fica de fora.
+- **Pagamento sempre na clínica, no dia:** o site não cobra nada. A confirmação e a tela final mostram o valor e a forma de pagamento escolhida.
+- **Cartões de desconto:** por enquanto não entram como opção no site. Aparece só a frase "Tem CardFácil ou outro cartão de desconto? Ligue…".
+- **Tela final:** botões "Salvar no calendário" (arquivo .ics com lembrete 2 h antes) e "Meus agendamentos".
+- **Marcação real ligada** (`PERMITIR_AGENDAR=1`) desde 23/11, com o ok do Guilherme.
+
 ### Modo teste
 
-Enquanto `PERMITIR_AGENDAR=0` no Coolify, o site faz tudo com horários reais, mas **não grava nada**: no fim aparece "Teste concluído. Nada foi marcado na agenda". Para ligar a marcação de verdade, a clínica aprova, alguém muda `PERMITIR_AGENDAR=1` no app agenda-clinica-dias e faz o redeploy.
+Para testar sem gravar, use `PERMITIR_AGENDAR=0` (por exemplo, rodando a ponte no computador com `python3 agenda/servidor.py` e um `agenda/.env` com `PORT=3100` e `CORS_ORIGINS=http://127.0.0.1:8080`): o site faz tudo com horários reais, mas **não grava nada**: no fim aparece "Teste concluído. Nada foi marcado na agenda". Para ligar a marcação de verdade, a clínica aprova, alguém muda `PERMITIR_AGENDAR=1` no app agenda-clinica-dias e faz o redeploy.
 
 ### Pendências
 
-- [ ] Clínica testar e aprovar; depois ligar `PERMITIR_AGENDAR=1`.
+- [x] Marcação real ligada em 23/11.
+- [ ] Decidir se os cartões de desconto entram como opção de pagamento no site.
 - [ ] Fotos dos outros médicos.
 - [ ] Endereço da unidade Timóteo · Portaria I: o Feegow diz "Rua Doutor Tadeu Damásio dos Reis, 450", e o site usa "Rua Cento e Vinte e Oito, 14".
 - [ ] No Feegow, Infectologia, Obstetrícia, Nutrologia, Psicanálise e Psicopedagogia usam a "CONSULTA UROLOGISTA" (3229) como consulta padrão. Por isso ficaram fora do agendamento on-line até a clínica corrigir.

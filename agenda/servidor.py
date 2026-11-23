@@ -411,6 +411,61 @@ def preparar(pid, uid, eid, pagamento):
     return achar(d, "tabela_id"), achar(d, "valor")
 
 
+# Preços de uma consulta, para mostrar ANTES de a pessoa escolher como vai pagar.
+# O preparar_agendamento sem tabela devolve "opcoes" com todas as tabelas daquela forma de pagamento:
+# a "Particular" e as dos cartões de desconto (CardFácil, AAPI...). A "Parceria" é interna e fica fora.
+PRECOS_CACHE = {}  # (profissional, unidade, especialidade) -> (hora, resposta)
+NOMES_DESCONTO = {
+    "cardfacil": "CardFácil",
+    "aapi": "AAPI",
+    "associacao dos aposentados": "Associação dos Aposentados",
+    "tomocard": "TomoCard",
+}
+
+
+def _nome_tabela(nome):
+    """'CardFacil (Dinheiro e Pix)' -> 'cardfacil'; 'AAPI (CARTÃO)' -> 'aapi'."""
+    base = re.sub(r"\s*\(.*?\)\s*$", "", str(nome or "")).strip().lower()
+    return base
+
+
+def precos(q):
+    pid, uid, eid = _ids(q, "profissional_id", "unidade_id", "especialidade_id")
+    if not medico(pid, eid, uid):
+        return 400, {"erro": "Médico, especialidade ou unidade inválidos."}
+    chave = (pid, uid, eid)
+    hit = PRECOS_CACHE.get(chave)
+    if hit and time.time() - hit[0] < 3600:
+        return 200, hit[1]
+
+    def opcoes(forma):
+        d = feegow("preparar_agendamento", {
+            "profissional_id": pid, "especialidade_id": eid, "unidade_id": uid,
+            "tipo_atendimento": "particular", "forma_pagamento": forma,
+        })
+        return forma, d.get("opcoes") or []
+
+    with ThreadPoolExecutor(2) as ex:
+        por_forma = dict(ex.map(opcoes, ["dinheiro_pix", "cartao"]))
+
+    particular, descontos = {}, {}
+    for forma, lista in por_forma.items():
+        for o in lista:
+            base = _nome_tabela(o.get("nome"))
+            preco = {"valor": o.get("valor"), "centavos": int_ou(o.get("valor_centavos"))}
+            if base == "particular":
+                particular[forma] = preco
+            elif base in NOMES_DESCONTO:
+                descontos.setdefault(base, {"nome": NOMES_DESCONTO[base]})[forma] = preco
+    resp = {
+        "particular": particular,
+        "descontos": sorted(descontos.values(), key=lambda x: x["nome"].lower()),
+        "pagamento": "na clínica, no dia da consulta",
+    }
+    PRECOS_CACHE[chave] = (time.time(), resp)
+    return 200, resp
+
+
 CONVENIOS_CACHE = {}  # profissional_id -> (hora, lista)
 
 
@@ -956,6 +1011,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(*horarios(q))
             if p == "/api/convenios":
                 return self.send_json(*convenios(q))
+            if p == "/api/precos":
+                return self.send_json(*precos(q))
             if p == "/api/meus/agendamentos":
                 _, sess = sessao_do_pedido(self.headers)
                 if not sess:
