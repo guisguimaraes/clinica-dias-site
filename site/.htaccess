@@ -42,7 +42,7 @@ ErrorDocument 404 /404.html
   # O que o site carrega de fora: three.js e gsap do passeio (jsdelivr), mapa (OpenFreeMap),
   # avaliações (Google Places) e fotos de quem avaliou (googleusercontent).
   # 'unsafe-inline': as páginas têm scripts e estilos no próprio HTML. blob: e wasm: mapa e Draco do passeio.
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com; font-src 'self' data:; connect-src 'self' data: blob: https://tiles.openfreemap.org https://places.googleapis.com https://cdn.jsdelivr.net; worker-src 'self' blob:; media-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com; font-src 'self' data:; connect-src 'self' data: blob: https://agenda.clinicadias.com https://tiles.openfreemap.org https://places.googleapis.com https://cdn.jsdelivr.net; worker-src 'self' blob:; media-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'; upgrade-insecure-requests"
 
   <FilesMatch "\.(webp|png|jpe?g|svg|woff2|mp3|mp4|webm)$">
     Header set Cache-Control "public, max-age=2592000"

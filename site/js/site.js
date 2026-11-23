@@ -117,6 +117,8 @@
     const nome = botoes[atual].textContent.trim();
     titulo.textContent = nome;
     texto.textContent = explicacoes[nome] || '';
+    const agendar = painel.querySelector('[data-painel-agendar]');
+    if (agendar) agendar.dataset.especialidade = nome; // a janela de agendamento já abre nesta especialidade
     botoes.forEach((b, k) => b.setAttribute('aria-pressed', String(k === atual)));
     painel.hidden = false;
     requestAnimationFrame(() => painel.classList.add('aberto'));
